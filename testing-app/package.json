@@ -1,0 +1,27 @@
+{
+  "name": "testing-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "bcrypt-ts": "^7.1.0",
+    "dotenv": "^17.2.2",
+    "exceljs": "^4.4.0",
+    "mongodb": "^6.19.0",
+    "scheduler-node-models": "^1.1.36"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/dotenv": "^6.1.1",
+    "@types/exceljs": "^0.5.3",
+    "@types/mongodb": "^4.0.6"
+  }
+}

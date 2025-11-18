@@ -1,0 +1,14 @@
+[Unit]
+Description=Authentication API - backend API server for OsanScheduler authentication
+Documentation=https://www.osanscheduler.com
+#After=network.target
+
+[Service]
+EnvironmentFile=/usr/local/etc/schedulerApiEnv
+Type=simple
+User=root
+ExecStart=/usr/bin/node /usr/local/bin/authentication-api/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+scheduler-node-models/node_modules
+scheduler-node-models/dist
+testing-app/node_modules
+.env
+/testing-app/dist
+/testing-app/node_modules
+/authentication-api/node_modules
+/authentication-api/dist
+/authentication-api/.env
+general-api/node_modules
+general-api/dist
+general-api/.env
+/node_modules
+/testing-app/node_modules
