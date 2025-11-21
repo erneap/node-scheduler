@@ -1,11 +1,15 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { Formula, Report } from "scheduler-node-models/general";
+import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
 import { ISite, Site } from "scheduler-node-models/scheduler/sites";
-import { IWorkcode, LaborCode, Workcode } 
+import { CompareWorkCode, IWorkcode, LaborCode, Workcode } 
   from "scheduler-node-models/scheduler/labor";
-import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { User } from "scheduler-node-models/users";
 import { Forecast, Period } from "scheduler-node-models/scheduler/sites/reports";
+import { Holiday } from "scheduler-node-models/scheduler/teams/company";
+import { ObjectId } from "mongodb";
+import { collections } from "../../config/mongoconnect";
+import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 
 export class ChargeStatusReport extends Report {
   private site: Site;
@@ -16,70 +20,203 @@ export class ChargeStatusReport extends Report {
   private borders: Map<string, Partial<Borders>>;
   private alignments: Map<string, Partial<Alignment>>;
   private numformats: Map<string, string>;
+  private employees: Employee[];
+  private holidays: Holiday[];
 
-  constructor(
-    isite: ISite,
-    workcodes: IWorkcode[]
-  ) {
+  constructor() {
     super();
-    this.site = new Site(isite);
+    this.site = new Site();
     this.workcodes = new Map<string, Workcode>();
-    workcodes.forEach(wc => {
-      const wCode = new Workcode(wc);
-      this.workcodes.set(wCode.id, wCode);
-    });
     this.lastWorked = new Date(0);
     this.fonts = new Map<string, Partial<Font>>();
     this.fills = new Map<string, Fill>();
     this.borders = new Map<string, Partial<Borders>>();
     this.alignments = new Map<string, Partial<Alignment>>();
     this.numformats = new Map<string, string>();
+    this.employees = [];
+    this.holidays = [];
   }
 
-  create(user: User, iEmps: IEmployee[], companyID: string, 
-    reqDate: Date) : Workbook {
+  async create(user: User, data: ReportRequest) : Promise<Workbook> {
     const workbook = new Workbook();
     workbook.creator = user.getFullName();
     workbook.created = new Date();
 
-    // determine the lastworked date for the report
-    const employees: Employee[] = [];
-    this.lastWorked = new Date(0);
-    iEmps.forEach(iEmp => {
-      const emp = new Employee(iEmp);
-      const last = emp.getLastWorkday();
-      if (emp.companyinfo.company.toLowerCase() === companyID
-        && emp.isActive(reqDate)) {
-        if (last.getTime() > this.lastWorked.getTime()) {
-          this.lastWorked = new Date(last);
-        }
+    try {
+      let reqDate = new Date();
+      if (data.startDate) {
+        reqDate = new Date(data.startDate);
       }
-      employees.push(emp);
-    });
-    employees.sort((a,b) => a.compareTo(b));
+      const start = new Date(Date.UTC(reqDate.getFullYear()-1, 0, 1));
+      const end = new Date(Date.UTC(reqDate.getFullYear() + 1, 11, 31, 23, 59, 59));
 
-    this.createStyles();
-
-    // create the statistics sheet first, so the other sheets can feed it data
-    const stats = this.createStatisticsSheet(workbook);
-    let statsRow = 3;
-
-    // step through the forecast reports, to see if valid, create current and forecast
-    // sheets.
-    this.site.forecasts.forEach(rpt => {
-      if (rpt.use(reqDate, companyID)) {
-        let row = this.addReport(workbook, 'Current', rpt, employees, stats, statsRow)
-        if (row) {
-          statsRow = row;
+      await this.getAllDatabaseInfo(data.teamid, data.siteid, data.companyid, start, end);
+      
+      // determine the lastworked date for the report
+      const employees: Employee[] = [];
+      this.lastWorked = new Date(0);
+      this.employees.forEach(iEmp => {
+        const emp = new Employee(iEmp);
+        const last = emp.getLastWorkday();
+        if (data.companyid 
+          && emp.companyinfo.company.toLowerCase() === data.companyid.toLowerCase()
+          && emp.isActive(reqDate)) {
+          if (last.getTime() > this.lastWorked.getTime()) {
+            this.lastWorked = new Date(last);
+          }
         }
-        row = this.addReport(workbook, 'Forecast', rpt, employees, stats, statsRow);
-        if (row) {
-          statsRow = row;
+        employees.push(emp);
+      });
+      employees.sort((a,b) => a.compareTo(b));
+
+      this.createStyles();
+
+      // create the statistics sheet first, so the other sheets can feed it data
+      const stats = this.createStatisticsSheet(workbook);
+      let statsRow = 3;
+
+      // step through the forecast reports, to see if valid, create current and forecast
+      // sheets.
+      this.site.forecasts.forEach(rpt => {
+        if (data.companyid && rpt.use(reqDate, data.companyid)) {
+          let row = this.addReport(workbook, 'Current', rpt, employees, stats, statsRow)
+          if (row) {
+            statsRow = row;
+          }
+          row = this.addReport(workbook, 'Forecast', rpt, employees, stats, statsRow);
+          if (row) {
+            statsRow = row;
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.log(error);
+    }
 
     return workbook;
+  }
+    
+  /**
+   * This method will control all pulling of the database information in a more or less
+   * synchronized way, based on team, site, company, and a start and end dates.  It will
+   * throw an error if the team and site identifier is not provided.
+   * @param teamid The string value (or undefined) for the team identifer. 
+   * @param siteid The string value (or undefined) for the site identifier.
+   * @param companyid The string value (or undefined) for any associated company identifier.
+   * @param start The date object for the start of the report period.
+   * @param end The date object for the end of the report period.
+   */
+  async getAllDatabaseInfo(teamid: string | undefined, siteid: string | undefined, 
+    companyid: string | undefined, start: Date, end: Date): Promise<void> {
+    try {
+      if (teamid && teamid !== '' && siteid && siteid !== '') {
+        const team = await this.getTeam(teamid, siteid, companyid);
+        const employees = await this.getEmployees(teamid, siteid, start, end);
+        this.employees = employees;
+        const employeeWorkPromises = 
+          this.employees.map(async (emp, e) => {
+            const work = await this.getEmployeeWork(emp.id, start.getFullYear(), 
+              end.getFullYear());
+            emp.work = work;
+            this.employees[e] = emp;
+          });
+        await Promise.allSettled(employeeWorkPromises);
+      } else {
+        throw new Error('TeamID or SiteID empty');
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
+   * This method will provide team and site information while filling in the team's
+   * workcodes and an associated company's holidays.
+   * @param teamid The string value for the team identifier.
+   * @param siteid The string value for the site assocated with the team
+   * @param companyid (Optional) a string value for the associated company
+   * @returns Nothing, but only returns after all values are placed in their respective
+   * class members.
+   */
+  async getTeam(teamid: string, siteid: string, companyid?: string): Promise<void> {
+    try {
+      const teamQuery = { _id: new ObjectId(teamid) };
+      const iteam = await collections.teams!.findOne<ITeam>(teamQuery);
+      if (iteam) {
+        const team = new Team(iteam);
+        team.workcodes.forEach(wc => {
+          this.workcodes.set(wc.id, new Workcode(wc));
+        });
+        if (companyid && companyid !== '') {
+          team.companies.forEach(co => {
+            if (co.id.toLowerCase() === companyid.toLowerCase()) {
+              co.holidays.forEach(hol => {
+                this.holidays.push(new Holiday(hol));
+              });
+              this.holidays.sort((a,b) => a.compareTo(b));
+            }
+          });
+        }
+        team.sites.forEach(s => {
+          if (s.id.toLowerCase() === siteid.toLowerCase()) {
+            this.site = new Site(s);
+          }
+        });
+        return;
+      } else {
+        throw new Error('no team for id')
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getEmployees(team: string, site: string, start: Date, end: Date): Promise<Employee[]> {
+    const employees: Employee[] = [];
+    if (collections.employees) {
+      const empQuery = { team: new ObjectId(team), site: site };
+      const empCursor = await collections.employees.find<IEmployee>(empQuery);
+      const result = await empCursor.toArray();
+      result.forEach(async(iEmp) => {
+        employees.push(new Employee(iEmp));
+      });
+      employees.sort((a,b) => a.compareTo(b));
+    }
+    return employees;
+  }
+
+  /**
+   * This function will pull the requested employee's work records from the database to
+   * provide a single array.
+   * @param empid The string value for the employee for the work records to be pulled
+   * @param start The numeric value for the starting year for the pull query
+   * @param end The number value for the ending year for the pull query
+   * @returns An array of work objects to signify the work accompllished by charge number
+   * within the start and end years.
+   */
+  async getEmployeeWork(empid: string, start: number, end: number): Promise<Work[]> {
+    const work: Work[] = [];
+    if (collections.work) {
+      const empID = new ObjectId(empid);
+      const workQuery = { 
+        employeeID: empID,
+        year: { $gte: start, $lte: end }
+      };
+      const workCursor = collections.work.find<IWorkRecord>(workQuery);
+      const workResult = await workCursor.toArray();
+      try {
+        workResult.forEach(wr => {
+          const wRecord = new WorkRecord(wr);
+          wRecord.work.forEach(wk => {
+            work.push(new Work(wk));
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
+      work.sort((a,b) => a.compareTo(b));
+    }
+    return work;
   }
 
   /**

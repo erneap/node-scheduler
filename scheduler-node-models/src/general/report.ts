@@ -88,5 +88,6 @@ export interface ReportRequest {
   password?: string;
   startDate?: string;
   endDate?: string;
+  userid?: string;
   includeDaily: boolean;
 }

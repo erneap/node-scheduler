@@ -16,10 +16,14 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors({
-  origin: ['https://www.osanscheduler.com', 'https://osanscheduler.com', 'http://localhost:4200', 'https://docker'],
+  origin: ['https://www.osanscheduler.com', 'https://osanscheduler.com', 'http://localhost:4200', 'https://docker', 'null'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-  exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
+  exposedHeaders: [
+    'Content-Type', 'Authorization', 
+    'refreshToken', 'X-Custom-Header',
+    'Content-Disposition'
+  ]
 }));
 app.use(express.json({ limit: '10mb'}));
 

@@ -158,6 +158,15 @@ export class MissionType {
             }
           });
         }
+      } else if (gs && gs.exploitations.length > 0) {
+        msn.sensors.forEach(mSen => {
+          if (gs.useSensor(msn.platformID, mSen.sensorID, msn.exploitation, 
+            msn.communications, enclave)) {
+            if (senMax < mSen.preflightMinutes) {
+              senMax = mSen.preflightMinutes;
+            }
+          }
+        });      
       } else {
         msn.sensors.forEach(mSen => {
           sensors.forEach(sen => {
@@ -188,6 +197,15 @@ export class MissionType {
             }
           });
         }
+      } else if (gs && gs.exploitations.length > 0) {
+        msn.sensors.forEach(mSen => {
+          if (gs.useSensor(msn.platformID, mSen.sensorID, msn.exploitation, 
+            msn.communications, enclave)) {
+            if (senMax < mSen.postflightMinutes) {
+              senMax = mSen.postflightMinutes;
+            }
+          }
+        });   
       } else {
         msn.sensors.forEach(mSen => {
           sensors.forEach(sen => {
@@ -218,6 +236,15 @@ export class MissionType {
             }
           });
         }
+      } else if (gs && gs.exploitations.length > 0) {
+        msn.sensors.forEach(mSen => {
+          if (gs.useSensor(msn.platformID, mSen.sensorID, msn.exploitation, 
+            msn.communications, enclave)) {
+            if (senMax < mSen.scheduledMinutes) {
+              senMax = mSen.scheduledMinutes;
+            }
+          }
+        });   
       } else {
         msn.sensors.forEach(mSen => {
           sensors.forEach(sen => {
@@ -248,6 +275,15 @@ export class MissionType {
             }
           });
         }
+      } else if (gs && gs.exploitations.length > 0) {
+        msn.sensors.forEach(mSen => {
+          if (gs.useSensor(msn.platformID, mSen.sensorID, msn.exploitation, 
+            msn.communications, enclave)) {
+            if (senMax < mSen.executedMinutes) {
+              senMax = mSen.executedMinutes;
+            }
+          }
+        });   
       } else {
         msn.sensors.forEach(mSen => {
           sensors.forEach(sen => {
@@ -278,6 +314,15 @@ export class MissionType {
             }
           });
         }
+      } else if (gs && gs.exploitations.length > 0) {
+        msn.sensors.forEach(mSen => {
+          if (gs.useSensor(msn.platformID, mSen.sensorID, msn.exploitation, 
+            msn.communications, enclave)) {
+            if (senMax < mSen.additionalMinutes) {
+              senMax = mSen.additionalMinutes;
+            }
+          }
+        });   
       } else {
         msn.sensors.forEach(mSen => {
           sensors.forEach(sen => {

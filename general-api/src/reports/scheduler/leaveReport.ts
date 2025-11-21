@@ -1,12 +1,17 @@
 import { Alignment, Borders, Fill, Font, RichText, Style, Workbook, Worksheet } from "exceljs";
 import { LeaveMonth, LeavePeriod } from "./leaves";
-import { Employee, IEmployee, Leave } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { Holiday, IHoliday } from "scheduler-node-models/scheduler/teams/company";
 import { IWorkcode, Workcode } from "scheduler-node-models/scheduler/labor";
 import { User } from "scheduler-node-models/users";
-import { Formula, Report } from "scheduler-node-models/general";
+import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
+import { collections } from '../../config/mongoconnect';
+import { ObjectId } from "mongodb";
+import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { Site } from "scheduler-node-models/scheduler/sites";
 
 export class LeaveReport extends Report {
+  private site: Site;
   private employees: Employee[];
   private holidays: Holiday[];
   private fonts: Map<string, Partial<Font>>;
@@ -16,26 +21,17 @@ export class LeaveReport extends Report {
   private numformats: Map<string, string>;
   private workcodes: Map<string, Workcode>;
 
-  constructor(holidays: IHoliday[], workcodes: IWorkcode[]) {
+  constructor() {
     super();
     this.employees = [];
-
+    this.site = new Site();
     this.holidays = [];
-    holidays.forEach(hol => {
-      this.holidays.push(new Holiday(hol));
-    });
-    this.holidays.sort((a,b) => a.compareTo(b));
     this.fonts = new Map<string, Partial<Font>>();
     this.fills = new Map<string, Fill>();
     this.borders = new Map<string, Partial<Borders>>();
     this.alignments = new Map<string, Partial<Alignment>>();
     this.numformats = new Map<string, string>();
     this.workcodes = new Map<string, Workcode>();
-    if (workcodes.length > 0) {
-      workcodes.forEach(wc => {
-        this.workcodes.set(wc.id, new Workcode(wc));
-      })
-    }
   }
 
   /**
@@ -48,29 +44,154 @@ export class LeaveReport extends Report {
    * @param reqDate A date object for the requested date
    * @returns The workbook object with the report data.
    */
-  create(user: User, iEmps: IEmployee[], site: string, company: string, reqDate: Date) : Workbook {
-    const start = new Date(Date.UTC(reqDate.getUTCFullYear(), 0, 1));
-    const end = new Date(Date.UTC(reqDate.getUTCFullYear() + 1, 0, 1));
-    iEmps.forEach(iemp => {
-      const emp = new Employee(iemp);
-      if (emp.atSite(site, start, end) 
-        && emp.companyinfo.company.toLowerCase() === company.toLowerCase()) {
-        this.employees.push(emp);
-      }
-    });
-    this.employees.sort((a,b) => a.compareTo(b));
-
+  async create(user: User, data: ReportRequest) : Promise<Workbook> {
     const workbook = new Workbook();
     workbook.creator = user.getFullName();
     workbook.created = new Date();
 
-    this.createStyles();
+    let start = new Date();
+    if (data.startDate) {
+      start = new Date(data.startDate);
+    }
+    start = new Date(Date.UTC(start.getFullYear(), 0, 1))
+    const end = new Date(Date.UTC(start.getUTCFullYear() + 1, 0, 1));
+    
+    try {
+      await this.getAllDatabaseInfo(data.teamid, data.siteid, data.companyid, start, end);
 
-    this.createLeaveListing(workbook, start.getFullYear(), this.holidays.length > 0);
-    this.createMonthlyListing(workbook, start.getFullYear(), true);
-    this.createMonthlyListing(workbook, start.getFullYear(), false);
+      this.createStyles();
 
+      this.createLeaveListing(workbook, start.getFullYear(), 
+        (data.companyid) ? data.companyid : '', this.holidays.length > 0);
+      this.createMonthlyListing(workbook, start.getFullYear(), data.companyid, true);
+      this.createMonthlyListing(workbook, start.getFullYear(), data.companyid, false);
+    } catch (error) {
+      console.log(error);
+    }
     return workbook;
+  }
+  
+  /**
+   * This method will control all pulling of the database information in a more or less
+   * synchronized way, based on team, site, company, and a start and end dates.  It will
+   * throw an error if the team and site identifier is not provided.
+   * @param teamid The string value (or undefined) for the team identifer. 
+   * @param siteid The string value (or undefined) for the site identifier.
+   * @param companyid The string value (or undefined) for any associated company identifier.
+   * @param start The date object for the start of the report period.
+   * @param end The date object for the end of the report period.
+   */
+  async getAllDatabaseInfo(teamid: string | undefined, siteid: string | undefined, 
+    companyid: string | undefined, start: Date, end: Date): Promise<void> {
+    try {
+      if (teamid && teamid !== '' && siteid && siteid !== '') {
+        const team = await this.getTeam(teamid, siteid, companyid);
+        const employees = await this.getEmployees(teamid, siteid, start, end);
+        this.employees = employees;
+        const employeeWorkPromises = 
+          this.employees.map(async (emp, e) => {
+            const work = await this.getEmployeeWork(emp.id, start.getFullYear(), 
+              end.getFullYear());
+            emp.work = work;
+            this.employees[e] = emp;
+          });
+        await Promise.allSettled(employeeWorkPromises);
+      } else {
+        throw new Error('TeamID or SiteID empty');
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
+   * This method will provide team and site information while filling in the team's
+   * workcodes and an associated company's holidays.
+   * @param teamid The string value for the team identifier.
+   * @param siteid The string value for the site assocated with the team
+   * @param companyid (Optional) a string value for the associated company
+   * @returns Nothing, but only returns after all values are placed in their respective
+   * class members.
+   */
+  async getTeam(teamid: string, siteid: string, companyid?: string): Promise<void> {
+    try {
+      const teamQuery = { _id: new ObjectId(teamid) };
+      const iteam = await collections.teams!.findOne<ITeam>(teamQuery);
+      if (iteam) {
+        const team = new Team(iteam);
+        team.workcodes.forEach(wc => {
+          this.workcodes.set(wc.id, new Workcode(wc));
+        });
+        if (companyid && companyid !== '') {
+          team.companies.forEach(co => {
+            if (co.id.toLowerCase() === companyid.toLowerCase()) {
+              co.holidays.forEach(hol => {
+                this.holidays.push(new Holiday(hol));
+              });
+              this.holidays.sort((a,b) => a.compareTo(b));
+            }
+          });
+        }
+        team.sites.forEach(s => {
+          if (s.id.toLowerCase() === siteid.toLowerCase()) {
+            this.site = new Site(s);
+          }
+        });
+        return;
+      } else {
+        throw new Error('no team for id')
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getEmployees(team: string, site: string, start: Date, end: Date): Promise<Employee[]> {
+    const employees: Employee[] = [];
+    if (collections.employees) {
+      const empQuery = { team: new ObjectId(team), site: site };
+      const empCursor = await collections.employees.find<IEmployee>(empQuery);
+      const result = await empCursor.toArray();
+      result.forEach(async(iEmp) => {
+        employees.push(new Employee(iEmp));
+      });
+      employees.sort((a,b) => a.compareTo(b));
+    }
+    return employees;
+  }
+
+  /**
+   * This function will pull the requested employee's work records from the database to
+   * provide a single array.
+   * @param empid The string value for the employee for the work records to be pulled
+   * @param start The numeric value for the starting year for the pull query
+   * @param end The number value for the ending year for the pull query
+   * @returns An array of work objects to signify the work accompllished by charge number
+   * within the start and end years.
+   */
+  async getEmployeeWork(empid: string, start: number, end: number): Promise<Work[]> {
+    const work: Work[] = [];
+    if (collections.work) {
+      const empID = new ObjectId(empid);
+      const workQuery = { 
+        employeeID: empID,
+        year: { $gte: start, $lte: end }
+      };
+      const workCursor = collections.work.find<IWorkRecord>(workQuery);
+      const workResult = await workCursor.toArray();
+      try {
+        workResult.forEach(wr => {
+          const wRecord = new WorkRecord(wr);
+          wRecord.work.forEach(wk => {
+            work.push(new Work(wk));
+          });
+        });
+      } catch (error) {
+        throw error;
+      }
+      work.sort((a,b) => a.compareTo(b));
+    }
+    return work;
   }
 
 
@@ -148,7 +269,10 @@ export class LeaveReport extends Report {
    * @param workbook The report object in which a sheet is created into.
    * @param year the integer value for the year of the report
    */
-  createLeaveListing(workbook: Workbook, year: number, showHolidays: boolean) {
+  createLeaveListing(workbook: Workbook, year: number, companyid: string, 
+    showHolidays: boolean) {
+    const start = new Date(Date.UTC(year, 0, 1));
+    const end = new Date(Date.UTC(year+1, 0, 1)-10000);
     const sheetLabel = `${year} PTO-Hol`;
     const sheet = workbook.addWorksheet(sheetLabel, {
       pageSetup: { 
@@ -214,7 +338,10 @@ export class LeaveReport extends Report {
     }
     let row = 2;
     this.employees.forEach(emp => {
-      row = this.employeePTOHolidaySection(sheet, emp, row, year, showHolidays) + 1;
+      if (emp.atSite(this.site.id, start, end) 
+        && emp.companyinfo.company.toLowerCase() === companyid.toLowerCase()) {
+        row = this.employeePTOHolidaySection(sheet, emp, row, year, showHolidays) + 1;
+      }
     });
   }
 
@@ -733,7 +860,7 @@ export class LeaveReport extends Report {
    * @param year The numeric value for the year of the listing
    * @param bAll A boolean value for whether to list all employee's or not.
    */
-  createMonthlyListing(workbook: Workbook, year: number, bAll?: boolean) {
+  createMonthlyListing(workbook: Workbook, year: number, companyid?: string, bAll?: boolean) {
 
     let sheetLabel = `${year} Monthly`;
     if (!bAll) {
@@ -834,7 +961,7 @@ export class LeaveReport extends Report {
     
     for (let m=0; m < 12; m++) {
       row++;
-      row = this.createMonthListing(sheet, row, m, year, bAll)
+      row = this.createMonthListing(sheet, row, m, year, companyid, bAll)
     }
   }
 
@@ -850,7 +977,7 @@ export class LeaveReport extends Report {
    * @returns A numeric value to the last row of the month's table.
    */
   createMonthListing(sheet: Worksheet, row: number, month: number, year: number, 
-    bAll?: boolean): number {
+    companyid?: string, bAll?: boolean): number {
 
     // Add Two rows for the month label/year, plus columns for each day of the month.
     // also, with full report (bAll), then add labels for the totals in columns 34-36.
@@ -935,6 +1062,8 @@ export class LeaveReport extends Report {
     row += 2;
     const startRow = row;
     this.employees.forEach(emp => {
+      if (emp.atSite(this.site.id, start, end) && companyid 
+        && emp.companyinfo.company.toLowerCase() === companyid?.toLowerCase())
       if (this.createEmployeeMonthList(sheet, row, start, end, emp, bAll)) {
         row++;
       }

@@ -7,6 +7,7 @@ import { ReportRequest } from 'scheduler-node-models/general';
 import { DrawSummary, MissionSummary } from './reports/metrics';
 import { MidShiftReport } from './reports/scheduler/midShiftReport';
 import { Workcenter } from 'scheduler-node-models/scheduler/sites/workcenters/workcenter';
+import { ModTimeReport } from './reports/scheduler/modtimeReport';
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ const main = async() => {
       
       if (user) {
       const data = { 
-          reportType: 'midshift',
+          reportType: 'modreport',
           teamid: '64dad6b14952737d1eb2193f',
           siteid: 'dgsc',
           companyid: 'rtx',
@@ -77,6 +78,11 @@ const main = async() => {
         case "midshift":
           report = new MidShiftReport();
           rptname = 'midshifts';
+          break;
+        case "mods":
+        case "modreport":
+          report = new ModTimeReport();
+          rptname = 'modreport';
           break;
       }
       if (report) {

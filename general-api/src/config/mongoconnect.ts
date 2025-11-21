@@ -22,17 +22,17 @@ export async function connectToDB() {
       console.log('Connected to database');
       
       const db: Db = client.db('scheduler');
-      let users: Collection = await client.db('authenticate').collection("users");
+      let users: Collection = client.db('authenticate').collection("users");
       if (!users) {
         users = await db.createCollection("users");
       }
       collections.users = users;
-      let employees: Collection = await db.collection("employees");
+      let employees: Collection = db.collection("employees");
       if (!employees) {
         employees = await db.createCollection("employees");
       }
       collections.employees = employees;
-      let work: Collection = await db.collection('employeework');
+      let work: Collection = db.collection('employeework');
       if (!work) {
         work = await db.createCollection("employeework");
       }
@@ -52,14 +52,17 @@ export async function connectToDB() {
         help = await db.createCollection('help');
       }
       collections.help = help;
-      let missions = await client.db('metrics2').collection("missions");
+
+      // set up the metrics database and collection tables
+      const metricsDB: Db = client.db('metrics2');
+      let missions: Collection = metricsDB.collection('missions');
       if (!missions) {
-        missions = await client.db('metrics2').createCollection('missions');
+        missions = await db.createCollection('missions');
       }
       collections.missions = missions;
-      let outages = await client.db('metrics2').collection('outages');
+      let outages: Collection = metricsDB.collection('outages');
       if (!outages) {
-        outages = await client.db('metrics2').createCollection('outages');
+        outages = await metricsDB.createCollection('outages');
       }
       collections.outages = outages;
       console.log('Successfully connected to collections');

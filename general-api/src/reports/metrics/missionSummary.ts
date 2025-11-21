@@ -1,10 +1,12 @@
 import { Alignment, Border, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { GeneralTypes, SystemInfo } from "scheduler-node-models/metrics/systemdata";
+import { GeneralTypes, ISystemInfo, SystemInfo } from "scheduler-node-models/metrics/systemdata";
 import { User } from "scheduler-node-models/users";
-import { Mission } from "scheduler-node-models/metrics";
+import { IMission, IOutage, Mission } from "scheduler-node-models/metrics";
 import { Outage } from "scheduler-node-models/metrics";
 import { MissionType } from "./missionType";
-import { Report } from "scheduler-node-models/general";
+import { Report, ReportRequest } from "scheduler-node-models/general";
+import { collections } from '../../config/mongoconnect';
+import fs from 'fs';
 
 export class MissionSummary extends Report {
   private reportType: GeneralTypes;
@@ -19,34 +21,102 @@ export class MissionSummary extends Report {
   private borders: Map<string, Partial<Borders>>;
   private alignments: Map<string, Partial<Alignment>>;
 
-  constructor(type: GeneralTypes, start: Date, end: Date, missions: Mission[], 
-    outages: Outage[], systemInfo: SystemInfo, daily?: boolean) {
+  constructor() {
     super()
-    this.reportType = type;
-    this.start = new Date(start);
-    this.end = new Date(end);
-    this.missions = missions;
-    this.outages = outages;
-    this.systeminfo = systemInfo;
-    this.dailyReports = (daily) ? daily : false;
+    this.reportType = GeneralTypes.ALL;
+    this.start = new Date();
+    this.end = new Date();
+    this.missions = [];
+    this.outages = [];
+    this.dailyReports = false;
+
+    this.systeminfo = {};
+    const initialFile = (process.env.INITIAL_INFO) ? process.env.INITIAL_INFO:
+      '/Users/antonerne/data/initial.json';
+    fs.readFile(initialFile, 'utf8', (err, data: string) => {
+      if (err) {
+        console.log(err);
+        return
+      }
+      const iSysInfo = JSON.parse(data) as ISystemInfo;
+      this.systeminfo = new SystemInfo(iSysInfo);
+    });
+    
     this.fonts = new Map<string, Partial<Font>>();
     this.fills = new Map<string, Fill>();
     this.borders = new Map<string, Partial<Borders>>();
     this.alignments = new Map<string, Partial<Alignment>>();
   }
 
-  create(user: User): Workbook {
+  async create(user: User, data: ReportRequest): Promise<Workbook> {
     const workbook = new Workbook();
     workbook.creator = user.getFullName();
     workbook.created = new Date();
+    if (data.includeDaily) {
+      this.dailyReports = data.includeDaily;
+    }
+
+    this.start = new Date();
+    if (data.startDate) {
+      this.start = new Date(data.startDate);
+    }
+    this.start = new Date(Date.UTC(this.start.getFullYear(), this.start.getMonth(),
+      this.start.getDate()));
+    this.end = new Date(this.start.getTime() + (24 * 3600000));
+    if (data.endDate) {
+      this.end = new Date(data.endDate);
+      this.end = new Date(Date.UTC(this.end.getFullYear(), this.end.getMonth(), 
+        this.end.getDate(), 23, 59, 59));
+    }
     const delta = Math.floor((this.end.getTime() - this.start.getTime()) / (24 * 3600000));
     if (delta == 1 && delta > 7 ) {
       this.dailyReports = false;
     }
+    if (data.subreport) {
+      switch (data.subreport.toLowerCase()) {
+        case "geoint":
+          this.reportType = GeneralTypes.GEOINT;
+          break;
+        case "syers":
+          this.reportType = GeneralTypes.SYERS;
+          break;
+        case "ddsa":
+          this.reportType = GeneralTypes.MIST;
+          break;
+        case "xint":
+          this.reportType = GeneralTypes.XINT;
+          break;
+      }
+    }
+
+    // get the missions
+    this.missions = [];
+    if (collections.missions) {
+      const msnQuery = { "missionDate": { "$gte": this.start, "$lte": this.end }}
+      const msnCursor = collections.missions.find<IMission>(msnQuery);
+      const msnResults = await msnCursor.toArray();
+      msnResults.forEach(msn => {
+        this.missions.push(new Mission(msn));
+      });
+      this.missions.sort((a,b) => a.compareTo(b));
+    }
+
+
+    // get the outages
+    this.outages = [];
+    if (collections.outages) {
+      const outQuery = { "outageDate": { "&gte": this.start, "$lte": this.end }};
+      const outCursor = collections.outages.find<IOutage>(outQuery);
+      const outResults = await outCursor.toArray();
+      outResults.forEach(outage => {
+        this.outages.push(new Outage(outage));
+      });
+      this.outages.sort((a, b) => a.compareTo(b));
+    }
 
     this.createStyles();
     this.createSummarySheet(workbook, this.start, this.end, this.dailyReports, 
-      this.reportType, '');
+      this.reportType, 'Summary');
 
     return workbook;
   }
@@ -150,7 +220,7 @@ export class MissionSummary extends Report {
 
     const widths = [ 8, 7, 4, 7, 8, 8, 8, 8, 8, 8, 8, 8];
     widths.forEach((width, w) => {
-      sheet.getColumn(w).width = width;
+      sheet.getColumn(w+1).width = width;
     });
 
     // create headers/labels at top of page
@@ -249,11 +319,11 @@ export class MissionSummary extends Report {
         exp);
       this.setCell(sheet, this.getCellID('G', nRow), this.getCellID('G', nRow), cStyle, 
         this.getNumberString(this.getTotal('scheduled', exp, missionMap, sensorList), 0));
-      this.setCell(sheet, this.getCellID('H', nRow), this.getCellID('G', nRow), cStyle, 
+      this.setCell(sheet, this.getCellID('H', nRow), this.getCellID('H', nRow), cStyle, 
         this.getNumberString(this.getTotal('executed', exp, missionMap, sensorList), 0));
-      this.setCell(sheet, this.getCellID('I', nRow), this.getCellID('G', nRow), cStyle, 
+      this.setCell(sheet, this.getCellID('I', nRow), this.getCellID('I', nRow), cStyle, 
         this.getNumberString(this.getTotal('cancelled', exp, missionMap, sensorList), 0));
-      this.setCell(sheet, this.getCellID('J', nRow), this.getCellID('G', nRow), cStyle, 
+      this.setCell(sheet, this.getCellID('J', nRow), this.getCellID('J', nRow), cStyle, 
         this.getNumberString(this.getTotal('aborted', exp, missionMap, sensorList), 0));
 
       this.systeminfo.platforms?.forEach(plat => {
@@ -277,19 +347,19 @@ export class MissionSummary extends Report {
               this.setCell(sheet, this.getCellID('G', nRow + platCount), 
                 this.getCellID('G', nRow + platCount), prdStyle, 
                 this.getNumberString(this.getTotal('scheduled', exp, missionMap, 
-                  [pSen.id]), 0));
+                  [pSen.id], plat.id), 0));
               this.setCell(sheet, this.getCellID('H', nRow + platCount), 
                 this.getCellID('H', nRow + platCount), prdStyle, 
                 this.getNumberString(this.getTotal('executed', exp, missionMap, 
-                  [pSen.id]), 0));
+                  [pSen.id], plat.id), 0));
               this.setCell(sheet, this.getCellID('I', nRow + platCount), 
                 this.getCellID('I', nRow + platCount), prdStyle, 
                 this.getNumberString(this.getTotal('cancelled', exp, missionMap, 
-                  [pSen.id]), 0));
+                  [pSen.id], plat.id), 0));
               this.setCell(sheet, this.getCellID('J', nRow + platCount), 
                 this.getCellID('J', nRow + platCount), prdStyle, 
                 this.getNumberString(this.getTotal('aborted', exp, missionMap, 
-                  [pSen.id]), 0));
+                  [pSen.id], plat.id), 0));
             }
           });
           nRow += platCount;
@@ -376,7 +446,7 @@ export class MissionSummary extends Report {
                 font: this.fonts.get('bold9'),
                 alignment: this.alignments.get('center')
               };
-              this.setCell(sheet, this.getCellID("B", nRow), this.getCellID("C", nRow),
+              this.setCell(sheet, this.getCellID("D", nRow), this.getCellID("D", nRow),
                 style, "");
             } else {
               if (encCount === 0) {
@@ -432,7 +502,7 @@ export class MissionSummary extends Report {
 
             let ao = 0.0;
             if (executed > 0) {
-              ao = ((executed = outageTime) / executed) * 100.0;
+              ao = ((executed - outageTime) / executed) * 100.0;
             }
             if (ao > 0 && ao < 100) {
               style.font = this.fonts.get("notnorm");
@@ -452,10 +522,15 @@ export class MissionSummary extends Report {
         this.createSummarySheet(workbook, start, end, false, GeneralTypes.GEOINT, "GEOINT")
       }
       if (bDaily) {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: '2-digit',
+        });
         let dayStart = new Date(start);
         while (dayStart.getTime() < end.getTime()) {
           const dayEnd = new Date((dayStart.getTime() + (24 * 3600000)) - 1000);
-          this.createSummarySheet(workbook, dayStart, dayEnd, false, rptType, '');
+          this.createSummarySheet(workbook, dayStart, dayEnd, false, rptType, 
+            formatter.format(dayStart));
           dayStart = new Date(dayStart.getTime() + (24 * 3600000));
         }
       }
@@ -463,22 +538,24 @@ export class MissionSummary extends Report {
   }
 
   getTotal(type: string, exploit: string, missionMap:Map<string, MissionType>, 
-    sensors: string[]): number {
+    sensors: string[], platform?: string): number {
     let answer = 0;
     for (const [key, mtype] of missionMap) {
-      switch (type.toLowerCase()) {
-        case "scheduled":
-          answer += mtype.getScheduled(exploit, sensors);
-          break;
-        case "executed":
-          answer += mtype.getExecuted(exploit, sensors);
-          break;
-        case "cancelled":
-          answer += mtype.getCancelled(exploit, sensors);
-          break;
-        case "aborded":
-          answer += mtype.getAborted(exploit, sensors);
-          break;
+      if (!platform || platform.toLowerCase() === mtype.platform.toLowerCase()) {
+        switch (type.toLowerCase()) {
+          case "scheduled":
+            answer += mtype.getScheduled(exploit, sensors);
+            break;
+          case "executed":
+            answer += mtype.getExecuted(exploit, sensors);
+            break;
+          case "cancelled":
+            answer += mtype.getCancelled(exploit, sensors);
+            break;
+          case "aborded":
+            answer += mtype.getAborted(exploit, sensors);
+            break;
+        }
       }
     }
     return answer;
