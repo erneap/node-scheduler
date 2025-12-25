@@ -1,4 +1,5 @@
 import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts';
+import { ISecurityQuestion, SecurityQuestion } from './question';
 
 /**
  * The user class and interface.
@@ -22,6 +23,7 @@ export interface IUser {
   resettoken?: string;
   resettokenexp?: Date;
   additionalEmails?: string[];
+  questions?: ISecurityQuestion[];
 }
 
 /**
@@ -53,6 +55,7 @@ export class User implements IUser {
   public resettoken?: string;
   public resettokenexp?: Date;
   public additionalEmails: string[];
+  public questions: SecurityQuestion[];
 
   constructor(user?: IUser) {
     this.id = (user && user.id ) ? user.id : '';
@@ -82,6 +85,19 @@ export class User implements IUser {
         this.additionalEmails?.push(em);
       });
       this.additionalEmails.sort();
+    }
+    this.questions = [];
+    if (user && user.questions) {
+      user.questions.forEach(quest => {
+        this.questions.push(new SecurityQuestion(quest));
+      });
+      this.questions.sort((a,b) => a.compareTo(b));
+    } else {
+      for (let i=1; i < 4; i++ ) {
+        this.questions.push(new SecurityQuestion({
+          id: i, question: '', answer: ''
+        }))
+      }
     }
   }
 
@@ -283,5 +299,39 @@ export class User implements IUser {
     if (found >= 0) {
       this.additionalEmails.splice(found, 1);
     }
+  }
+
+  /**
+   * This function will update a security question question or answer
+   * based on the identifier, field and value provided.
+   * @param id A numeric value for the identifier of the question.
+   * @param field A string value for the field (question or answer) to be
+   * updated.
+   * @param value A string value for the updated value for the field.
+   */
+  updateSecurityQuestion(id: number, field: string, value: string) {
+    this.questions.forEach((quest, i) => {
+      if (quest.id === id) {
+        quest.update(field, value);
+        this.questions[i] = quest;
+      }
+    });
+  }
+
+  /**
+   * This function is used to check the response for a security question
+   * answer to the stored value.
+   * @param id A numeric value for the question to check against.
+   * @param value A string value for the answer to the question.
+   * @returns A boolean value for whether the answers match.
+   */
+  checkSecurityQuestion(id: number, value: string): boolean {
+    let answer = false;
+    this.questions.forEach(quest => {
+      if (quest.id === id) {
+        answer = quest.compare(value);
+      }
+    });
+    return answer;
   }
 }
