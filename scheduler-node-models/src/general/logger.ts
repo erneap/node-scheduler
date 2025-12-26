@@ -9,13 +9,15 @@ export class Logger {
   }
 
   log(message: string): void {
-    this.buffer.push(message);
+    const now = new Date();
+    this.buffer.push(`${now.getTime()}\t${message}`);
   }
 
   private flush(): void {
+    this.logFile = this.logFile.replaceAll(' ', '_');
+    this.createDirIfNotExists(this.logFile)
     if (this.buffer.length > 0) {
       const logLines = this.buffer.join('\n') + '\n';
-      this.logFile = this.logFile.replaceAll(' ', '_');
       try {
         const tf = fs.open(this.logFile, (err) => {
           if (err) {
@@ -49,5 +51,11 @@ export class Logger {
   stop(): void {
     clearInterval(this.interval);
     this.flush();
+  }
+
+  createDirIfNotExists(directoryPath: string): void {
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
   }
 }

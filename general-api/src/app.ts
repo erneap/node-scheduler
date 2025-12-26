@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
 import { connectToDB } from './config/mongoconnect';
 import printRoutes from './routes/printRoutes';
+import logsRoutes from './routes/logsRoutes';
 
 connectToDB();
 
@@ -28,7 +29,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb'}));
 
 // add routes to the application interface
-app.use('/api/general', printRoutes)
+app.use('/api/general', printRoutes);
+app.use('/api/general', logsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
