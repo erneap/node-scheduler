@@ -169,6 +169,11 @@ router.put('/user', auth, async(req: Request, res: Response) => {
             user.additionalEmails.splice(eIndex, 1);
           }
           break;
+        case "securityquestion":
+          if (update.subid) {
+            user.updateSecurityQuestion(update.subid, update.field, update.value);
+          }
+          break;
       }
       colUsers.replaceOne(query, user);
       res.status(200).json(user);

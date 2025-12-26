@@ -32,6 +32,7 @@ export interface UpdateUserRequest {
   id: string;
   field: string;
   value: string;
+  subid?: number;
 }
 
 /**
@@ -51,4 +52,15 @@ export interface PasswordResetRequest {
   emailAddress: string;
   password: string;
   resettoken: string;
+  subid?: number;
+}
+
+/**
+ * This interface is used in the security question reset part 1 to provide the user's
+ * security question to be answered.
+ */
+export interface SecurityQuestionResponse {
+  emailAddress: string;
+  questionid: number;
+  question: string;
 }
