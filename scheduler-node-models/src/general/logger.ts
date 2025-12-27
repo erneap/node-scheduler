@@ -54,6 +54,10 @@ export class Logger {
   }
 
   createDirIfNotExists(directoryPath: string): void {
+    if (directoryPath.endsWith('.log')) {
+      const index = directoryPath.lastIndexOf('/');
+      directoryPath = directoryPath.substring(0, index);
+    }
     if (!fs.existsSync(directoryPath)) {
       fs.mkdirSync(directoryPath, { recursive: true });
     }
