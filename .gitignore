@@ -10,5 +10,8 @@ testing-app/node_modules
 general-api/node_modules
 general-api/dist
 general-api/.env
+scheduler-api/node_modules
+scheduler-api/dist
+scheduler-api/.env
 /node_modules
 /testing-app/node_modules

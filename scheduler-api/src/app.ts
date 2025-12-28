@@ -7,12 +7,12 @@ import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
 import { connectToDB } from './config/mongoconnect';
 import { createPool } from './config/mariadb';
-import printRoutes from './routes/printRoutes';
-import logsRoutes from './routes/logsRoutes';
-import noticeRoutes from './routes/noticeRoutes';
+import { createLogs } from './config/logging';
+import initialRoutes from './routes/initialRoutes'
 
 connectToDB();
 createPool();
+createLogs('scheduler');
 
 const app = express();
 
@@ -32,9 +32,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb'}));
 
 // add routes to the application interface
-app.use('/api/general', printRoutes);
-app.use('/api/general', logsRoutes);
-app.use('/api/general', noticeRoutes);
+app.use('/api/scheduler', initialRoutes);
+//app.use('/api/general', logsRoutes);
+//app.use('/api/general', noticeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
