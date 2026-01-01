@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 import { Logger } from 'scheduler-node-models/general';
 
 export const logConnection: {
-  log?: Logger
+  log?: Logger,
+  employeeLog?: Logger
 } = {}
 
 export async function createLogs(application: string) {
@@ -11,4 +12,6 @@ export async function createLogs(application: string) {
   }
   logConnection.log = new Logger(
   `${process.env.LOG_DIR}/${application}/process_${(new Date().toDateString())}.log`);
+  logConnection.employeeLog = new Logger(
+  `${process.env.LOG_DIR}/employee/process_${(new Date().toDateString())}.log`);
 }
