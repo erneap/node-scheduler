@@ -14,7 +14,7 @@ const router = Router();
 /**
  * This method will will provide an employee based on the identifier provided.
  */
-router.get('/employee/:id', async(req: Request, res: Response) => {
+router.get('/employee/:id', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     if (empID) {
@@ -49,7 +49,7 @@ router.get('/employee/:id', async(req: Request, res: Response) => {
  * collection with the primary key (_id) to the user.id.
  * 5) lastly, pass the employee object with user object attached in the response.
  */
-router.post('/employee', async(req: Request, res: Response) => {
+router.post('/employee', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as IEmployee;
     if (data) {
@@ -118,7 +118,7 @@ router.post('/employee', async(req: Request, res: Response) => {
  * name info, company info, change the email address, add and subtract other email
  * address, security questions, permission groups, and set password.
  */
-router.put('/employee', async(req: Request, res: Response) => {
+router.put('/employee', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateRequest
     if (data) {
@@ -400,7 +400,7 @@ async function UpdateEmployee(id: string, field: string, value: string): Promise
  * 6) return a message saying the deletion was completed. 
  * If any error is throws, send the error message.
  */
-router.delete('/employee/:id/:by', async(req: Request, res: Response) => {
+router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
   try {
     const colUser = collections.users;
     const colEmp = collections.employees;

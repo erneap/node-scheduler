@@ -162,6 +162,29 @@ export class Schedule implements ISchedule {
           case 'hours':
             wd.hours = Number(value);
             break;
+          case 'copy':
+            let oldWkd: Workday | undefined = undefined;
+            let oWkID = w;
+            let bExit = false;
+            while (!oldWkd && !bExit) {
+              oWkID--;
+              if (oWkID < 0) {
+                oWkID = this.workdays.length - 1
+              }
+              if (oWkID === w) {
+                bExit = true;
+              }
+              let tWkd = this.workdays[oWkID];
+              if (tWkd.code !== '' && tWkd.workcenter !== '' && tWkd.hours > 0.0) {
+                oldWkd = new Workday(tWkd);
+              }
+            }
+            if (oldWkd) {
+              wd.workcenter = oldWkd.workcenter;
+              wd.code = oldWkd.code;
+              wd.hours = oldWkd.hours;
+            }
+            break;
         }
         this.workdays[w] = wd;
       }
