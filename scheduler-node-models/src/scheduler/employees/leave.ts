@@ -85,3 +85,10 @@ export class Leave implements ILeave {
       && this.leavedate.getUTCDate() === date.getUTCDate());
   }
 }
+
+export enum LeaveStatus {
+  Draft = "DRAFT",
+  Requested = "REQUESTED",
+  Approved = "APPROVED",
+  Actual = "ACTUAL"
+}

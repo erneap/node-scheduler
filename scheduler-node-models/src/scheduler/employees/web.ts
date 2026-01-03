@@ -1,3 +1,4 @@
+import { LeaveStatus } from "./leave";
 import { LeaveRequest } from "./leaverequest";
 
 export interface ChangeLeaveRequestResponse {
@@ -19,6 +20,22 @@ export interface ChangeAssignment {
   asgmt: number;
   schedule?: number;
   workday?: number;
+  field: string;
+  value: string;
+}
+
+export interface NewLeaveRequest {
+  employee: string;
+  leavedate: Date;
+  code: string;
+  status: LeaveStatus;
+  hours: number;
+  holcode?: string;
+}
+
+export interface UpdateLeave {
+  employee: string;
+  leaveid: number;
   field: string;
   value: string;
 }
