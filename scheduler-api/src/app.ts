@@ -9,6 +9,9 @@ import { connectToDB } from './config/mongoconnect';
 import { createPool } from './config/mariadb';
 import { createLogs } from './config/logging';
 import initialRoutes from './routes/initialRoutes'
+import employeeRoutes from './routes/employeeRoutes';
+import employeeAssignmentRoutes from './routes/employeeAssignmentRoutes';
+import employeeVariationRoutes from './routes/employeeVariationRoutes';
 
 connectToDB();
 createPool();
@@ -33,8 +36,9 @@ app.use(express.json({ limit: '10mb'}));
 
 // add routes to the application interface
 app.use('/api/scheduler', initialRoutes);
-//app.use('/api/general', logsRoutes);
-//app.use('/api/general', noticeRoutes);
+app.use('/api/scheduler', employeeRoutes);
+app.use('/api/scheduler', employeeAssignmentRoutes);
+app.use('/api/scheduler', employeeVariationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

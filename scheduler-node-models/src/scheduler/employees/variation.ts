@@ -119,14 +119,27 @@ export class Variation implements IVariation {
   }
 
   /**
-   * This function will set the workday's values from the client app where they are set. 
-   * @param wdID The numeric value for the identifier of the particular workday.
-   * @param wkctr The string value representing the workcenter.
-   * @param code The string value for the work code to use on the day.
-   * @param hours The numeric value (float) for the number of hours to work on that day.
+   * This function is used to completely change a variation's workday
+   * @param wdID The numeric value to identity which of the schedule's workday to change
+   * @param wkctr The string value for the new workcenter.
+   * @param code The string value for the new work code.
+   * @param hours The numeric valur for the hours to work.
    */
-  updateWorkday(wdID: number, wkctr: string, code: string, hours: number) {
+  changeWorkday(wdID: number, wkctr: string, code: string, hours: number) {
+    let found = false;
     this.schedule.changeWorkday(wdID, wkctr, code, hours);
+  }
+
+  /**
+   * This function is used to update a single field  in a schedule's workday.
+   * @param wdID The numeric value to identify which of the schedule's workdays to update
+   * @param field The string value to identify which field within the workday to update
+   * @param value The string value (string or numeric string) to update the value of the
+   * data member.
+   */
+  updateWorkday(wdID: number, field: string, value: string) {
+    let found = false;
+    this.schedule.updateWorkday(wdID, field, value);
   }
 
   /**

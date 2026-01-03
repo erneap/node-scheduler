@@ -155,7 +155,7 @@ router.put('/employee/assignment', async(req: Request, res: Response) => {
  * @param date A string value in the proper format.
  * @returns 
  */
-function getDateFromString(date: string): Date {
+export function getDateFromString(date: string): Date {
   const parts = date.split('-');
   const year = parseInt(parts[0]);
   const month = parseInt(parts[1]);

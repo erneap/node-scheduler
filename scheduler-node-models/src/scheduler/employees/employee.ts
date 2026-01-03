@@ -613,6 +613,31 @@ export class Employee implements IEmployee {
   }
 
   /**
+   * This method is used to add a new variation to the employee.  It will determine the
+   * new variation's identifier and add that along with site and start date to the new
+   * variation.  The variation's enddate will match the start date at this time.
+   * @param site A string value for the site identifier.
+   * @param start A data value for the start of this variation.
+   */
+  addVariation(site: string, start: Date) {
+    // start by getting and determing the next variation id number.
+    let newID = -1;
+    this.variations.forEach(vari => {
+      if (vari.id > newID) {
+        newID = vari.id;
+      }
+    });
+    newID++;
+    const newVari = new Variation();
+    newVari.id = newID;
+    newVari.site = site;
+    newVari.startdate = new Date(start);
+    newVari.enddate = new Date(start);
+    this.variations.push(newVari);
+    this.variations.sort((a,b) => a.compareTo(b));
+  }
+
+  /**
    * The function will remove a particular assignment from the assignment list
    * @param id The numeric identifier for the assignment to remove.
    */
