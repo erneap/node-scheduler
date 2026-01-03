@@ -7,6 +7,7 @@ import { collections } from "../config/mongoconnect";
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-node-models/users";
 import { getDateFromString } from "./employeeAssignmentRoutes";
+import { getEmployee, updateEmployee } from "./initialRoutes";
 
 const router = Router();
 
@@ -25,28 +26,10 @@ router.post('/employee/variation', async(req: Request, res: Response) => {
   try {
     const data = req.body as NewEmployeeAssignment;
     if (data) {
-      const colEmp = collections.employees;
-      if (colEmp) {
-        const query = {_id: new ObjectId(data.employee)};
-        const iEmp = await colEmp.findOne<IEmployee>(query);
-        if (iEmp) {
-          const employee = new Employee(iEmp);
-          employee.addVariation(data.site, data.start);
-          await colEmp.replaceOne(query, employee);
-          const colUsers = collections.users;
-          if (colUsers) {
-            const iUser = await colUsers.findOne<IUser>(query)
-            if (iUser) {
-              employee.user = new User(iUser);
-            }
-          }
-          res.status(200).json(employee);
-        } else {
-          throw new Error('Employee not found');
-        }
-      } else {
-        throw new Error('Employee collection missing');
-      }
+      const employee = await getEmployee(data.employee);
+      employee.addVariation(data.site, data.start);
+      await updateEmployee(employee);
+      res.status(200).json(employee);
     } else {
       throw new Error('Data not provided')
     }
@@ -76,65 +59,47 @@ router.put('/employee/variation', async(req: Request, res: Response) => {
   try {
     const data = req.body as ChangeAssignment;
     if (data) {
-      const colEmp = collections.employees;
-      const query = { _id: new ObjectId(data.employee)};
-      if (colEmp) {
-        const iEmp = await colEmp.findOne<IEmployee>(query);
-        if (iEmp) {
-          const employee = new Employee(iEmp);
-          employee.variations.sort((a,b) => a.compareTo(b));
-          employee.variations.forEach((vari, v) => {
-            if (vari.id === data.asgmt) {
-              switch (data.field.toLowerCase()) {
-                case "site":
-                  vari.site = data.value;
-                  break;
-                case "mids":
-                case "ismids":
-                  vari.mids = Boolean(data.value);
-                  break;
-                case "dates":
-                  vari.schedule.showdates = Boolean(data.value);
-                  break;
-                case "start":
-                case "startdate":
-                  vari.startdate = getDateFromString(data.value);
-                  break;
-                case "end":
-                case "enddate":
-                  vari.enddate = getDateFromString(data.value);
-                  break;
-                case "changeschedule":
-                  vari.schedule.setScheduleDays(Number(data.value));
-                  break;
-                case "workday-code":
-                case "workday-workcenter":
-                case "workday-hours":
-                case "workday-copy":
-                  const wparts = data.field.split('-');
-                  if (data.schedule && data.workday) {
-                    vari.updateWorkday(data.workday, wparts[1], data.value);
-                  }
-                  break;
+      const employee = await getEmployee(data.employee);
+      employee.variations.sort((a,b) => a.compareTo(b));
+      employee.variations.forEach((vari, v) => {
+        if (vari.id === data.asgmt) {
+          switch (data.field.toLowerCase()) {
+            case "site":
+              vari.site = data.value;
+              break;
+            case "mids":
+            case "ismids":
+              vari.mids = Boolean(data.value);
+              break;
+            case "dates":
+              vari.schedule.showdates = Boolean(data.value);
+              break;
+            case "start":
+            case "startdate":
+              vari.startdate = getDateFromString(data.value);
+              break;
+            case "end":
+            case "enddate":
+              vari.enddate = getDateFromString(data.value);
+              break;
+            case "changeschedule":
+              vari.schedule.setScheduleDays(Number(data.value));
+              break;
+            case "workday-code":
+            case "workday-workcenter":
+            case "workday-hours":
+            case "workday-copy":
+              const wparts = data.field.split('-');
+              if (data.schedule && data.workday) {
+                vari.updateWorkday(data.workday, wparts[1], data.value);
               }
-              employee.variations[v] = vari;
-            }
-          });
-          await colEmp.replaceOne(query, employee);
-          const colUsers = collections.users;
-          if (colUsers) {
-            const iUser = await colUsers.findOne<IUser>(query)
-            if (iUser) {
-              employee.user = new User(iUser);
-            }
+              break;
           }
-          res.status(200).json(employee);
-        } else {
-          throw new Error('Employee not found');
+          employee.variations[v] = vari;
         }
-      } else {
-        throw new Error('Employee collection missing');
-      }
+      });
+      await updateEmployee(employee);
+      res.status(200).json(employee);
     } else {
       throw new Error('Data not provided.')
     }
@@ -162,39 +127,21 @@ router.delete('/employee/variation/:id/:vari', async(req: Request, res: Response
     const empID = req.params.id;
     const sVarID = req.params.vari;
     if (empID !== '' && sVarID !== '') {
-      const colEmp = collections.employees;
-      const query = { _id: new ObjectId(empID) };
-      if (colEmp) {
-        const iEmp = await colEmp.findOne<IEmployee>(query);
-        if (iEmp) {
-          const employee = new Employee(iEmp);
-          const variID = Number(sVarID);
-          let index = -1;
-          employee.variations.forEach((vari, v) => {
-            if (vari.id === variID) {
-              index = v;
-            }
-          });
-          if (index >= 0) {
-            employee.variations.splice(index, 1);
-          } else {
-            throw new Error('Variation not found')
-          }
-          await colEmp.replaceOne(query, employee);
-          const colUsers = collections.users;
-          if (colUsers) {
-            const iUser = await colUsers.findOne<IUser>(query)
-            if (iUser) {
-              employee.user = new User(iUser);
-            }
-          }
-          res.status(200).json(employee);
-        } else {
-          throw new Error('Employee not found')
+      const employee = await getEmployee(empID);
+      const variID = Number(sVarID);
+      let index = -1;
+      employee.variations.forEach((vari, v) => {
+        if (vari.id === variID) {
+          index = v;
         }
+      });
+      if (index >= 0) {
+        employee.variations.splice(index, 1);
       } else {
-        throw new Error('No employee collection')
+        throw new Error('Variation not found')
       }
+      await updateEmployee(employee);
+      res.status(200).json(employee);
     } else {
       throw new Error('Employee or Variation ID missing');
     }

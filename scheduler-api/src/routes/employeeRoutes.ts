@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { logConnection } from "../config/logging";
-import { getEmployee } from "./initialRoutes";
+import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
 import { collections } from "../config/mongoconnect";
 import { IUser, User } from "scheduler-node-models/users";
@@ -131,8 +131,8 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
         case "middlename":
         case "last":
         case "lastname":
-          employee = await UpdateEmployee(data.id, data.field, data.value);
-          user = await UpdateUser(data.id, data.field, data.value);
+          await modifyEmployee(data.id, data.field, data.value);
+          await modifyUser(data.id, data.field, data.value);
           break;
         case "email":
         case "emailaddress":
@@ -150,7 +150,7 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
         case "removepermission":
         case "securityquestion":
         case "securityanswer":
-          user = await UpdateUser(data.id, data.field, data.value, data.optional);
+          await modifyUser(data.id, data.field, data.value, data.optional);
           break;
         case "suffix":
         case "company":
@@ -164,35 +164,11 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
         case "grade":
         case "costcenter":
         case "division":
-          employee = await UpdateEmployee(data.id, data.field, data.value);
+          await modifyEmployee(data.id, data.field, data.value);
           break;
       }
-      // pull the employee from the database if not already present
-      if (!employee) {
-        const colEmp = collections.employees;
-        const empQuery = { _id: new ObjectId(data.id)};
-        if (colEmp) {
-          const iEmp = await colEmp.findOne<IEmployee>(empQuery);
-          if (iEmp) {
-            employee = new Employee(iEmp);
-          }
-        }
-      }
-      // pull the user from the database if not already present
-      if (!user) {
-        const colUser = collections.users;
-        const userQuery = { _id: new ObjectId(data.id)};
-        if (colUser) {
-          const iUser = await colUser.findOne<IUser>(userQuery);
-          if (iUser) {
-            user = new User(iUser);
-          }
-        }
-      }
-      // put the user into the employee's user field
-      if (employee) {
-        employee.user = user;
-      }
+      // pull the employee from the database 
+      employee = await getEmployee(data.id);
       // return the employee object to the client.
       res.status(200).json(employee);
     } else {
@@ -217,103 +193,89 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
  * integer to identify which security question/answer to update.
  * @returns The resultant user object that has been updated.
  */
-async function UpdateUser(id: string, field: string, value: string, 
-  opt?: string): Promise<IUser> {
-  const colUsers = collections.users;
-  if (colUsers) {
-    const userQuery = { _id: new ObjectId(id)};
-    const iUser = await colUsers.findOne<IUser>(userQuery);
-    if (iUser) {
-      // Get user to update
-      const user = new User(iUser);
-      switch (field.toLowerCase()) {
-        case "first":
-        case "firstname":
-          user.firstName = value;
-          break;
-        case "middle":
-        case "middlename":
-          user.middleName = value;
-          break;
-        case "last":
-        case "lastname":
-          user.lastName = value;
-          break;
-        case "email":
-        case "emailaddress":
-          user.emailAddress = value;
-          break;
-        case "addemail":
-          user.addAdditionalEmail(value);
-          break;
-        case "removeemail":
-          user.deleteAdditionalEmail(value);
-          break;
-        case "updateemail":
-          if (opt) {
-            user.deleteAdditionalEmail(opt);
-          } 
-          user.addAdditionalEmail(value);
-          break;
-        case "password":
-          user.setPassword(value);
-          break;
-        case "unlock":
-          user.badAttempts = 0;
-          break;
-        case "addworkgroup":
-        case "addperm":
-        case "addpermission":
-          user.workgroups.push(value);
-          break;
-        case "removeworkgroup":
-        case "remove":
-        case "removeperm":
-        case "removepermission":
-          let index = -1;
-          user.workgroups.forEach((wg, i) => {
-            if (value.toLowerCase() === wg.toLowerCase()) {
-              index = i;
-            }
-          });
-          if (index >= 0) {
-            user.workgroups.splice(index, 1);
-          }
-          break;
-        case "securityquestion":
-          while (user.questions.length < 3) {
-            user.questions.push(new SecurityQuestion());
-          }
-          user.questions.sort((a,b) => a.compareTo(b));
-          if (opt) {
-            const qID = Number(opt);
-            const question = user.questions[qID];
-            question.question = value;
-            user.questions[qID] = question;
-          }
-          break;
-        case "securityanswer":
-          while (user.questions.length < 3) {
-            user.questions.push(new SecurityQuestion());
-          }
-          user.questions.sort((a,b) => a.compareTo(b));
-          if (opt) {
-            const qID = Number(opt);
-            const question = user.questions[qID];
-            question.answer = value;
-            user.questions[qID] = question;
-          }
-          break;
+async function modifyUser(id: string, field: string, value: string, 
+  opt?: string): Promise<void> {
+  const user = await getUser(id);
+  switch (field.toLowerCase()) {
+    case "first":
+    case "firstname":
+      user.firstName = value;
+      break;
+    case "middle":
+    case "middlename":
+      user.middleName = value;
+      break;
+    case "last":
+    case "lastname":
+      user.lastName = value;
+      break;
+    case "email":
+    case "emailaddress":
+      user.emailAddress = value;
+      break;
+    case "addemail":
+      user.addAdditionalEmail(value);
+      break;
+    case "removeemail":
+      user.deleteAdditionalEmail(value);
+      break;
+    case "updateemail":
+      if (opt) {
+        user.deleteAdditionalEmail(opt);
+      } 
+      user.addAdditionalEmail(value);
+      break;
+    case "password":
+      user.setPassword(value);
+      break;
+    case "unlock":
+      user.badAttempts = 0;
+      break;
+    case "addworkgroup":
+    case "addperm":
+    case "addpermission":
+      user.workgroups.push(value);
+      break;
+    case "removeworkgroup":
+    case "remove":
+    case "removeperm":
+    case "removepermission":
+      let index = -1;
+      user.workgroups.forEach((wg, i) => {
+        if (value.toLowerCase() === wg.toLowerCase()) {
+          index = i;
+        }
+      });
+      if (index >= 0) {
+        user.workgroups.splice(index, 1);
       }
-      // Now that the field is updated, update the user in the collection
-      await colUsers.replaceOne(userQuery, user);
-      return user;
-    } else {
-      throw new Error("User not found");
-    }
-  } else {
-    throw new Error("User collection missing");
+      break;
+    case "securityquestion":
+      while (user.questions.length < 3) {
+        user.questions.push(new SecurityQuestion());
+      }
+      user.questions.sort((a,b) => a.compareTo(b));
+      if (opt) {
+        const qID = Number(opt);
+        const question = user.questions[qID];
+        question.question = value;
+        user.questions[qID] = question;
+      }
+      break;
+    case "securityanswer":
+      while (user.questions.length < 3) {
+        user.questions.push(new SecurityQuestion());
+      }
+      user.questions.sort((a,b) => a.compareTo(b));
+      if (opt) {
+        const qID = Number(opt);
+        const question = user.questions[qID];
+        question.answer = value;
+        user.questions[qID] = question;
+      }
+      break;
   }
+  await updateUser(user);
 }
 
 /**
@@ -324,66 +286,53 @@ async function UpdateUser(id: string, field: string, value: string,
  * @param value The string value to place in the employee field.
  * @returns The resultant employee object with the new field data.
  */
-async function UpdateEmployee(id: string, field: string, value: string): Promise<IEmployee> {
-  const colEmp = collections.employees;
-  if (colEmp) {
-    // pull the employee from the employee collection
-    const empQuery = { _id: new ObjectId(id)};
-    const iEmp = await colEmp.findOne<IEmployee>(empQuery);
-    if (iEmp) {
-      const employee = new Employee(iEmp);
-      // update the employee by the field given.
-      switch (field.toLowerCase()) {
-        case "first":
-        case "firstname":
-          employee.name.firstname = value;
-          break;
-        case "middle":
-        case "middlename":
-          employee.name.middlename = value;
-          break;
-        case "last":
-        case "lastname":
-          employee.name.lastname = value;
-          break;
-        case "suffix":
-          employee.name.suffix = value;
-          break;
-        case "company":
-          employee.companyinfo.company = value;
-          break;
-        case "employeeid":
-        case "companyid":
-          employee.companyinfo.employeeid = value;
-          break;
-        case "alternateid":
-        case "alternate":
-          employee.companyinfo.alternateid = value;
-          break;
-        case "jobtitle":
-        case "title":
-          employee.companyinfo.jobtitle = value;
-          break;
-        case "rank":
-        case "grade":
-          employee.companyinfo.rank = value;
-          break;
-        case "costcenter":
-          employee.companyinfo.costcenter = value;
-          break;
-        case "division":
-          employee.companyinfo.division = value;
-          break;
-      }
-      // update the employee in the collection
-      await colEmp.replaceOne(empQuery, employee);
-      return employee;
-    } else {
-      throw new Error('Employee not found');
-    }
-  } else {
-    throw new Error("Employee collection missing");
+async function modifyEmployee(id: string, field: string, value: string): 
+  Promise<void> {
+  const employee = await getEmployee(id);
+  // update the employee by the field given.
+  switch (field.toLowerCase()) {
+    case "first":
+    case "firstname":
+      employee.name.firstname = value;
+      break;
+    case "middle":
+    case "middlename":
+      employee.name.middlename = value;
+      break;
+    case "last":
+    case "lastname":
+      employee.name.lastname = value;
+      break;
+    case "suffix":
+      employee.name.suffix = value;
+      break;
+    case "company":
+      employee.companyinfo.company = value;
+      break;
+    case "employeeid":
+    case "companyid":
+      employee.companyinfo.employeeid = value;
+      break;
+    case "alternateid":
+    case "alternate":
+      employee.companyinfo.alternateid = value;
+      break;
+    case "jobtitle":
+    case "title":
+      employee.companyinfo.jobtitle = value;
+      break;
+    case "rank":
+    case "grade":
+      employee.companyinfo.rank = value;
+      break;
+    case "costcenter":
+      employee.companyinfo.costcenter = value;
+      break;
+    case "division":
+      employee.companyinfo.division = value;
+      break;
   }
+  await updateEmployee(employee);
 }
 
 /**
@@ -402,34 +351,29 @@ async function UpdateEmployee(id: string, field: string, value: string): Promise
  */
 router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
   try {
-    const colUser = collections.users;
-    const colEmp = collections.employees;
+    const empID = req.params.id;
     const byID = req.params.by;
     let byName = '';
     let name = '';
-    if (byID && colUser) {
-      const uQuery = {_id: new ObjectId(byID)};
-      const iUser = await colUser.findOne<IUser>(uQuery);
-      if (iUser) {
-        const user = new User(iUser);
-        byName = user.getFirstLast();
-      }
+    if (byID) {
+      const byUser = await getUser(byID);
+      byName = byUser.getFirstLast();
     }
-    const delID = req.params.id;
-    if (delID && colUser && colEmp) {
-      const query = { _id: new ObjectId(delID)};
-      const iEmp = await colEmp.findOne<IEmployee>(query);
-      if (iEmp) {
-        const employee = new Employee(iEmp);
-        name = employee.name.getFirstLast();
+    if (empID) {
+      const employee = await getEmployee(empID);
+      name = employee.name.getFirstLast();
+      const query = { _id: new ObjectId(empID)};
+      if (collections.employees) {
+        let result = await collections.employees.deleteOne(query);
+        if (result.deletedCount > 0 && logConnection.employeeLog) {
+          logConnection.employeeLog.log(`Employee Deleted: ${name}, by: ${byName}`);
+        }
       }
-      let result = await colEmp.deleteOne(query);
-      if (result.deletedCount > 0 && logConnection.employeeLog) {
-        logConnection.employeeLog.log(`Employee Deleted: ${name}, by: ${byName}`);
-      }  
-      result = await colUser.deleteOne(query);
-      if (result.deletedCount > 0 && logConnection.employeeLog) {
-        logConnection.employeeLog.log(`User Deleted: ${name}, by: ${byName}`);
+      if (collections.users) { 
+        let result = await collections.users.deleteOne(query);
+        if (result.deletedCount > 0 && logConnection.employeeLog) {
+          logConnection.employeeLog.log(`User Deleted: ${name}, by: ${byName}`);
+        }
       }
     }
     res.status(200).json({'message': 'employee deleted'});

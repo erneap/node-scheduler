@@ -105,20 +105,36 @@ export async function getEmployee(empid: string): Promise<Employee> {
   if (collections.employees) {
     // 1) get the employee
     const iEmployee = await collections.employees.findOne<IEmployee>(employeeQuery);
-    if (iEmployee) {
+    if (iEmployee && iEmployee !== null) {
       const employee = new Employee(iEmployee);
-      if (collections.users) {
-        const iUser = await collections.users.findOne<IUser>(employeeQuery);
-        if (iUser) {
-          employee.user = new User(iUser);
-        }
-      }
+      const user = await getUser(empid);
+      employee.user = user;
       return employee;
     } else {
       throw new Error('No employee found');
     }
   } else {
     throw new Error('No employees collection');
+  }
+}
+
+/**
+ * This function will pull all the user information for the employee.
+ * @param empid The string value for the user's identifier.
+ * @returns A user object for the user identifier.
+ */
+export async function getUser(empid: string): Promise<User> {
+  const userQuery = { _id: new ObjectId(empid)};
+  if (collections.users) {
+    const iUser = await collections.users.findOne<IUser>(userQuery);
+    if (iUser && iUser !== null) {
+      const user = new User(iUser);
+      return user;
+    } else {
+      throw new Error('User not found');
+    }
+  } else {
+    throw new Error('User collection missing');
   }
 }
 
@@ -191,6 +207,33 @@ async function getEmployeeWork(empid: string, start: number, end: number): Promi
     work.sort((a,b) => a.compareTo(b));
   }
   return work;
+}
+
+export async function updateEmployee(emp: IEmployee): Promise<void> {
+  const employee = new Employee(emp);
+  const query = { _id: new ObjectId(employee.id)};
+  employee.user = undefined;
+  if (collections.employees) {
+    const results = await collections.employees.replaceOne(query, employee);
+    if (results.modifiedCount <= 0) {
+      throw new Error('Employee not updated');
+    }
+  } else {
+    throw new Error('Employee collection missing');
+  }
+}
+
+export async function updateUser(usr: User): Promise<void> {
+  const user = new User(usr);
+  const query = { _id: new ObjectId(user.id )};
+  if (collections.users) {
+    const results = await collections.users.replaceOne(query, user);
+    if (results.modifiedCount <= 0) {
+      throw new Error('User not updated');
+    }
+  } else {
+    throw new Error('Users collection missing');
+  }
 }
 
 export default router;
