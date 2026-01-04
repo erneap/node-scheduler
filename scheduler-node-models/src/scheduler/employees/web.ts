@@ -39,3 +39,15 @@ export interface UpdateLeave {
   field: string;
   value: string;
 }
+
+export interface NewLeaveBalance {
+  employee: string;
+  year: number;
+}
+
+export interface UpdateLeaveBalance {
+  employee: string;
+  year: number;
+  field: string;
+  value: number;
+}

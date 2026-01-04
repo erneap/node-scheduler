@@ -82,15 +82,58 @@ router.put('/employee/leave', async(req: Request, res: Response) => {
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {
-      throw new Error('No new employee leave request data');
+      throw new Error('No employee leave update data');
     }
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: CreateEmployeeLeave: ${error.message}`);
+      logConnection.employeeLog.log(`Error: UpdateEmployeeLeave: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
 });
+
+/**
+ * This method is used to delete a leave from the employee's leave list.  Employee and
+ * leave identifiers are passed as part of the request.  You are not able to delete 
+ * 'actual' leaves, because these are based on ingested data.
+ * Steps:
+ * 1) Get the employee and leave identifier from the request.
+ * 2) Pull the employee from the database.
+ * 3) Search the employee's leave for the leave identifier.
+ * 4) If found, delete it.
+ * 5) Update the employee in the database.
+ * 6) Respond with the employee object.
+ */
+router.delete('employee/leave/:id/:leave', async(req: Request, res: Response) => {
+  try {
+    const empID = req.params.id;
+    const leaveID = req.params.leave;
+    if (empID && leaveID) {
+      const employee = await getEmployee(empID);
+      let found = -1;
+      const iLeaveID = Number(leaveID);
+      employee.leaves.forEach((lv, l) => {
+        if (lv.id === iLeaveID 
+          && lv.status.toLowerCase() !== LeaveStatus.Actual.toLowerCase()) {
+          found = l;
+        }
+      });
+      if (found >= 0) {
+        employee.leaves.splice(found, 1);
+      }
+      await updateEmployee(employee);
+      res.status(200).json(employee);
+    } else {
+      throw new Error('No employee and/or leave identifier');
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.employeeLog) {
+      logConnection.employeeLog.log(`Error: DeleteEmployeeLeave: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
+})
 
 export default router;
