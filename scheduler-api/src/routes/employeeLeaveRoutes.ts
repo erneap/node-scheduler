@@ -51,34 +51,12 @@ router.post('/employee/leave', auth, async(req: Request, res: Response) => {
  * 5) After the update, update the employee in the database.
  * 6) Respond with the employee object.
  */
-router.put('/employee/leave', async(req: Request, res: Response) => {
+router.put('/employee/leave', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateLeave;
     if (data) {
       const employee = await getEmployee(data.employee);
-      employee.leaves.forEach((lv, l) => {
-        if (lv.id === data.leaveid 
-          && lv.status.toLowerCase() !== LeaveStatus.Actual.toLowerCase()) {
-          switch (data.field.toLowerCase()) {
-            case "date":
-            case "leavedate":
-              lv.leavedate = new Date(data.value);
-              break;
-            case "code":
-              lv.code = data.value;
-              break;
-            case "hours":
-              lv.hours = Number(data.value);
-              break;
-            case "status":
-              lv.status = data.value.toUpperCase();
-              break;
-            case "holcode":
-              lv.tagday = data.value;
-              break;
-          }
-        }
-      });
+      employee.updateLeave(data.leaveid, data.field, data.value);
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {
@@ -105,23 +83,13 @@ router.put('/employee/leave', async(req: Request, res: Response) => {
  * 5) Update the employee in the database.
  * 6) Respond with the employee object.
  */
-router.delete('employee/leave/:id/:leave', async(req: Request, res: Response) => {
+router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     const leaveID = req.params.leave;
     if (empID && leaveID) {
       const employee = await getEmployee(empID);
-      let found = -1;
-      const iLeaveID = Number(leaveID);
-      employee.leaves.forEach((lv, l) => {
-        if (lv.id === iLeaveID 
-          && lv.status.toLowerCase() !== LeaveStatus.Actual.toLowerCase()) {
-          found = l;
-        }
-      });
-      if (found >= 0) {
-        employee.leaves.splice(found, 1);
-      }
+      employee.deleteLeave(Number(leaveID));
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {

@@ -613,28 +613,87 @@ export class Employee implements IEmployee {
   }
 
   /**
-   * This method is used to add a new variation to the employee.  It will determine the
-   * new variation's identifier and add that along with site and start date to the new
-   * variation.  The variation's enddate will match the start date at this time.
-   * @param site A string value for the site identifier.
-   * @param start A data value for the start of this variation.
+   * This method will be used to update an assignment already in the employee's
+   * list.  It can throw errors for assignment not found and for missing data
+   * expected for the field to be update.
+   * @param id A numeric value for the assignment to update
+   * @param field A string value for the field to update
+   * @param value A string value for the update to the required field
+   * @param schedule (Optional) A numeric value for the assignment schedule to be updated
+   * @param workday (Optional) A numeric value for the assignment schedule workday to 
+   * be updated.
    */
-  addVariation(site: string, start: Date) {
-    // start by getting and determing the next variation id number.
-    let newID = -1;
-    this.variations.forEach(vari => {
-      if (vari.id > newID) {
-        newID = vari.id;
+  updateAssignment(id: number, field: string, value: string, schedule?: number, 
+    workday?: number) {
+    let found = false;
+    this.assignments.sort((a,b) => a.compareTo(b));
+    this.assignments.forEach((asgmt, i) => {
+      if (asgmt.id === id) {
+        found = true;
+        switch (field.toLowerCase()) {
+          case "site":
+            asgmt.site = value;
+            break;
+          case "workcenter":
+            asgmt.workcenter = value;
+            break;
+          case "start":
+          case "startdate":
+            asgmt.startDate = this.getDateFromString(value);
+            break;
+          case "end":
+          case "enddate":
+            asgmt.endDate = this.getDateFromString(value);
+            break;
+          case "rotationdate":
+            asgmt.rotationdate = this.getDateFromString(value);
+            break;
+          case "rotationdays":
+            asgmt.rotationdays = Number(value);
+            break;
+          case "addschedule":
+            asgmt.addSchedule(Number(value));
+            break;
+          case "removeschedule":
+            if (schedule) {
+              asgmt.removeSchedule(schedule);
+            } else {
+              throw new Error('Assignment schedule id not provided')
+            }
+            break;
+          case "scheduledays":
+            if (schedule) {
+              asgmt.changeScheduleDays(schedule, Number(value));
+            } else {
+              throw new Error('Assignment schedule id not provided')
+            }
+            break;
+          case "workday-code":
+          case "workday-workcenter":
+          case "workday-hours":
+          case "workday-copy":
+            const wparts = field.split('-');
+            if (schedule && workday) {
+              asgmt.updateWorkday(schedule, workday, wparts[1], value);
+            } else {
+              throw new Error('Assignment schedule and/or workday id not provided')
+            }
+            break;
+          case "addlaborcode":
+            const vparts = value.split('|');
+            asgmt.addLaborCode(vparts[0], vparts[1]);
+            break;
+          case "removelaborcode":
+            const rparts = value.split('|');
+            asgmt.removeLaborCode(rparts[0], rparts[1]);
+            break;
+        }
+        this.assignments[i] = asgmt;
       }
     });
-    newID++;
-    const newVari = new Variation();
-    newVari.id = newID;
-    newVari.site = site;
-    newVari.startdate = new Date(start);
-    newVari.enddate = new Date(start);
-    this.variations.push(newVari);
-    this.variations.sort((a,b) => a.compareTo(b));
+    if (!found) {
+      throw new Error('Assignment not found');
+    }
   }
 
   /**
@@ -664,6 +723,127 @@ export class Employee implements IEmployee {
       this.assignments[pos-1].endDate 
         = new Date(this.assignments[pos+1].startDate.getTime() - (24 * 3600000));
       this.assignments.splice(pos,1);
+    }
+  }
+
+  /**
+   * This method is used to add a new variation to the employee.  It will determine the
+   * new variation's identifier and add that along with site and start date to the new
+   * variation.  The variation's enddate will match the start date at this time.
+   * @param site A string value for the site identifier.
+   * @param start A data value for the start of this variation.
+   */
+  addVariation(site: string, start: Date) {
+    // start by getting and determing the next variation id number.
+    let newID = -1;
+    this.variations.forEach(vari => {
+      if (vari.id > newID) {
+        newID = vari.id;
+      }
+    });
+    newID++;
+    const newVari = new Variation();
+    newVari.id = newID;
+    newVari.site = site;
+    newVari.startdate = new Date(start);
+    newVari.enddate = new Date(start);
+    this.variations.push(newVari);
+    this.variations.sort((a,b) => a.compareTo(b));
+  }
+
+  /**
+   * This method will update the selected variation with an update a single
+   * field in the selected variation.  If the variation isn't found, an error 
+   * will be transmitted to the requestor.
+   * @param varID A numeric value for the variation to change.
+   * @param field A string value for the data member to change.
+   * @param value A string value representing the data member's new value.
+   * @param workday (Optional) a numeric value for the workday to update if the update
+   * field is in a variation workday.
+   */
+  updateVariation(varID: number, field: string, value: string, workday?: number) {
+    this.variations.sort((a,b) => a.compareTo(b));
+    let found = false;
+    this.variations.forEach((vari, v) => {
+      if (vari.id === varID) {
+        found = true;
+        switch (field.toLowerCase()) {
+          case "site":
+            vari.site = value;
+            break;
+          case "mids":
+          case "ismids":
+            vari.mids = Boolean(value);
+            break;
+          case "dates":
+            vari.schedule.showdates = Boolean(value);
+            break;
+          case "start":
+          case "startdate":
+            vari.startdate = this.getDateFromString(value);
+            break;
+          case "end":
+          case "enddate":
+            vari.enddate = this.getDateFromString(value);
+            break;
+          case "changeschedule":
+            vari.schedule.setScheduleDays(Number(value));
+            break;
+          case "workday-code":
+          case "workday-workcenter":
+          case "workday-hours":
+          case "workday-copy":
+            const wparts = field.split('-');
+            if (workday) {
+              vari.updateWorkday(workday, wparts[1], value);
+            }
+            break;
+        }
+        this.variations[v] = vari;
+      }
+    });
+    if (!found) {
+      throw new Error('Variation not found');
+    }
+  }
+
+  /**
+   * This method will be used to convert a date string in the format of 2006-01-02 to 
+   * a Date object with that date.
+   * @param date A string value in the correct format
+   * @returns 
+   */
+  private getDateFromString(date: string): Date {
+    const reDateFormat = new RegExp('^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$');
+    if (reDateFormat.test(date)) {
+      const parts = date.split('-');
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]);
+      const day = parseInt(parts[2]);
+
+      const result = new Date(Date.UTC(year, month - 1, day));
+      return result;
+    } else {
+      throw new Error('Date not in correct format (yyyy-mm-dd)');
+    }
+  }
+
+  /**
+   * This method will be used to remove a single variation from the employee's variation
+   * list.  An error will be thrown if the variation is not found.
+   * @param varID A numeric value for the identifier of the variation to delete.
+   */
+  removeVariation(varID: number) {
+    let found = -1;
+    this.variations.forEach((vari, v) => {
+      if (vari.id === varID) {
+        found = v;
+      }
+    });
+    if (found >= 0) {
+      this.variations.splice(found, 1);
+    } else {
+      throw new Error('Variation not found');
     }
   }
 
@@ -995,6 +1175,8 @@ export class Employee implements IEmployee {
       }
       this.balances.push(bal);
       this.balances.sort((a,b) => a.compareTo(b));
+    } else {
+      throw new Error('Leave Balance year already exists');
     }
   }
 
@@ -1002,25 +1184,27 @@ export class Employee implements IEmployee {
    * This function is used to update a leave balance object with a new annual year and
    * carry over amount.
    * @param year The numeric value for the year used as a key value
-   * @param annual The numeric value for the employee's annual leave amount in hours.
-   * @param carry The numeric value for the number of hours the employee brings forward
-   * to this year.
+   * @param field The string value for the field to update
+   * @param carry The numeric value for the number of hours for that field.
    */
-  updateLeaveBalance(year: number, annual: number, carry: number) {
+  updateLeaveBalance(year: number, field: string, value: number) {
     let found = false;
     for (let lb=0; lb < this.balances.length && !found; lb++) {
       if (this.balances[lb].year === year) {
-        this.balances[lb].annual = annual;
-        this.balances[lb].carryover = carry;
+        found = true;
+        switch (field.toLowerCase()) {
+          case "annual":
+            this.balances[lb].annual = value;
+            break;
+          case 'carry':
+          case 'carryover':
+            this.balances[lb].carryover = value;
+            break;
+        }
       }
     }
     if (!found) {
-      const lb = new AnnualLeave({
-        year: year,
-        annual: annual,
-        carryover: carry
-      });
-      this.balances.push(lb);
+      throw new Error('Leave Balance year not found')
     }
     this.balances.sort((a,b) => a.compareTo(b));
   }
@@ -1038,6 +1222,8 @@ export class Employee implements IEmployee {
     });
     if (found >= 0) {
       this.balances.splice(found, 1);
+    } else {
+      throw new Error('Leave Balance year not found')
     }
   }
 

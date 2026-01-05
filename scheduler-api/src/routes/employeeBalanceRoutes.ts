@@ -24,45 +24,14 @@ const router = Router();
  * 6)  Update the employee in the database.
  * 7)  Respond with the updated employee object.
  */
-router.post('/employee/balance', async(req: Request, res: Response) => {
+router.post('/employee/balance', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewLeaveBalance;
     if (data) {
       const employee = await getEmployee(data.employee);
-      // determine if year is already in the list
-      let found = false;
-      let previous = 0.0;
-      let annual = 0.0;
-      employee.balances.forEach(bal => {
-        if (bal.year === data.year) {
-          found = true;
-        } else if (bal.year === data.year - 1) {
-          previous = bal.annual + bal.carryover;
-          annual = bal.annual;
-        }
-      });
-      if (!found) { 
-        const start = new Date(Date.UTC(data.year - 1, 0, 1));
-        const end = new Date(data.year, 0, 1);
-        employee.leaves.forEach(lv => {
-          if (lv.code.toLowerCase() === 'p' && lv.leavedate.getTime() >= start.getTime()
-            && lv.leavedate.getTime() < end.getTime()) {
-            previous -= lv.hours;
-          }
-        });
-        if (previous > 40.0) {
-          previous = 40.0;
-        }
-        employee.balances.push(new AnnualLeave({
-          year: data.year,
-          annual: annual,
-          carryover: previous
-        }));
-        await updateEmployee(employee);
-        res.status(201).json(employee);
-      } else {
-        throw new Error('Year already created');
-      }
+      employee.createLeaveBalance(data.year);
+      await updateEmployee(employee);
+      res.status(201).json(employee);
     } else {
       throw new Error('New Leave Balance data missing');
     }
@@ -86,30 +55,12 @@ router.post('/employee/balance', async(req: Request, res: Response) => {
  * 6) Update the employee record in the database.
  * 7) Respond with the update employee object.
  */
-router.put('/employee/balance', async(req: Request, res: Response) => {
+router.put('/employee/balance', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateLeaveBalance;
     if (data) {
       const employee = await getEmployee(data.employee);
-      let found = false;
-      employee.balances.forEach((bal, b) => {
-        if (bal.year === data.year) {
-          found = true;
-          switch (data.field.toLowerCase()) {
-            case "annual":
-              bal.annual = data.value;
-              break;
-            case 'carry':
-            case 'carryover':
-              bal.carryover = data.value;
-              break;
-          }
-          employee.balances[b] = bal;
-        }
-      });
-      if (!found) {
-        throw new Error(`Leave Balance not found - ${data.year}`);
-      }
+      employee.updateLeaveBalance(data.year, data.field, data.value);
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {
@@ -134,24 +85,14 @@ router.put('/employee/balance', async(req: Request, res: Response) => {
  * 5) Update the employee in the database
  * 6) Response with the employee object.
  */
-router.delete('/employee/balance/:id/:year', async(req: Request, res: Response) => {
+router.delete('/employee/balance/:id/:year', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     const syear = req.params.year;
     if (empID && syear) {
       const year = Number(syear);
       const employee = await getEmployee(empID);
-      let found = -1;
-      employee.balances.forEach((bal, b) => {
-        if (bal.year === year) {
-          found = b;
-        }
-      });
-      if (found >= 0) {
-        employee.balances.splice(found, 1);
-      } else {
-        throw new Error(`Leave Balance Year not found - ${year}`);
-      }
+      employee.deleteLeaveBalance(year);
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {

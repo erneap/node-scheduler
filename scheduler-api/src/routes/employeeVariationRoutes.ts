@@ -22,7 +22,7 @@ const router = Router();
  * 4) Replace the employee record in the database.
  * 5) Respond with the updated employee.
  */
-router.post('/employee/variation', async(req: Request, res: Response) => {
+router.post('/employee/variation', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewEmployeeAssignment;
     if (data) {
@@ -55,49 +55,12 @@ router.post('/employee/variation', async(req: Request, res: Response) => {
  * 4) Replace the employee record in the database.
  * 5) Respond with the employee to the client.
  */
-router.put('/employee/variation', async(req: Request, res: Response) => {
+router.put('/employee/variation', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as ChangeAssignment;
     if (data) {
       const employee = await getEmployee(data.employee);
-      employee.variations.sort((a,b) => a.compareTo(b));
-      employee.variations.forEach((vari, v) => {
-        if (vari.id === data.asgmt) {
-          switch (data.field.toLowerCase()) {
-            case "site":
-              vari.site = data.value;
-              break;
-            case "mids":
-            case "ismids":
-              vari.mids = Boolean(data.value);
-              break;
-            case "dates":
-              vari.schedule.showdates = Boolean(data.value);
-              break;
-            case "start":
-            case "startdate":
-              vari.startdate = getDateFromString(data.value);
-              break;
-            case "end":
-            case "enddate":
-              vari.enddate = getDateFromString(data.value);
-              break;
-            case "changeschedule":
-              vari.schedule.setScheduleDays(Number(data.value));
-              break;
-            case "workday-code":
-            case "workday-workcenter":
-            case "workday-hours":
-            case "workday-copy":
-              const wparts = data.field.split('-');
-              if (data.schedule && data.workday) {
-                vari.updateWorkday(data.workday, wparts[1], data.value);
-              }
-              break;
-          }
-          employee.variations[v] = vari;
-        }
-      });
+      employee.updateVariation(data.asgmt, data.field, data.value, data.workday);
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {
@@ -122,24 +85,14 @@ router.put('/employee/variation', async(req: Request, res: Response) => {
  * 5) Save the modified employee record.
  * 6) Add the employee's user record and send it via the response.
  */
-router.delete('/employee/variation/:id/:vari', async(req: Request, res: Response) => {
+router.delete('/employee/variation/:id/:vari', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     const sVarID = req.params.vari;
     if (empID !== '' && sVarID !== '') {
       const employee = await getEmployee(empID);
       const variID = Number(sVarID);
-      let index = -1;
-      employee.variations.forEach((vari, v) => {
-        if (vari.id === variID) {
-          index = v;
-        }
-      });
-      if (index >= 0) {
-        employee.variations.splice(index, 1);
-      } else {
-        throw new Error('Variation not found')
-      }
+      employee.removeVariation(variID);
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {

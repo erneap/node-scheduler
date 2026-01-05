@@ -1,5 +1,6 @@
 import { LeaveStatus } from "./leave";
 import { LeaveRequest } from "./leaverequest";
+import { Work } from "./work";
 
 export interface ChangeLeaveRequestResponse {
   message: string;
@@ -58,4 +59,23 @@ export interface NewEmployeeLeaveRequest {
   startdate: Date;
   enddate: Date;
   comment?: string;
+}
+
+export interface EmployeeContactSpecialtyUpdate {
+  employee: string;
+  typeid: number;
+  contactid: number;
+  value: string;
+}
+
+export interface EmployeeSpecialtiesUpdate {
+  employee: string;
+  action: string;
+  specialties: number[];
+}
+
+export interface EmployeeWorkResponse {
+  employee: string;
+  year: number;
+  work: Work[];
 }

@@ -2,8 +2,7 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { logConnection } from "../config/logging";
 import { getEmployee, updateEmployee } from "./initialRoutes";
-import { LeaveRequest, LeaveRequestComment, LeaveStatus, NewEmployeeLeaveRequest } from "scheduler-node-models/scheduler/employees";
-import { ObjectId } from "mongodb";
+import { NewEmployeeLeaveRequest } from "scheduler-node-models/scheduler/employees";
 import { UpdateRequest } from "scheduler-node-models/general";
 
 const router = Router();
@@ -19,7 +18,7 @@ const router = Router();
  * 6) Update the employee in the database
  * 7) Respond with the employee to the client.
  */
-router.post('/employee/request', async(req: Request, res: Response) => {
+router.post('/employee/request', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewEmployeeLeaveRequest;
     if (data) {
@@ -66,7 +65,7 @@ router.post('/employee/request', async(req: Request, res: Response) => {
  * 5) Update the employee in the database
  * 6) Respond with the employee object to the client
  */
-router.put('/employee/request', async(req: Request, res: Response) => {
+router.put('/employee/request', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateRequest;
     if (data) {
@@ -99,7 +98,7 @@ router.put('/employee/request', async(req: Request, res: Response) => {
  * 4) Update the employee in the database
  * 5) Response with the updated employee to the client.
  */
-router.delete('/employee/request/:id/:reqid', async(req: Request, res: Response) => {
+router.delete('/employee/request/:id/:reqid', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     const reqID = req.params.reqid;

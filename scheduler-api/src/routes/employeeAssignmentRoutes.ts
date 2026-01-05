@@ -50,61 +50,13 @@ router.post('/employee/assignment', auth, async(req: Request, res: Response) => 
  * ** If an error is detected, an error message is put in the log and sent as a response
  * 5) Send updated employee back as response.
  */
-router.put('/employee/assignment', async(req: Request, res: Response) => {
+router.put('/employee/assignment', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as ChangeAssignment;
     if (data) {
       const employee = await getEmployee(data.employee);
-      employee.assignments.sort((a,b) => a.compareTo(b));
-      employee.assignments.forEach((asgmt, i) => {
-        if (asgmt.id === data.asgmt) {
-          switch (data.field.toLowerCase()) {
-            case "site":
-              asgmt.site = data.value;
-              break;
-            case "workcenter":
-              asgmt.workcenter = data.value;
-              break;
-            case "start":
-            case "startdate":
-              asgmt.startDate = getDateFromString(data.value);
-              break;
-            case "end":
-            case "enddate":
-              asgmt.endDate = getDateFromString(data.value);
-              break;
-            case "rotationdate":
-              asgmt.rotationdate = getDateFromString(data.value);
-              break;
-            case "rotationdays":
-              asgmt.rotationdays = Number(data.value);
-              break;
-            case "addschedule":
-              asgmt.addSchedule(Number(data.value));
-              break;
-            case "removeschedule":
-              if (data.schedule) {
-                asgmt.removeSchedule(data.schedule);
-              }
-              break;
-            case "scheduledays":
-              if (data.schedule) {
-                asgmt.changeScheduleDays(data.schedule, Number(data.value));
-              }
-              break;
-            case "workday-code":
-            case "workday-workcenter":
-            case "workday-hours":
-            case "workday-copy":
-              const wparts = data.field.split('-');
-              if (data.schedule && data.workday) {
-                asgmt.updateWorkday(data.schedule, data.workday, wparts[1], data.value);
-              }
-              break;
-          }
-          employee.assignments[i] = asgmt;
-        }
-      });
+      employee.updateAssignment(data.asgmt, data.field, data.value, data.schedule, 
+        data.workday);
       await updateEmployee(employee);
       res.status(200).json(employee);
     }
@@ -136,25 +88,14 @@ export function getDateFromString(date: string): Date {
  * This method will delete an assignment from an employee's record, based on employee 
  * identifier and assignment id.
  */
-router.delete('/employee/assignment/:id/:asgmt', async(req: Request, res: Response) => {
+router.delete('/employee/assignment/:id/:asgmt', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
     const asgmtID = req.params.asgmt;
 
     if (empID !== '' && asgmtID !== '') {
       const employee = await getEmployee(empID);
-      const asID = Number(asgmtID);
-      let found = -1;
-      employee.assignments.forEach((asgmt, a) => {
-        if (asgmt.id === asID) {
-          found = a;
-        }
-      });
-      if (found >= 0) {
-        employee.assignments.splice(found, 1);
-      } else {
-        throw new Error(`Assignment not found: ${asID}`);
-      }
+      employee.removeAssignment(Number(asgmtID));
       await updateEmployee(employee);
       res.status(200).json(employee);
     } else {
