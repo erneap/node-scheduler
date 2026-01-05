@@ -136,6 +136,15 @@ router.put('/employee/contact', auth, async(req: Request, res: Response) => {
   }
 });
 
+/**
+ * This method is used to pull a work list for an employee from the database
+ * Steps:
+ * 1) Get the employee identifer and year for the work to pull
+ * 2) Check for the work collection, if not found, send error
+ * 3) Pull the work record from the database
+ * 4) Create the work response from the data.
+ * 5) Respond with the employee work response.
+ */
 router.get('/employee/work/:id/:year', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id;
