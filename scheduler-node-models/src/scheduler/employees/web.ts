@@ -51,3 +51,11 @@ export interface UpdateLeaveBalance {
   field: string;
   value: number;
 }
+
+export interface NewEmployeeLeaveRequest {
+  employee: string;
+  code: string;
+  startdate: Date;
+  enddate: Date;
+  comment?: string;
+}

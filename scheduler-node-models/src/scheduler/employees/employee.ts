@@ -1230,7 +1230,7 @@ export class Employee implements IEmployee {
    * @param comment The string vlue for any comment to use
    * @returns The new leave request object or undefined if not created.
    */
-  createLeaveRequest(start: Date, end: Date, code: string, comment: string)
+  createLeaveRequest(start: Date, end: Date, code: string, comment?: string)
     : LeaveRequest | undefined {
     start = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
     end = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()));
@@ -1240,7 +1240,7 @@ export class Employee implements IEmployee {
     this.requests.forEach((req, r) => {
       if (req.startdate.getTime() === start.getTime() 
         && req.enddate.getTime() === end.getTime()) {
-        if (comment !== '') {
+        if (comment) {
           const cmt = new LeaveRequestComment({
             commentdate: new Date(),
             comment: comment
@@ -1272,7 +1272,7 @@ export class Employee implements IEmployee {
         commentdate: new Date(),
         comment: 'Request Created'
       }));
-      if (comment !== '') {
+      if (comment) {
         answer.comments.push(new LeaveRequestComment({
           commentdate: new Date(),
           comment: comment
