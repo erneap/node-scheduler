@@ -14,6 +14,7 @@ import employeeAssignmentRoutes from './routes/employeeAssignmentRoutes';
 import employeeVariationRoutes from './routes/employeeVariationRoutes';
 import employeeLeaveRoutes from './routes/employeeLeaveRoutes';
 import employeeBalanceRoutes from './routes/employeeBalanceRoutes';
+import employeeMiscRoutes from './routes/employeeMiscRoutes';
 
 connectToDB();
 createPool();
@@ -43,6 +44,7 @@ app.use('/api/scheduler', employeeAssignmentRoutes);
 app.use('/api/scheduler', employeeVariationRoutes);
 app.use('/api/scheduler', employeeLeaveRoutes);
 app.use('/api/scheduler', employeeBalanceRoutes);
+app.use('/api/scheduler', employeeMiscRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
