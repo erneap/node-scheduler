@@ -16,7 +16,7 @@
     "dotenv": "^17.2.2",
     "exceljs": "^4.4.0",
     "mongodb": "^6.19.0",
-    "scheduler-node-models": "^1.1.36"
+    "scheduler-node-models": "^1.2.39"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",

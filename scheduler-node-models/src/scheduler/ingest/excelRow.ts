@@ -13,6 +13,8 @@ export interface IExcelRow {
   modified: boolean;
   hours: number;
   holidayID: string;
+  description: string;
+  comment: string;
 }
 
 export class ExcelRow implements IExcelRow {
@@ -25,6 +27,8 @@ export class ExcelRow implements IExcelRow {
   public modified: boolean;
   public hours: number;
   public holidayID: string;
+  public description: string;
+  public comment: string;
 
   constructor(row?: IExcelRow) {
     this.date = (row) ? new Date(row.date) : new Date();
@@ -36,6 +40,8 @@ export class ExcelRow implements IExcelRow {
     this.modified = (row) ? row.modified : false;
     this.hours = (row) ? row.hours : 0.0;
     this.holidayID = (row) ? row.holidayID : '';
+    this.description = (row) ? row.description : '';
+    this.comment = (row) ? row.comment : '';
   }
 
   compareTo(other?: ExcelRow): number {
@@ -54,5 +60,19 @@ export class ExcelRow implements IExcelRow {
       return (this.employee.toLowerCase() < other.employee.toLowerCase()) ? -1 : 1;
     }
     return -1;
+  }
+
+  toString(): string {
+    let result = `${this.date.toDateString()} - ${this.employee} - `;
+    if (this.code !== '') {
+      result += `${this.code} `
+      if (this.code.toLowerCase() === 'h') {
+        result += `(${this.holidayID})`
+      }
+    } else {
+      result += `${this.chargeNumber}/${this.extension}`
+    }
+    result += ` - ${this.hours.toFixed(2)}`;
+    return result;
   }
 }
