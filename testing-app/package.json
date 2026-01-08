@@ -11,12 +11,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@zurmokeeper/exceljs": "^4.4.9",
     "adm-zip": "^0.5.16",
     "bcrypt-ts": "^7.1.0",
     "dotenv": "^17.2.2",
     "exceljs": "^4.4.0",
     "mongodb": "^6.19.0",
-    "scheduler-node-models": "^1.2.39"
+    "scheduler-node-models": "^1.2.42"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",

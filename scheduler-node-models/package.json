@@ -1,6 +1,6 @@
 {
   "name": "scheduler-node-models",
-  "version": "1.2.39",
+  "version": "1.2.42",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -17,14 +17,13 @@
   "description": "",
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
-    "@types/exceljs": "^0.5.3",
     "@types/nodemailer": "^7.0.0",
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@zurmokeeper/exceljs": "^4.4.9",
     "adm-zip": "^0.5.16",
     "bcrypt-ts": "^7.1.0",
-    "exceljs": "^4.4.0",
     "mongodb": "^6.18.0",
     "nodemailer": "^7.0.5"
   }

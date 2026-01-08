@@ -1,6 +1,6 @@
 import { ITeam, Team } from "../teams";
 import { ExcelRow } from "./excelRow";
-import { Workbook } from "exceljs";
+import { Workbook } from "@zurmokeeper/exceljs";
 
 export class SAPIngest {
   public files: File[];
@@ -62,7 +62,7 @@ export class SAPIngest {
         // get the data from the worksheet
         worksheet.eachRow((row, r) => {
           let value = row.getCell(explanation);
-          if (value && !value.toString().toLowerCase().includes('total')) {
+          if (r > 1 && value && !value.toString().toLowerCase().includes('total')) {
             // this row is pertainent data, so complete an excelrow object for the data 
             // in the row
             const eRow = new ExcelRow();
@@ -88,7 +88,11 @@ export class SAPIngest {
                     eRow.extension = sValue;
                     break;
                   case 'hours':
-                    eRow.hours = Number(sValue);
+                    const hPattern = "^[0-9]{1,2}(\.[0-9]+)?$";
+                    const hourRE = new RegExp(hPattern);
+                    if (hourRE.test(sValue)) {
+                      eRow.hours = Number(sValue);
+                    }
                     break;
                   case 'charge number desc':
                     eRow.description = sValue;
