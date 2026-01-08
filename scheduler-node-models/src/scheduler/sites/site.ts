@@ -1,4 +1,4 @@
-import { Employee } from "../employees";
+import { Employee, IEmployee } from "../employees";
 import { ILaborCode, LaborCode } from "../labor";
 import { CofSReport, ICofSReport } from "./reports/cofsReport";
 import { Forecast, IForecast } from "./reports/forecast";
@@ -16,6 +16,7 @@ export interface ISite {
   laborCodes?: ILaborCode[];
   forecasts?: IForecast[];
   cofs?: ICofSReport[];
+  employees?: IEmployee[];
 }
 
 /**
@@ -66,6 +67,14 @@ export class Site implements ISite {
       this.cofs.sort((a,b) => a.compareTo(b));
     }
     this.employees = [];
+    if (site && site.employees) {
+      site.employees.forEach(emp => {
+        if (this.employees) {
+          this.employees.push(new Employee(emp));
+        }
+      });
+      this.employees.sort((a,b) => a.compareTo(b));
+    }
   }
 
   /**

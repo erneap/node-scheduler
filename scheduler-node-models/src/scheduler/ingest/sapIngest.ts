@@ -1,6 +1,6 @@
 import { ITeam, Team } from "../teams";
 import { ExcelRow } from "./excelRow";
-import { Workbook } from "@zurmokeeper/exceljs";
+import { Workbook } from "exceljs";
 
 export class SAPIngest {
   public files: File[];

@@ -13,8 +13,12 @@ export const collections: {
 } = {}
 
 export async function connectToDB() {
-  dotenv.config();
-  const uri = process.env.MONGO_URI;
+  while (!process.env.MONGO_USER) {
+    await dotenv.config()
+  }
+  const uri = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@`
+    + `${process.env.MONGO_SERVER}:${process.env.MONGO_PORT}?`
+    + `${process.env.MONGO_APPEND}`;
   if (uri) {
     try {
       const client = new MongoClient(uri);
