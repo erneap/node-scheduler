@@ -11,6 +11,7 @@ export class ExcelRowIngest {
   public site: Site;
   public company: string;
   public docDate: Date;
+  public results: ExcelRow[];
 
   constructor(date: Date, files?: File[], team?: ITeam, site?: ISite, company?: string) {
     this.files = (files) ? files : [];
@@ -18,27 +19,24 @@ export class ExcelRowIngest {
     this.site = (site) ? new Site(site) : new Site();
     this.company = (company) ? company : '';
     this.docDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
+    this.results = [];
   }
 
   async Process(): Promise<ExcelRow[]> {
-    const result: ExcelRow[] = [];
+    this.results = [];
 
     if (this.files.length > 0) {
       const allfiles = this.files.map(async(file, f) => {
-        const results = await this.processFile(file);
-        console.log(results.length);
-        result.push(...results);
+        await this.processFile(file);
       });
       await Promise.allSettled(allfiles);
     }
 
-    result.sort((a,b) => a.compareTo(b));
-    return result;
+    this.results.sort((a,b) => a.compareTo(b));
+    return this.results;
   }
 
-  async processFile(file: File): Promise<ExcelRow[]> {
-    const result: ExcelRow[] = [];
-
+  async processFile(file: File): Promise<void> {
     // convert the file into a buffer to allow the exceljs library to create an excel
     // document to read through.
     const filereader = file.stream().getReader();
@@ -55,33 +53,34 @@ export class ExcelRowIngest {
     await workbook.xlsx.load(fileBinary.buffer);
     const worksheet = workbook.getWorksheet('Sheet1');
 
+    const monthDates: Date[] = [];
+    for (let d = 0; d < 31; d++) {
+      monthDates.push(new Date(this.docDate.getTime() + (d * 24 * 3600000)));
+    }
+
     if (worksheet) {
       worksheet.eachRow(async (row, r) => {
-        const name = row.getCell(1).toString().trim();
-        if (name !== '' && name !== 'Name' && name.toLowerCase() !== 'remarks'
-          && name.toLowerCase() !== 'N/A') {
-          console.log(name);
-          if (this.site.employees) {
-            const emp = this.site.employees.find(e =>
-              e.name.getLastFirst().toLowerCase() === name.toLowerCase());
-            if (emp) {
-              for (let c = 3; c < 34; c++) {
-                const results = await this.readExcelRow(row, c, emp);
-                console.log(results.length);
-                result.push(...results);
+        if (row.getCell(1) && row.getCell(1) !== null && row.getCell(1).value !== null) {
+          const name = row.getCell(1).toString().trim();
+          if (name.includes(',')) {
+            if (this.site.employees) {
+              const emp = this.site.employees.find(e =>
+                e.name.getLastFirst().toLowerCase() === name.toLowerCase());
+              if (emp) {
+                const rowPromises = monthDates.map(async(day,d) => {
+                  await this.readCell(row, d+3, day, emp);
+                });
+                await Promise.allSettled(rowPromises);
               }
+            } else {
+              throw new Error('No employees in site');
             }
-          } else {
-            throw new Error('No employees in site');
           }
         }
-
       });
     } else {
       throw new Error('No worksheet');
     }
-    result.sort((a,b) => a.compareTo(b));
-    return result;
   }
 
   /**
@@ -103,18 +102,14 @@ export class ExcelRowIngest {
     return laborcodes;
   }
 
-  async readExcelRow(row: Row, c: number, emp: Employee): Promise<ExcelRow[]> {
-    const result: ExcelRow[] = [];
+  async readCell(row: Row, c: number, colDate: Date, emp: Employee): Promise<void> {
     // create test patterns for hours, if value doesn't match the hours pattern, it will
     // be assumed to be a leave code
     const hPattern = "^[0-9]{1,2}(\.[0-9]+)?$";
     const hourRE = new RegExp(hPattern);
-    const colDate = new Date(this.docDate.getTime() + (24 * 3600000 * (c-3)));
-    console.log(colDate);
     // Step through the days of the month to create the excel rows to add
     // for this employee
     const sValue = row.getCell(c).toString().trim();
-    console.log(sValue);
     if (sValue !== '') {
       if (hourRE.test(sValue)) {
         // test for value being an hours, if true find out which labor code
@@ -142,24 +137,23 @@ export class ExcelRowIngest {
           eRow.extension = laborcode.extension;
           eRow.premium = '1';
           eRow.hours = Number(sValue);
-          result.push(eRow);
+          this.results.push(new ExcelRow(eRow));
         }
       } else {
         // this will be a leave code, so find out which to use, then 
         // create the excel row with the employee's standard workday.
         this.team.workcodes.forEach(wc => {
           if (wc.isLeave && wc.altcode 
-            && sValue.toLowerCase() === wc.altcode) {
+            && sValue.toLowerCase() === wc.altcode.toLowerCase()) {
             const eRow = new ExcelRow();
             eRow.date = new Date(colDate);
             eRow.employee = emp.companyinfo.employeeid;
             eRow.code = wc.id;
             eRow.hours = emp.getStandardWorkday(colDate);
-            result.push(eRow);
+            this.results.push(new ExcelRow(eRow));
           }
         });
       }
     }
-    return result;
   }
 }

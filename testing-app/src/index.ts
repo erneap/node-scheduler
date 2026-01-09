@@ -26,9 +26,7 @@ const main = async() => {
         const team = new Team(iTeam);
         
         const site = new Site(team.sites.find(s => s.id.toLowerCase() === 'dgsc'));
-        console.log(site.id);
         const employees = await getEmployees(teamID, 'dgsc');
-        console.log(employees.length);
         site.employees = employees;
         const files: File[] = [];
 
