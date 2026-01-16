@@ -8,55 +8,46 @@ import * as path from 'path';
 import { Site } from 'scheduler-node-models/scheduler/sites';
 import { Employee, IEmployee } from 'scheduler-node-models/scheduler/employees';
 import { IUser, User } from 'scheduler-node-models/users';
+import { ManualExcelReport } from './reports/mexcel';
 
 dotenv.config();
 
 const main = async() => {
   await connectToDB();
 
-  const teamCol: Collection | undefined = collections.teams;
-  const empCol: Collection | undefined = collections.employees;
   const teamID = '64dad6b14952737d1eb2193f';
+  const siteID = 'dgsc';
+  const companyID = 'caci';
+  const month = new Date(Date.UTC(2026, 0, 1));
+  const userID = '63a39b8255247905bd993e1f';
+
+  const userCol = collections.users;
 
   try {
-    if (teamCol && empCol) {
-      const query = { _id: new ObjectId(teamID)};
-      const iTeam = await teamCol.findOne<ITeam>(query);
-      if (iTeam && iTeam !== null) {
-        const team = new Team(iTeam);
-        
-        const site = new Site(team.sites.find(s => s.id.toLowerCase() === 'dgsc'));
-        const employees = await getEmployees(teamID, 'dgsc');
-        site.employees = employees;
-        const files: File[] = [];
-
-        const filelist = [ 'XINT-CACI.xlsx', 'GEOINT-All-CACI.xlsx'
-        ]
-
-        const basePath = '/Users/antonerne/Downloads';
-        const mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        filelist.forEach(fileName => {
-          const filePath = path.join(basePath, fileName);
-          const fileBuffer = fs.readFileSync(filePath);
-
-          const file = new File([fileBuffer], fileName, 
-            { type: mimeType, 
-              lastModified: fs.statSync(filePath).mtimeMs });
-          files.push(file);
-        });
-
-        console.log('Create ingest object');
-        const ingest = new ExcelRowIngest(new Date(), files, team, site, 'CACI');
-        ingest.team = team;
-        console.log('Starting processing');
-        const result = await ingest.Process();
-
-        result.forEach(row => {
-          console.log(row.toString());
-        });
+    if (userCol) {
+      let user = new User();
+      
+      const userQuery = { _id: new ObjectId(userID)};
+      if (collections.users) {
+        const iUser = await collections.users.findOne<IUser>(userQuery);
+        if (iUser) {
+          user = new User(iUser);
+        }
       }
+      const report = new ManualExcelReport();
+      const workbook = await report.create(user, month, teamID, siteID, companyID);
+      const formatter = Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        year: 'numeric'
+      });
+
+      let rptname = '/Users/antonerne/Downloads/'
+        + `${companyID.toUpperCase()}-${formatter.format(month)}.xlsx`;
+      let contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+      await workbook.xlsx.writeFile(rptname)
     } else {
-      throw new Error('Collections not available');
+      throw new Error('User collection not present');
     }
   } catch (error) {
     console.log(error);
