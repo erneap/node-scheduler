@@ -1,9 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
+import { logConnection, collections } from "scheduler-node-models/config";
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
-import { collections } from "../config/mongoconnect";
 import { IUser, User } from "scheduler-node-models/users";
 import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-node-models/general";
@@ -16,7 +15,7 @@ const router = Router();
  */
 router.get('/employee/:id', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
+    const empID = req.params.id as string;
     if (empID) {
       const emp = await getEmployee(empID);
       res.status(200).json(emp);
@@ -351,8 +350,8 @@ async function modifyEmployee(id: string, field: string, value: string):
  */
 router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const byID = req.params.by;
+    const empID = req.params.id as string;
+    const byID = req.params.by as string;
     let byName = '';
     let name = '';
     if (byID) {

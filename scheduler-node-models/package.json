@@ -1,6 +1,6 @@
 {
   "name": "scheduler-node-models",
-  "version": "1.2.91",
+  "version": "1.2.94",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -24,6 +24,7 @@
     "adm-zip": "^0.5.16",
     "bcrypt-ts": "^7.1.0",
     "exceljs": "^4.4.0",
+    "mariadb": "^3.4.5",
     "mongodb": "^6.18.0",
     "nodemailer": "^7.0.5"
   }

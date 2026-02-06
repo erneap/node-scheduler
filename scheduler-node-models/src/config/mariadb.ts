@@ -1,14 +1,10 @@
 import * as mariadb from 'mariadb';
-import dotenv from 'dotenv';
 
 export const mdbConnection: {
   pool?: mariadb.Pool
 } = {};
 
 export async function createPool() {
-  while (!process.env.MYSQL_USER) {
-    await dotenv.config();
-  }
   mdbConnection.pool = await mariadb.createPool({
     host: process.env.MYSQL_SERVER,
     port: (process.env.MYSQL_PORT) ? Number(process.env.MYSQL_PORT) : 3306,
@@ -17,4 +13,5 @@ export async function createPool() {
     database: 'scheduler',
     connectionLimit: 5
   });
+  console.log('Connected to mariadb');
 }

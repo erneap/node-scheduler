@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
+import { logConnection } from "scheduler-node-models/config";
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { AnnualLeave, Employee, IEmployee, NewLeaveBalance, UpdateLeaveBalance } from "scheduler-node-models/scheduler/employees";
 
@@ -87,8 +87,8 @@ router.put('/employee/balance', auth, async(req: Request, res: Response) => {
  */
 router.delete('/employee/balance/:id/:year', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const syear = req.params.year;
+    const empID = req.params.id as string;
+    const syear = req.params.year as string;
     if (empID && syear) {
       const year = Number(syear);
       const employee = await getEmployee(empID);

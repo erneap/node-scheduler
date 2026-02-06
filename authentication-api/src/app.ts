@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import { connectToDB } from './config/mongoconnect';
+import { connectToDB } from 'scheduler-node-models/config';
 import authenticateRoutes from './routes/authenticateRoutes';
 import resetRoutes from './routes/resetRoutes';
 import userRoutes from './routes/userRoutes';

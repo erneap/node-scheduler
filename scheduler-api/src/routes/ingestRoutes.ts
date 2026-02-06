@@ -1,14 +1,8 @@
 import { Request, Response, Router } from "express";
-import { Logger } from "scheduler-node-models/general";
-import { InitialResponse } from 'scheduler-node-models/scheduler/web';
 import { ObjectId } from "mongodb";
-import { collections } from '../config/mongoconnect';
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
-import { Site } from "scheduler-node-models/scheduler/sites";
-import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { collections } from "scheduler-node-models/config";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
 import { ManualExcelReport } from "../reports/mexcel";
 
 const router = Router();
@@ -24,12 +18,12 @@ const router = Router();
  * 3) Create excel workbook with the report object.
  * 4) Send the workbook as a download.
  */
-router.get('/ingest/:team/:site/:company/:date', async(req: Request, res: Response) => {
+router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: Response) => {
   try {
-    const teamid = req.params.team;
-    const siteid = req.params.site;
-    const companyid = req.params.company;
-    const sDate = req.params.date;
+    const teamid = req.params.team as string;
+    const siteid = req.params.site as string;
+    const companyid = req.params.company as string;
+    const sDate = req.params.date as string;
     if (teamid && siteid && companyid && sDate) {
       const date = new Date(Date.parse(sDate));
       const formatter = Intl.DateTimeFormat('en-US', {

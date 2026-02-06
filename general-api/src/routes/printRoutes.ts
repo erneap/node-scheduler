@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { collections } from '../config/mongoconnect';
+import { collections } from 'scheduler-node-models/config';
 import { IUser, User } from 'scheduler-node-models/users';
 import { Logger, ReportRequest } from "scheduler-node-models/general";
 import { ChargeStatusReport, CofSReports, EnterpriseSchedule, LeaveReport, ScheduleReport } 

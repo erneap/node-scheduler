@@ -1,7 +1,8 @@
 import { Request, Response, Router } from "express";
 import { Logger, sendMail } from "scheduler-node-models/general";
-import { ForgotPasswordRequest, IUser, PasswordResetRequest, SecurityQuestionResponse, User } from "scheduler-node-models/users";
-import { collections } from "../config/mongoconnect";
+import { ForgotPasswordRequest, IUser, PasswordResetRequest, SecurityQuestionResponse, 
+  User } from "scheduler-node-models/users";
+import { collections } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
 

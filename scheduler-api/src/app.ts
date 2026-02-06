@@ -5,9 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import { connectToDB } from './config/mongoconnect';
-import { createPool } from './config/mariadb';
-import { createLogs } from './config/logging';
+import { connectToDB, createPool, createLogs } from 'scheduler-node-models/config';
 import initialRoutes from './routes/initialRoutes'
 import employeeRoutes from './routes/employeeRoutes';
 import employeeAssignmentRoutes from './routes/employeeAssignmentRoutes';

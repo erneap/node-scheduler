@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Collection } from "mongodb";
-import { collections } from "../config/mongoconnect";
+import { collections } from "scheduler-node-models/config";
 import { AuthenticationRequest, IUser, User } from 'scheduler-node-models/users';
 import * as jwt from 'jsonwebtoken';
 import { Logger } from "scheduler-node-models/general";
@@ -75,7 +75,7 @@ router.post('/authenticate', async(req: Request, res: Response) => {
  * used to record the logging out, plus the removal of access and refresh token
  */
 router.delete('/authenticate/:userid', auth, async(req: Request, res: Response) => {
-  let userid = req.params.userid;
+  let userid = req.params.userid as string;
   const now = new Date();
   const colUser: Collection | undefined = collections.users;
   if (colUser) {

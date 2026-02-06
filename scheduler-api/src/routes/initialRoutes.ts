@@ -2,13 +2,12 @@ import { Request, Response, Router } from "express";
 import { Logger } from "scheduler-node-models/general";
 import { InitialResponse } from 'scheduler-node-models/scheduler/web';
 import { ObjectId } from "mongodb";
-import { collections } from '../config/mongoconnect';
+import { logConnection, collections } from "scheduler-node-models/config";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
 
 const router = Router();
 
@@ -25,7 +24,7 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
       team: new Team(),
       exception: ''
     };
-    const userid = req.params.id;
+    const userid = req.params.id as string;
 
     // to pull initial data, we start with a user id, then pull the employee's record
     // from the database, then pull the employee's team and search the team sites to 

@@ -1,9 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
+import { logConnection } from "scheduler-node-models/config";
 import {  ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } 
   from "scheduler-node-models/scheduler/employees";
-import { collections } from "../config/mongoconnect";
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-node-models/users";
 import { getDateFromString } from "./employeeAssignmentRoutes";
@@ -87,8 +86,8 @@ router.put('/employee/variation', auth, async(req: Request, res: Response) => {
  */
 router.delete('/employee/variation/:id/:vari', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const sVarID = req.params.vari;
+    const empID = req.params.id as string;
+    const sVarID = req.params.vari as string;
     if (empID !== '' && sVarID !== '') {
       const employee = await getEmployee(empID);
       const variID = Number(sVarID);

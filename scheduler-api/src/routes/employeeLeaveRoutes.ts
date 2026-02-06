@@ -1,10 +1,7 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
-import { collections } from "../config/mongoconnect";
-import { ObjectId } from "mongodb";
-import { IUser, User } from "scheduler-node-models/users";
-import { Employee, IEmployee, LeaveStatus, NewLeaveRequest, UpdateLeave } from "scheduler-node-models/scheduler/employees";
+import { logConnection } from "scheduler-node-models/config";
+import { NewLeaveRequest, UpdateLeave } from "scheduler-node-models/scheduler/employees";
 import { getEmployee, updateEmployee } from "./initialRoutes";
 
 const router = Router();
@@ -85,8 +82,8 @@ router.put('/employee/leave', auth, async(req: Request, res: Response) => {
  */
 router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const leaveID = req.params.leave;
+    const empID = req.params.id as string;
+    const leaveID = req.params.leave as string;
     if (empID && leaveID) {
       const employee = await getEmployee(empID);
       employee.deleteLeave(Number(leaveID));

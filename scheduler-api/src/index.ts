@@ -1,10 +1,8 @@
-import dotenv from 'dotenv';
-import { Logger } from 'scheduler-node-models/general';
+import 'dotenv/config';
 import app from './app';
-import { logConnection } from './config/logging';
+import { logConnection } from 'scheduler-node-models/config';
 
 (async() => {
-  dotenv.config();
 
   const now = new Date();
   const PORT = process.env.PORT || 7005;

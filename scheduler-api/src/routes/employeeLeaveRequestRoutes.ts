@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
+import { logConnection } from "scheduler-node-models/config";
 import { getEmployee, updateEmployee } from "./initialRoutes";
 import { NewEmployeeLeaveRequest } from "scheduler-node-models/scheduler/employees";
 import { UpdateRequest } from "scheduler-node-models/general";
@@ -100,8 +100,8 @@ router.put('/employee/request', auth, async(req: Request, res: Response) => {
  */
 router.delete('/employee/request/:id/:reqid', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const reqID = req.params.reqid;
+    const empID = req.params.id as string;
+    const reqID = req.params.reqid as string;
     if (empID && reqID) {
       const employee = await getEmployee(empID);
       employee.deleteLeaveRequest(reqID);

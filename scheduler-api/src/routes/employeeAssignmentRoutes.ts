@@ -1,8 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
-import { Assignment, ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } from "scheduler-node-models/scheduler/employees";
-import { collections } from "../config/mongoconnect";
+import { Assignment, ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } 
+  from "scheduler-node-models/scheduler/employees";
+import { logConnection, collections } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-node-models/users";
 import { getEmployee, updateEmployee } from "./initialRoutes";
@@ -90,8 +90,8 @@ export function getDateFromString(date: string): Date {
  */
 router.delete('/employee/assignment/:id/:asgmt', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const asgmtID = req.params.asgmt;
+    const empID = req.params.id as string;
+    const asgmtID = req.params.asgmt as string;
 
     if (empID !== '' && asgmtID !== '') {
       const employee = await getEmployee(empID);

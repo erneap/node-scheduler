@@ -1,9 +1,9 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "../config/logging";
+import { logConnection, collections } from "scheduler-node-models/config";
 import { getEmployee, getTeam, updateEmployee } from "./initialRoutes";
-import { EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, EmployeeWorkResponse, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
-import { collections } from "../config/mongoconnect";
+import { EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, EmployeeWorkResponse, 
+  IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { ObjectId } from "mongodb";
 
 const router = Router();
@@ -147,8 +147,8 @@ router.put('/employee/contact', auth, async(req: Request, res: Response) => {
  */
 router.get('/employee/work/:id/:year', auth, async(req: Request, res: Response) => {
   try {
-    const empID = req.params.id;
-    const sYear = req.params.year;
+    const empID = req.params.id as string;
+    const sYear = req.params.year as string;
     if (empID && sYear) {
       const year = Number(sYear);
       if (collections.work) {

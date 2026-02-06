@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { DeleteNotices, Logger, NewNotice, Notice } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';
-import { mdbConnection } from "../config/mariadb";
+import { mdbConnection } from "scheduler-node-models/config";
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
@@ -12,7 +12,7 @@ router.get('/notices/:userid', auth, async(req: Request, res: Response) => {
   const notices: Notice[] = [];
   let conn;
   try {
-    const userid = req.params.userid;
+    const userid = req.params.userid as string;
     if (userid && mdbConnection.pool) {
       // get a connection from the db.pool
       conn = await mdbConnection.pool.getConnection();
@@ -84,7 +84,7 @@ router.post('/notice', auth, async(req: Request, res: Response) => {
 router.delete('/notice/:id', auth, async(req: Request, res: Response) => {
   let conn;
   try {
-    const noteid = req.params.id;
+    const noteid = req.params.id as string;
     if (noteid && mdbConnection.pool) {
       conn = await mdbConnection.pool.getConnection();
 

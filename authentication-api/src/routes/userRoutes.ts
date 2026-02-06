@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { Logger } from "scheduler-node-models/general";
 import { auth } from "../middleware/authorization.middleware";
 import { Collection, ObjectId } from "mongodb";
-import { collections } from "../config/mongoconnect";
+import { collections } from "scheduler-node-models/config";
 import { AddUserRequest, IUser, UpdateUserRequest, User } from "scheduler-node-models/users";
 import { IEmployee } from 'scheduler-node-models/scheduler/employees';
 
@@ -18,7 +18,7 @@ const logger = new Logger(
  * interface.
  */
 router.get('/user/:id', auth, async(req: Request, res: Response) => {
-  const id = req?.params?.id;
+  const id = req?.params?.id as string;
   const colUser = collections.users;
   const now = new Date();
   if (colUser) {
@@ -198,7 +198,7 @@ router.delete('/user/:id', auth, async(req: Request, res: Response) => {
   const colEmps: Collection | undefined = collections.employees;
   const now = new Date();
   if (colUsers && colEmps) {
-    const id = req.params.id;
+    const id = req.params.id as string;
     if (id) {
       // first query the users collection to ensure the user was present
       const query = { _id: new ObjectId(id) };

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Collection } from "mongodb";
-import { collections } from "../config/mongoconnect";
+import { collections } from "scheduler-node-models/config";
 import { IUser, User } from 'scheduler-node-models/users';
 import { Logger } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';

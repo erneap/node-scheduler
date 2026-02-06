@@ -1,9 +1,8 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import { Logger } from 'scheduler-node-models/general';
 import app from './app';
 
 (async() => {
-  dotenv.config();
 
   const now = new Date();
   const logger = new Logger(

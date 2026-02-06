@@ -93,10 +93,10 @@ const getEntriesFromLogs = (logDir: string, date?: Date): ILogEntry[] => {
  */
 router.get('/log/:log/:date', auth, async(req: Request, res: Response) => {
   try {
-    const logname = req.params.log;
+    const logname = req.params.log as string;
     let maxDate = new Date();
     if (req.params.date) {
-      maxDate = new Date(req.params.date);
+      maxDate = new Date(req.params.date as string);
     }
     const log = new Log();
     const logDir = (process.env.LOG_DIR) ? process.env.LOG_DIR : '';
@@ -124,7 +124,7 @@ router.get('/log/:log/:date', auth, async(req: Request, res: Response) => {
  */
 router.get('/log/:log', auth, async(req: Request, res: Response) => {
   try {
-    const logname = req.params.log;
+    const logname = req.params.log as string;
     let maxDate = new Date();
     const log = new Log();
     const logDir = (process.env.LOG_DIR) ? process.env.LOG_DIR : '';
