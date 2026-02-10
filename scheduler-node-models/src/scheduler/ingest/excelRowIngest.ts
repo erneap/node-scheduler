@@ -4,16 +4,18 @@ import { ITeam, Team } from "../teams";
 import { ExcelRow } from "./excelRow";
 import { LaborCode } from "../labor";
 import { Employee } from "../employees";
+import {Readable } from 'stream';
 
 export class ExcelRowIngest {
-  public files: File[];
+  public files: Express.Multer.File[];
   public team: Team;
   public site: Site;
   public company: string;
   public docDate: Date;
   public results: ExcelRow[];
 
-  constructor(date: Date, files?: File[], team?: ITeam, site?: ISite, company?: string) {
+  constructor(date: Date, files?: Express.Multer.File[], team?: ITeam, site?: ISite, 
+    company?: string) {
     this.files = (files) ? files : [];
     this.team = (team) ? new Team(team) : new Team();
     this.site = (site) ? new Site(site) : new Site();
@@ -36,10 +38,10 @@ export class ExcelRowIngest {
     return this.results;
   }
 
-  async processFile(file: File): Promise<void> {
+  async processFile(file: Express.Multer.File): Promise<void> {
     // convert the file into a buffer to allow the exceljs library to create an excel
     // document to read through.
-    const filereader = file.stream().getReader();
+    const filereader = Readable.from(file.buffer);
     const fileDataU8: number[] = [];
     while (true) {
       const {done,value} = await filereader.read();

@@ -76,7 +76,7 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
 router.post('/ingest', upload.array('files'), async(req: Request, res: Response) => {
   try {
     // ensure the upload file is present
-    const files = req.files;
+    const files = req.files as Express.Multer.File[];
 
     if (!files) {
       throw new Error('No files uploaded')
@@ -117,7 +117,13 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     const rows: ExcelRow[] = [];
     switch (ingestMethod.toLowerCase().trim()) {
       case "sap":
-        const sapIngest = new SAPIngest(files, initial.team)
+        const sapIngest = new SAPIngest(files, initial.team);
+        const trows = await sapIngest.Process();
+        trows.forEach(row => {
+          rows.push(new ExcelRow(row));
+        });
+        rows.sort((a,b) => a.compareTo(b));
+        break;
       case "mexcel":
     }
   } catch (err) {
