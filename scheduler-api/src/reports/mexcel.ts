@@ -2,7 +2,7 @@ import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exce
 import { Formula, Report } from "scheduler-node-models/general";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { User } from "scheduler-node-models/users";
-import { collections } from "../config/mongoconnect";
+import { collections } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 

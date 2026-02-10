@@ -1,12 +1,13 @@
 import { ITeam, Team } from "../teams";
 import { ExcelRow } from "./excelRow";
 import { Workbook } from "exceljs";
+import { Readable } from "stream";
 
 export class SAPIngest {
-  public files: File[];
+  public files: Express.Multer.File[];
   public team: Team;
 
-  constructor(files?: File[], team?: ITeam) {
+  constructor(files?: Express.Multer.File[], team?: ITeam) {
     this.files = (files) ? files : [];
     this.team = (team) ? new Team(team) : new Team();
   }
@@ -26,11 +27,11 @@ export class SAPIngest {
     return result;
   }
 
-  async processFile(file: File): Promise<ExcelRow[]> {
+  async processFile(file: Express.Multer.File): Promise<ExcelRow[]> {
     const result: ExcelRow[] = [];
     // convert the file into a buffer to allow the exceljs library to create an excel
     // document to read through.
-    const filereader = file.stream().getReader();
+    const filereader = Readable.from(file.buffer);
     const fileDataU8: number[] = [];
     while (true) {
       const {done,value} = await filereader.read();

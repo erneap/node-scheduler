@@ -4,8 +4,15 @@ import { collections } from "scheduler-node-models/config";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
+import { logConnection } from "scheduler-node-models/config";
+import multer from 'multer';
+import { Site } from "scheduler-node-models/scheduler/sites";
+import { getAllDatabaseInfo } from "./initialRoutes";
+import { ExcelRow, SAPIngest, ExcelRowIngest } from 'scheduler-node-models/scheduler/ingest'
 
 const router = Router();
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage });
 
 /**
  * This method will be used to download a mexcel (manual excel) file so that the on-site
@@ -36,8 +43,8 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
       if ((req as any).user) {
         id = (req as any).user as string
       } 
-      const userQuery = { _id: new ObjectId(id)};
-      if (collections.users) {
+      if (collections.users && id !== '') {
+        const userQuery = { _id: new ObjectId(id)};
         const iUser = await collections.users.findOne<IUser>(userQuery);
         if (iUser) {
           user = new User(iUser);
@@ -58,12 +65,68 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
       throw new Error('creation data missing');
     }
   } catch (err) {
-
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`Error: GetManualIngestFile: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
   }
 });
 
-router.post('/ingest', async(req: Request, res: Response) => {
+router.post('/ingest', upload.array('files'), async(req: Request, res: Response) => {
+  try {
+    // ensure the upload file is present
+    const files = req.files;
 
+    if (!files) {
+      throw new Error('No files uploaded')
+    }
+
+    // if files are present, get the other data to determine the type of ingest that will
+    // be performed, either SAP or manual excel ingest.  This is based on team, site, and
+    // company for the ingest.  The last value gives the month and year for manual excel
+    // ingest, which allows the program to set the day of the month for the column data.
+    const teamid = req.body.teamid as string;
+    const siteid = req.body.siteid as string;
+    const companyid = req.body.companyid as string;
+    const sDate = req.body.date as string;
+    if (!teamid || teamid === '') {
+      throw new Error('No team identifier given');
+    }
+    if (!siteid || siteid === '') {
+      throw new Error('No site identifier given');
+    }
+    if (!companyid || companyid === '') {
+      throw new Error('No company identifer given');
+    }
+
+    // pull the team object to determine the method used for ingest of work data.
+    let ingestMethod = 'mexcel';
+    let site: Site = new Site();
+    const now = new Date();
+    const start = new Date(Date.UTC(now.getUTCFullYear() - 1, 0, 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), 11, 31));
+    const initial = await getAllDatabaseInfo(teamid, siteid, start, end);
+    if (initial.team.companies) {
+      initial.team.companies.forEach(co => {
+        if (co.id.toLowerCase() === companyid.toLowerCase()) {
+          ingestMethod = co.ingest;
+        }
+      });
+    }
+    const rows: ExcelRow[] = [];
+    switch (ingestMethod.toLowerCase().trim()) {
+      case "sap":
+        const sapIngest = new SAPIngest(files, initial.team)
+      case "mexcel":
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`Error: IngestFiles: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
 });
 
 export default router;
