@@ -8,7 +8,8 @@ import { logConnection } from "scheduler-node-models/config";
 import multer from 'multer';
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { getAllDatabaseInfo } from "./initialRoutes";
-import { ExcelRow, SAPIngest, ExcelRowIngest } from 'scheduler-node-models/scheduler/ingest'
+import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } from 'scheduler-node-models/scheduler/ingest'
+import { Employee, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -114,17 +115,28 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         }
       });
     }
-    const rows: ExcelRow[] = [];
+    const results: ExcelRowPeriod[] = [];
     switch (ingestMethod.toLowerCase().trim()) {
       case "sap":
         const sapIngest = new SAPIngest(files, initial.team);
-        const trows = await sapIngest.Process();
-        trows.forEach(row => {
-          rows.push(new ExcelRow(row));
+        const periods = await sapIngest.Process();
+        periods.forEach(period => {
+          results.push(new ExcelRowPeriod(period));
         });
-        rows.sort((a,b) => a.compareTo(b));
         break;
       case "mexcel":
+        const excelIngest = new ExcelRowIngest(new Date(sDate), files, 
+          initial.team, initial.site, companyid);
+        const prds = await excelIngest.Process();
+        prds.forEach(period => {
+          results.push(new ExcelRowPeriod(period));
+        });
+        break;
+    }
+    if (results.length > 0) {
+      const employees: Employee[] = [];
+      const employeeWork: WorkRecord[] = [];
+      
     }
   } catch (err) {
     const error = err as Error;

@@ -1,6 +1,6 @@
 {
   "name": "scheduler-node-models",
-  "version": "1.2.95",
+  "version": "1.2.97",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
