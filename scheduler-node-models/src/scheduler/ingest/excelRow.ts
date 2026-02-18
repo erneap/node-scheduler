@@ -76,3 +76,36 @@ export class ExcelRow implements IExcelRow {
     return result;
   }
 }
+
+/**
+ * This interface will contain the rows of information for employees reported on a single
+ * SAP Ingest spreadsheet or a Manual Excel spreadsheet, plus the start and ending dates
+ * for the spreadsheet, which equates to the first date reported on the sheet and the last.
+ */
+export interface IExcelRowPeriod {
+  start: Date;
+  end: Date;
+  rows: IExcelRow[];
+}
+
+/**
+ * This class implements the IExcelRowPeriod interface and provides either default 
+ * values for the build or fills the information into the object.
+ */
+export class ExcelRowPeriod implements IExcelRowPeriod {
+  public start: Date;
+  public end: Date;
+  public rows: ExcelRow[];
+
+  constructor(period?: IExcelRowPeriod) {
+    this.start = (period) ? new Date(period.start) : new Date(Date.UTC(9999, 11, 30));
+    this.end = (period) ? new Date(period.end) : new Date(0);
+    this.rows = [];
+    if (period && period.rows.length > 0) {
+      period.rows.forEach(row => {
+        this.rows.push(new ExcelRow(row));
+      });
+      this.rows.sort((a,b) => a.compareTo(b));
+    }
+  }
+}

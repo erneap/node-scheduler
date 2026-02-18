@@ -1,7 +1,7 @@
 import { Row, Workbook } from "exceljs";
 import { ISite, Site } from "../sites";
 import { ITeam, Team } from "../teams";
-import { ExcelRow } from "./excelRow";
+import { ExcelRow, ExcelRowPeriod } from "./excelRow";
 import { LaborCode } from "../labor";
 import { Employee } from "../employees";
 import {Readable } from 'stream';
@@ -12,7 +12,6 @@ export class ExcelRowIngest {
   public site: Site;
   public company: string;
   public docDate: Date;
-  public results: ExcelRow[];
 
   constructor(date: Date, files?: Express.Multer.File[], team?: ITeam, site?: ISite, 
     company?: string) {
@@ -21,24 +20,24 @@ export class ExcelRowIngest {
     this.site = (site) ? new Site(site) : new Site();
     this.company = (company) ? company : '';
     this.docDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
-    this.results = [];
   }
 
-  async Process(): Promise<ExcelRow[]> {
-    this.results = [];
+  async Process(): Promise<ExcelRowPeriod[]> {
+    const results: ExcelRowPeriod[] = [];
 
     if (this.files.length > 0) {
       const allfiles = this.files.map(async(file, f) => {
-        await this.processFile(file);
+        const result = await this.processFile(file);
+        results.push(result);
       });
       await Promise.allSettled(allfiles);
     }
 
-    this.results.sort((a,b) => a.compareTo(b));
-    return this.results;
+    return results;
   }
 
-  async processFile(file: Express.Multer.File): Promise<void> {
+  async processFile(file: Express.Multer.File): Promise<ExcelRowPeriod> {
+    const result: ExcelRowPeriod = new ExcelRowPeriod();
     // convert the file into a buffer to allow the exceljs library to create an excel
     // document to read through.
     const filereader = Readable.from(file.buffer);
@@ -57,7 +56,13 @@ export class ExcelRowIngest {
 
     const monthDates: Date[] = [];
     for (let d = 0; d < 31; d++) {
-      monthDates.push(new Date(this.docDate.getTime() + (d * 24 * 3600000)));
+      const nDate = new Date(this.docDate.getTime() + (d * 24 * 3600000));
+      if (nDate.getTime() < result.start.getTime()) {
+        result.start = new Date(nDate);
+      }
+      if (nDate.getTime() > result.end.getTime()) {
+        result.end = new Date(nDate);
+      }
     }
 
     if (worksheet) {
@@ -70,7 +75,10 @@ export class ExcelRowIngest {
                 e.name.getLastFirst().toLowerCase() === name.toLowerCase());
               if (emp) {
                 const rowPromises = monthDates.map(async(day,d) => {
-                  await this.readCell(row, d+3, day, emp);
+                  const erow = await this.readCell(row, d+3, day, emp);
+                  if (erow !== null) {
+                    result.rows.push(new ExcelRow(erow));
+                  }
                 });
                 await Promise.allSettled(rowPromises);
               }
@@ -83,6 +91,8 @@ export class ExcelRowIngest {
     } else {
       throw new Error('No worksheet');
     }
+    result.rows.sort((a,b) => a.compareTo(b));
+    return result;
   }
 
   /**
@@ -104,7 +114,7 @@ export class ExcelRowIngest {
     return laborcodes;
   }
 
-  async readCell(row: Row, c: number, colDate: Date, emp: Employee): Promise<void> {
+  async readCell(row: Row, c: number, colDate: Date, emp: Employee): Promise<ExcelRow | null> {
     // create test patterns for hours, if value doesn't match the hours pattern, it will
     // be assumed to be a leave code
     const hPattern = "^[0-9]{1,2}(\.[0-9]+)?$";
@@ -139,7 +149,7 @@ export class ExcelRowIngest {
           eRow.extension = laborcode.extension;
           eRow.premium = '1';
           eRow.hours = Number(sValue);
-          this.results.push(new ExcelRow(eRow));
+          return new ExcelRow(eRow);
         }
       } else {
         // this will be a leave code, so find out which to use, then 
@@ -152,10 +162,11 @@ export class ExcelRowIngest {
             eRow.employee = emp.companyinfo.employeeid;
             eRow.code = wc.id;
             eRow.hours = emp.getStandardWorkday(colDate);
-            this.results.push(new ExcelRow(eRow));
+            return new ExcelRow(eRow);
           }
         });
       }
     }
+    return null
   }
 }

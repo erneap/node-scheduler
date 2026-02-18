@@ -1,5 +1,5 @@
 import { ITeam, Team } from "../teams";
-import { ExcelRow } from "./excelRow";
+import { ExcelRow, ExcelRowPeriod } from "./excelRow";
 import { Workbook } from "exceljs";
 import { Readable } from "stream";
 
@@ -12,23 +12,21 @@ export class SAPIngest {
     this.team = (team) ? new Team(team) : new Team();
   }
 
-  async Process(): Promise<ExcelRow[]> {
-    const result: ExcelRow[] = [];
+  async Process(): Promise<ExcelRowPeriod[]> {
+    const result: ExcelRowPeriod[] = [];
 
     if (this.files.length > 0) {
       const allfiles = this.files.map(async(file, f) => {
         const results = await this.processFile(file);
-        result.push(...results);
+        result.push(results);
       });
       await Promise.allSettled(allfiles);
     }
-
-    result.sort((a,b) => a.compareTo(b));
     return result;
   }
 
-  async processFile(file: Express.Multer.File): Promise<ExcelRow[]> {
-    const result: ExcelRow[] = [];
+  async processFile(file: Express.Multer.File): Promise<ExcelRowPeriod> {
+    const result: ExcelRowPeriod = new ExcelRowPeriod();
     // convert the file into a buffer to allow the exceljs library to create an excel
     // document to read through.
     const filereader = Readable.from(file.buffer);
@@ -122,11 +120,17 @@ export class SAPIngest {
                 }
               }
             });
-            result.push(eRow);
+            if (eRow.date.getTime() < result.start.getTime()) {
+              result.start = new Date(eRow.date);
+            }
+            if (eRow.date.getTime() > result.end.getTime()) {
+              result.end = new Date(eRow.date);
+            }
+            result.rows.push(eRow)
           }
         });
       }
-      result.sort((a,b) => a.compareTo(b));
+      result.rows.sort((a,b) => a.compareTo(b));
     }
 
     return result;
