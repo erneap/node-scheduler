@@ -9,7 +9,7 @@ import multer from 'multer';
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { getAllDatabaseInfo } from "./initialRoutes";
 import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } from 'scheduler-node-models/scheduler/ingest'
-import { Employee, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -135,8 +135,30 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     }
     if (results.length > 0) {
       const employees: Employee[] = [];
+      const employeelist: ObjectId[] = []
       const employeeWork: WorkRecord[] = [];
-      
+      if (collections.employees) {
+        const empQuery = { team: new ObjectId(teamid), site: site };
+        const empCursor = await collections.employees.find<IEmployee>(empQuery);
+        const result = await empCursor.toArray();
+        result.forEach(iEmp => {
+          employees.push(new Employee(iEmp));
+          employeelist.push(new ObjectId(iEmp._id));
+        });
+        employees.sort((a,b) => a.compareTo(b));
+      }
+      if (collections.work) {
+        const workQuery = { year: now.getUTCFullYear(), employeeID: { $in: employeelist }};
+        const workCursor = await collections.work.find<IWorkRecord>(workQuery);
+        const result = await workCursor.toArray();
+        result.forEach(iWR => {
+          employeeWork.push(new WorkRecord(iWR));
+        });
+      }
+      results.forEach(period => {
+        let empID = '';
+        
+      });
     }
   } catch (err) {
     const error = err as Error;
