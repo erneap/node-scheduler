@@ -9,7 +9,7 @@ import multer from 'multer';
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { getAllDatabaseInfo } from "./initialRoutes";
 import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } from 'scheduler-node-models/scheduler/ingest'
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -156,9 +156,88 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
       }
       results.forEach(period => {
-        let empID = '';
-        
+        let employee = new Employee();
+        let empID = -1;
+        let work1 = new WorkRecord();
+        let work1ID = -1;
+        let work2: WorkRecord | undefined = undefined;
+        let work2ID = -1;
+        period.rows.forEach(row => {
+          if (employee.companyinfo.employeeid !== row.employee 
+            && employee.companyinfo.alternateid !== row.employee) {
+            if (empID >= 0) {
+              employees[empID] = employee
+            }
+            if (work1ID >= 0) {
+              employeeWork[work1ID] = work1;
+            }
+            if (work2ID >= 0 && work2) {
+              employeeWork[work2ID] = work2;
+            }
+            employees.forEach((emp, e) => {
+              if (emp.companyinfo.employeeid.toLowerCase() === row.employee.toLowerCase()
+                || emp.companyinfo.alternateid?.toLowerCase() === row.employee.toLowerCase()) {
+                employee = emp;
+                emp.removeLeaves(period.start, period.end);
+                empID = e;
+              }
+            });
+            work2 = undefined;
+            work2ID = -1;
+            employeeWork.forEach((wr, w) => {
+              if (wr.empID === employee.id && wr.year === period.start.getUTCFullYear()) {
+                work1ID = w;
+                work1 = wr;
+                work1.removeWork(period.start, period.end);
+              }
+              if (period.start.getUTCFullYear() !== period.end.getUTCFullYear()
+                && wr.empID === employee.id && wr.year === period.end.getUTCFullYear()) {
+                work2ID = w;
+                work2 = wr;
+                work2.removeWork(period.start, period.end);
+              }
+            });
+          }
+          if (row.code !== '') {
+            // code field of the row indicates whether or not this is a leave type.  If 
+            // not empty, we assume it is work.  At this point all leaves are recorded as
+            // actual
+            employee.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', row.holidayID);
+          } else {
+            const work = new Work({
+              dateworked: new Date(row.date),
+              chargenumber: row.chargeNumber,
+              extension: row.extension,
+              paycode: Number(row.premium),
+              hours: row.hours
+            });
+            if (work1.year === row.date.getUTCFullYear()) {
+              work1.work.push(work);
+              work1.work.sort((a,b) => a.compareTo(b));
+            } else if (work2 && work2.year === row.date.getUTCFullYear()) {
+              work2.work.push(work);
+              work2.work.sort((a,b) => a.compareTo(b));
+            }
+          }
+        });
       });
+
+      // after going through all the results, write each employee and employee work record
+      // to the database.
+      const employeeWritePromises = employees.map( async(emp) => {
+        const query = {_id: new ObjectId(emp.id)};
+        if (collections.employees) {
+          await collections.employees.replaceOne(query, emp);
+        }
+      });
+
+      const workWritePromises = employeeWork.map(async(wr) => {
+        const query = {_id: new ObjectId(wr.id)};
+        if (collections.work) {
+          await collections.work.replaceOne(query, wr);
+        }
+      });
+      await Promise.allSettled([employeeWritePromises, workWritePromises]);
     }
   } catch (err) {
     const error = err as Error;
