@@ -39,6 +39,8 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
       initial.employee = employee;
       initial.site = iData.site;
       initial.team = iData.team;
+    } else {
+      throw new Error('No Userid provided')
     }
     res.status(200).json(initial);
   } catch (err) {

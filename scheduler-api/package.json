@@ -28,7 +28,7 @@
     "mongodb": "^6.19.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "scheduler-node-models": "^1.2.97",
+    "scheduler-node-models": "^1.2.104",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
