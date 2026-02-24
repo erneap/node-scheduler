@@ -299,7 +299,34 @@ router.delete('/site/workcenter/:team/:site/:workcenter', auth, async(req: Reque
     const siteid = req.params.site as string;
     const wcID = req.params.workcenter as string;
     if (teamid && siteid && wcID) {
-      
+     if (collections.teams) {
+      const query = { _id: new ObjectId(teamid)};
+      const iTeam = await collections.teams.findOne<ITeam>(query);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.sites.forEach((site, s) => {
+          if (site.id.toLowerCase() === siteid.toLowerCase()) {
+            let found = -1;
+            site.workcenters.forEach((wc, w) => {
+              if (wc.id.toLowerCase() === wcID.toLowerCase()) {
+                found = w;
+              }
+            });
+            if (found >= 0) {
+              site.workcenters.splice(found, 1);
+            }
+            team.sites[s] = site;
+          }
+        });
+        await collections.teams.replaceOne(query, team);
+      }
+     } 
+      const now = new Date();
+      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
+      const initial = await getAllDatabaseInfo(teamid, siteid, begin, now);
+      res.status(200).json(initial.site);
+    } else {
+      throw new Error('Team, Site, and/or workcenter not identified')
     }
   } catch (err) {
     const error = err as Error;
