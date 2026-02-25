@@ -88,4 +88,33 @@ export class Site implements ISite {
     }
     return -1;
   }
+
+  /**
+   * This method will provide a list of labor codes active during the period provided.
+   * @param start The start date of the period
+   * @param end The ending date of the period
+   * @returns A list of active labor codes for the period.
+   */
+  getCurrentLaborCodes(start: Date, end: Date): LaborCode[] {
+    const result: LaborCode[] = [];
+    this.forecasts.forEach(fcst => {
+      if ((start.getTime() <= fcst.endDate.getTime())
+        && (end.getTime() >= fcst.startDate.getTime())) {
+        fcst.laborCodes.forEach(lc => {
+          let found = false;
+          result.forEach(rlc => {
+            if (rlc.chargeNumber === lc.chargeNumber
+              && rlc.extension === lc.extension) {
+              found = true;
+            }
+          });
+          if (!found) {
+            result.push(new LaborCode(lc));
+          }
+        });
+      }
+    });
+    result.sort((a,b) => a.compareTo(b));
+    return result;
+  }
 }

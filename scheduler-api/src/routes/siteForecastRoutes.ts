@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { getAllDatabaseInfo } from "./initialRoutes";
 import { LaborCode } from "scheduler-node-models/scheduler/labor";
+import { Site } from "scheduler-node-models/scheduler/sites";
 
 const router = Router();
 export default router;
@@ -346,9 +347,55 @@ export function getDateFromString(date: string): Date {
   }
 }
 
+/**
+ * This method will remove a forecast report from a site's record.
+ * STEPS:
+ * 1) Get the team, site, and report identifiers
+ * 2) Get the team and site from the data given.
+ * 3) Find the forecast report in the site's list to determine which is to be deleted.
+ * 4) If found, remove it from the list.
+ * 5) Update the site in the team record.
+ * 6) Update the team in the database.
+ * 7) Respond with the updated site.
+ */
 router.delete('/site/forecast/:team/:site/:id', auth, async(req: Request, res: Response) => {
   try {
-
+    const teamid = req.params.team as string;
+    const siteid = req.params.site as string;
+    const srptId = req.params.id as string;
+    if (teamid !== '' && siteid !== '' && srptId !== '') {
+      const rptID = Number(srptId);
+      
+      const now = new Date();
+      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
+      const initial = await getAllDatabaseInfo(teamid, siteid, begin, now);
+      const site = new Site(initial.site);
+      let found = -1;
+      site.forecasts.forEach((fcst, f) => {
+        if (fcst.id === rptID) {
+          found = f;
+        }
+      });
+      if (found >= 0) {
+        site.forecasts.splice(found, 1);
+      }
+      found = -1;
+      initial.team.sites.forEach((tsite, s) => {
+        if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
+          found = s;
+        }
+      });
+      if (found >= 0) {
+        initial.team.sites[found] = site;
+        const query = { _id: new ObjectId(initial.team.id)};
+        if (collections.teams) {
+          await collections.teams.replaceOne(query, initial.team);
+        }
+      }
+      res.status(200).json(site);
+    } else {
+      throw new Error('Missing Information: Team, site and/or forecast report id');
+    }
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
@@ -357,3 +404,39 @@ router.delete('/site/forecast/:team/:site/:id', auth, async(req: Request, res: R
     res.status(400).json({'message': error.message});
   }
 });
+
+/**
+ * This method is used to retrieve a list of active labor codes from the forecast reports
+ * based on team, site, and two dates to define the period the labor codes are active.
+ * STEPS:
+ * 1) Get the team, site, and dates from the parameters.  The dates will be in MM-dd-yyyy
+ * format
+ * 2) Get the team and site from the database.
+ * 3) Use the site's getCurrentLaborCodes method to retrieve a list of labor codes.
+ * 4) Respond with resultant list.
+ */
+router.get('/site/forecast/labor/:team/:site/:start/:end', auth, 
+  async(req: Request, res:Response) => {
+  try {
+    const teamid = req.params.team as string;
+    const siteid = req.params.site as string;
+    const sStart = req.params.start as string;
+    const sEnd = req.params.end as string;
+    if (teamid !== '' && siteid !== '' && sStart !== '' && sEnd !== '') {
+      const start = getDateFromString(sStart);
+      const end = getDateFromString(sEnd);
+      const initial = await getAllDatabaseInfo(teamid, siteid, start, end);
+      const site = new Site(initial.site);
+      const answer = site.getCurrentLaborCodes(start, end);
+      res.status(200).json(answer);
+    } else {
+      throw new Error('Missing Information: Team, site and/or periods.')
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`Error: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
+})

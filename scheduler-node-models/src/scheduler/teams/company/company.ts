@@ -12,7 +12,7 @@ export interface ICompany {
   ingest: string; 
   ingestPeriod?: number;
   startDay?: number;  // day of the week.
-  ingestPwd: string;
+  ingestPwd?: string;
   holidays?: IHoliday[];
   modperiods?: IModPeriod[];
 }
@@ -37,7 +37,7 @@ export class Company implements ICompany {
     this.ingest = (co) ? co.ingest : 'mexcel';
     this.ingestPeriod = (co && co.ingestPeriod) ? co.ingestPeriod : 0;
     this.startDay = (co && co.startDay) ? co.startDay : 0;
-    this.ingestPwd = (co) ? co.ingestPwd : '';
+    this.ingestPwd = (co && co.ingestPwd) ? co.ingestPwd : '';
     this.holidays = [];
     if (co && co.holidays && co.holidays.length > 0) {
       co.holidays.forEach(hol => {

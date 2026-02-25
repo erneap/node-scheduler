@@ -15,6 +15,9 @@ import employeeBalanceRoutes from './routes/employeeBalanceRoutes';
 import employeeMiscRoutes from './routes/employeeMiscRoutes';
 import ingestRoutes from './routes/ingestRoutes';
 import siteRoutes from './routes/siteRoutes';
+import siteForecastRoutes from './routes/siteForecastRoutes';
+import siteWorkcenterRoutes from './routes/siteWorkcenterRoutes';
+import siteCofSRoutes from './routes/siteCofSRoutes';
 
 connectToDB();
 createPool();
@@ -47,6 +50,9 @@ app.use('/api/scheduler', employeeBalanceRoutes);
 app.use('/api/scheduler', employeeMiscRoutes);
 app.use('/api/scheduler', ingestRoutes);
 app.use('/api/scheduler', siteRoutes);
+app.use('/api/scheduler', siteWorkcenterRoutes);
+app.use('/api/scheduler', siteForecastRoutes);
+app.use('/api/scheduler', siteCofSRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
