@@ -162,7 +162,16 @@ router.put('/site', auth, async(req: Request, res: Response) => {
 });
 
 /**
- * This method will remove a site from the team and database.
+ * This method will remove a site from the team and database.  Additionally, we need to
+ * remove all the employees associated with the site.
+ * STEPS:
+ * 1) Get the team and site identifier to be deleted from the request.
+ * 2) Get the team the site is associated with from the database.
+ * 3) Find the site and delete if present.
+ * 4) if site was present, delele all the employees associated with this team and site 
+ * from the database.
+ * 5) Update the team in the database.
+ * 6) Respond with an empty site.
  */
 router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
   try {

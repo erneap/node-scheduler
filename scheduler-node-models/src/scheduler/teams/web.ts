@@ -1,7 +1,6 @@
 import { HolidayType } from "./company";
 
 export interface NewTeam {
-  id: string;
   name: string;
 }
 
@@ -42,4 +41,17 @@ export interface UpdateTeam {
   optid?: string;
   field: string;
   value: string;
+}
+
+export interface NewWorkcode {
+  team: string;
+  id: string;
+  title: string;
+  start: number;
+  shiftCode: string;
+  altcode?: string;
+  search?: string;
+  isLeave: boolean;
+  textcolor: string;
+  backcolor: string;
 }
