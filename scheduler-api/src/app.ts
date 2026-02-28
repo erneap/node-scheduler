@@ -18,6 +18,7 @@ import siteRoutes from './routes/siteRoutes';
 import siteForecastRoutes from './routes/siteForecastRoutes';
 import siteWorkcenterRoutes from './routes/siteWorkcenterRoutes';
 import siteCofSRoutes from './routes/siteCofSRoutes';
+import teamRoutes from './routes/teamRoutes';
 
 connectToDB();
 createPool();
@@ -53,6 +54,7 @@ app.use('/api/scheduler', siteRoutes);
 app.use('/api/scheduler', siteWorkcenterRoutes);
 app.use('/api/scheduler', siteForecastRoutes);
 app.use('/api/scheduler', siteCofSRoutes);
+app.use('/api/scheduler', teamRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

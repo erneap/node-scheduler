@@ -30,11 +30,6 @@ export interface NewModPeriod {
   end: Date;
 }
 
-export interface NewTeamSpecialtyContact {
-  team: string;
-  name: string;
-}
-
 export interface UpdateTeam {
   team: string;
   companyid?: string;
