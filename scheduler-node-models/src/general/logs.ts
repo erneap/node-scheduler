@@ -104,3 +104,8 @@ export class LogList implements ILogList {
     }
   }
 }
+
+export interface AddLogEntry {
+  application: string;
+  message: string;
+}

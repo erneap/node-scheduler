@@ -26,7 +26,6 @@ import teamCompanyModRoutes from './routes/teamCompanyModRoutes';
 
 connectToDB();
 createPool();
-createLogs('scheduler');
 
 const app = express();
 

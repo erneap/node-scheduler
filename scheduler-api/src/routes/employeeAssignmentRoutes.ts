@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { Assignment, ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } 
   from "scheduler-node-models/scheduler/employees";
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, postMessage } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-node-models/users";
 import { getEmployee, updateEmployee } from "./initialRoutes";
@@ -33,9 +33,7 @@ router.post('/employee/assignment', auth, async(req: Request, res: Response) => 
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: CreateEmployeeAssignment: ${error.message}`);
-    }
+    postMessage('employee', `employeeAssignment: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -62,9 +60,7 @@ router.put('/employee/assignment', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateEmployeeAssignment: ${error.message}`);
-    }
+    postMessage('employee', `employeeAssignment: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -103,9 +99,7 @@ router.delete('/employee/assignment/:id/:asgmt', auth, async(req: Request, res: 
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: DeleteEmployeeAssignment: ${error.message}`);
-    }
+    postMessage('employee', `employeeAssignment: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

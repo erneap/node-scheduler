@@ -1,14 +1,12 @@
 import 'dotenv/config';
 import app from './app';
-import { logConnection } from 'scheduler-node-models/config';
+import { postMessage } from 'scheduler-node-models/config';
 
 (async() => {
 
   const now = new Date();
-  const PORT = process.env.PORT || 7005;
+  const PORT = process.env.PORT || 7006;
   app.listen(PORT, () => {
-    if (logConnection.log) {
-      logConnection.log.log(`Server is running on port ${PORT}`);
-    }
+    postMessage('scheduler', `Server is running on port ${PORT}`);
   });
 })();

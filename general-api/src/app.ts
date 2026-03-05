@@ -19,7 +19,12 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors({
-  origin: ['https://www.osanscheduler.com', 'https://osanscheduler.com', 'http://localhost:4200', 'https://docker', 'null'],
+  origin: ['https://www.osanscheduler.com', 
+    'https://osanscheduler.com', 
+    'http://localhost:4200', 
+    'https://docker', 
+    'null', 
+    'http://localhost:7006'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
   exposedHeaders: [

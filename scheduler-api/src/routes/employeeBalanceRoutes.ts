@@ -38,7 +38,7 @@ router.post('/employee/balance', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: CreateEmployeeLeaveBalance: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeaveBalance: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -69,7 +69,7 @@ router.put('/employee/balance', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateEmployeeLeaveBalance: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeaveBalance: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -101,7 +101,7 @@ router.delete('/employee/balance/:id/:year', auth, async(req: Request, res: Resp
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: DeleteEmployeeLeaveBalance: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeaveBalance: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

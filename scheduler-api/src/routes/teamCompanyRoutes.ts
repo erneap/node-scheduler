@@ -59,7 +59,7 @@ router.post('/team/company', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamCompany: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -125,7 +125,7 @@ router.put('/team/company', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamCompany: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -175,7 +175,7 @@ router.delete('/team/company/:team/:company', auth, async(req: Request, res: Res
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamCompany: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

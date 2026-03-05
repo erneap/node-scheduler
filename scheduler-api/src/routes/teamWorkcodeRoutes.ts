@@ -64,7 +64,7 @@ router.post('/team/workcode', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamWorkcodes: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -139,7 +139,7 @@ router.put('/team/workcode', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamWorkcodes: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -188,7 +188,7 @@ router.delete('/team/workcode/:team/:wcid', auth, async(req: Request, res: Respo
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`teamWorkcodes: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

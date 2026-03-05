@@ -35,7 +35,7 @@ router.get('/site/:id', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`site: Get: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -83,7 +83,7 @@ router.post('/site', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`site: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -155,7 +155,7 @@ router.put('/site', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`site: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -212,7 +212,7 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`site: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

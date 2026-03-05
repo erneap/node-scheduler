@@ -27,7 +27,7 @@ router.get('/employee/:id', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: GetEmployee: ${error.message}`);
+      logConnection.employeeLog.log(`employee: Get: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -106,7 +106,7 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: GetEmployee: ${error.message}`);
+      logConnection.employeeLog.log(`employee: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -176,7 +176,7 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateEmployee: ${error.message}`);
+      logConnection.employeeLog.log(`employee: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -379,7 +379,7 @@ router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: DeleteEmployee: ${error.message}`);
+      logConnection.employeeLog.log(`employee: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

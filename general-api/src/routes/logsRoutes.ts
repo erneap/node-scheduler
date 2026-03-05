@@ -1,8 +1,10 @@
 import { Request, Response, Router } from "express";
-import { ILogEntry, Log, LogEntry, Logger, LogList } from "scheduler-node-models/general";
+import { AddLogEntry, ILogEntry, Log, LogEntry, Logger, LogList } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';
 import * as fs from 'fs';
 import * as path from 'path';
+import { log } from "console";
+import { logConnection, mdbConnection } from "scheduler-node-models/config";
 
 const router = Router();
 const logger = new Logger(
@@ -12,33 +14,50 @@ const logger = new Logger(
  * This web api method will provide a list of available logs as the sub-directories
  * of the basic log directory from the environment.
  */
-router.get('/logs', auth, async(req: Request, res: Response) => {
+router.get('/logs', auth, async(req: Request, res: Response) => {let conn;
   try {
     const list = new LogList();
-    const logDir = (process.env.LOG_DIR) ? process.env.LOG_DIR : '';
-    if (logDir !== '') {
-      const dirents = fs.readdirSync(logDir, { withFileTypes: true })
-      const directories = dirents.filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
-      directories.forEach(dir => {
-        const log = new Log();
-        log.name = dir;
-        const entries = getEntriesFromLogs(log.name);
-        if (entries.length > 0) {
-          entries.forEach(entry => {
-            log.entries.push(new LogEntry(entry));
-          });
-          log.entries.sort((a,b) => b.compareTo(a));
+    if (mdbConnection.pool) {
+      // get a connection from the db.pool
+      conn = await mdbConnection.pool.getConnection();
+
+      // execute a query for notices for the user
+      const query = `SELECT * FROM logentries WHERE ORDER BY application, messageid;`;
+      const rows = await conn.query<any[]>(query);
+
+      // compile the notice rows into the list of notices
+      let log = new Log();
+      rows.forEach(row => {
+        if (log.name !== row.application) {
+          if (log.entries.length > 0) {
+            log.entries.sort((b,a) => a.compareTo(b));
+            list.logs.push(log);
+          }
+          log = new Log();
+          log.name = row.application;
         }
-        list.logs.push(log)
+        log.entries.push(new LogEntry({
+          date: row.messageid,
+          entry: row.message
+        }));
       });
+      if (log.entries.length > 0) {
+        log.entries.sort((b,a) => a.compareTo(b));
+        list.logs.push(log);
+      }
       list.logs.sort((a,b) => a.compareTo(b));
-      return res.status(200).json(list);
+    } else {
+      throw new Error('No database connection');
     }
+
+    // respond with the list of notices
+    res.status(200).json(list);
   } catch (err) {
     const error = err as Error;
     logger.log(`Error: ${error.message}`);
     res.status(400).json({'message': error.message});
+  } finally {
+    if (conn) conn.release();
   }
 });
 
@@ -138,6 +157,43 @@ router.get('/log/:log', auth, async(req: Request, res: Response) => {
         log.entries.sort((a,b) => b.compareTo(a));
       }
       return res.status(200).json(log);
+    }
+  } catch (err) {
+    const error = err as Error;
+    logger.log(`Error: ${error.message}`);
+    res.status(400).json({'message': error.message});
+  }
+});
+
+router.post('/log', async(req: Request, res: Response) => {
+  try {
+    const entry = req.body as AddLogEntry
+    if (entry.application !== '' && entry.message !== '') {
+      switch (entry.application.toLowerCase()) {
+        case "employee":
+          if (logConnection.employeeLog) {
+            logConnection.employeeLog.log(entry.message);
+          } else {
+            logger.log(entry.message);
+          }
+          break;
+        case "site":
+          if (logConnection.siteLog) {
+            logConnection.siteLog.log(entry.message);
+          } else {
+            logger.log(entry.message);
+          }
+          break;
+        case "team":
+          if (logConnection.teamLog) {
+            logConnection.teamLog.log(entry.message);
+          } else {
+            logger.log(entry.message);
+          }
+          break;
+        default:
+          logger.log(entry.message)
+      }
     }
   } catch (err) {
     const error = err as Error;

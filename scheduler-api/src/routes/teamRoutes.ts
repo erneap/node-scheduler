@@ -41,7 +41,7 @@ router.get('/team/:team', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`team: Get: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -88,7 +88,7 @@ router.post('/team', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`team: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -295,7 +295,7 @@ router.put('/team', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`team: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -331,7 +331,7 @@ router.delete('/team/:team', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`team: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

@@ -32,7 +32,7 @@ router.post('/employee/leave', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: CreateEmployeeLeave: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeave: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -62,7 +62,7 @@ router.put('/employee/leave', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateEmployeeLeave: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeave: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -95,7 +95,7 @@ router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Respon
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: DeleteEmployeeLeave: ${error.message}`);
+      logConnection.employeeLog.log(`employeeLeave: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

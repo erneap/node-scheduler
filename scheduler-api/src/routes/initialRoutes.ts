@@ -46,7 +46,7 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: ${error.message}`);
+      logConnection.log.log(`initial: Get: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

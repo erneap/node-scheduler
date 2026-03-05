@@ -45,7 +45,7 @@ router.put('/employee/specialty', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateSpecialty: ${error.message}`);
+      logConnection.employeeLog.log(`employeeMisc: Specialty: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -89,7 +89,7 @@ router.put('/employee/specialties', auth, async(req: Request, res: Response) => 
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateSpecialties: ${error.message}`);
+      logConnection.employeeLog.log(`employeeMisc: Specialties: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -130,7 +130,7 @@ router.put('/employee/contact', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateContactInfo: ${error.message}`);
+      logConnection.employeeLog.log(`employeeMisc: Contact: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -178,7 +178,7 @@ router.get('/employee/work/:id/:year', auth, async(req: Request, res: Response) 
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: GetEmployeeWork: ${error.message}`);
+      logConnection.employeeLog.log(`employeeMisc: Work: Get: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

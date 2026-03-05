@@ -2,8 +2,154 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { logConnection, collections } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
-import { ITeam, NewCompanyHoliday, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
-import { HolidayType } from "scheduler-node-models/scheduler/teams/company";
+import { ITeam, NewModPeriod, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
+import { getDateFromString } from "./employeeAssignmentRoutes";
 
 const router = Router();
 export default router;
+
+/**
+ * This method is used to add a new mod period to a company within a team.
+ * STEPS:
+ * 1) Get the new mod period data from the request.
+ * 2) Check for the team and company identifiers, plus year for the new mod period
+ * 3) If present, get the team from the database
+ * 4) find the company from the team's company list.
+ * 5) Add the new mod period to the company
+ * 6) replace the modified company to the team's company list
+ * 7) Replace the team in the database
+ * 8) Respond with the updated team.
+ */
+router.post('/team/company/mod', auth, async(req: Request, res: Response) => {
+  try {
+    const data = req.body as NewModPeriod;
+    if (data.team !== '' && data.companyid !== '' && data.year > 0) {
+      if (collections.teams) {
+        const query = { _id: new ObjectId(data.team)};
+        const iTeam = await collections.teams.findOne<ITeam>(query);
+        if (iTeam) {
+          const team = new Team(iTeam);
+          team.companies.forEach((co, c) => {
+            if (co.id.toLowerCase() === data.companyid.toLowerCase()) {
+              co.addModPeriod(data.year, data.start, data.end);
+              team.companies[c] = co;
+            }
+          });
+          await collections.teams.replaceOne(query, team);
+          res.status(200).json(team);
+        } else {
+          throw new Error('Team not found');
+        }
+      } else {
+        throw new Error('No team collection is provided');
+      }
+    } else {
+      throw new Error('Required data not present in request')
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`teamCompanyMod: Post: Error: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
+});
+
+/**
+ * This method will update a company's mod period 
+ * STEPS:
+ * 1) Get the team update from the request
+ * 2) Check for required information in the update data
+ * 3) If present, get the team from the database
+ * 4) find the company from the team's company list.
+ * 5) Modify mod period in the company
+ * 6) replace the modified company to the team's company list
+ * 7) Replace the team in the database
+ * 8) Respond with the updated team.
+ */
+router.put('/team/company/mod', auth, async(req: Request, res: Response) => {
+  try {
+    const data = req.body as UpdateTeam;
+    if (data.team !== '' && data.companyid && data.companyid !== '' && data.optid !== '') {
+      if (collections.teams) {
+        const query = { _id: new ObjectId(data.team)};
+        const iTeam = await collections.teams.findOne<ITeam>(query);
+        if (iTeam) {
+          const team = new Team(iTeam);
+          team.companies.forEach((co, c) => {
+            if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
+              const year = Number(data.optid);
+              co.updateModPeriod(year, data.field, getDateFromString(data.value))
+              team.companies[c] = co;
+            }
+          });
+          await collections.teams.replaceOne(query, team);
+          res.status(200).json(team);
+        } else {
+          throw new Error('Team not found');
+        }
+      } else {
+        throw new Error('No team collection is provided');
+      }
+    } else {
+      throw new Error('Required data not present in request')
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`teamCompanyMod: Put: Error: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
+});
+
+/**
+ * This method will delete a company's mod period 
+ * STEPS:
+ * 1) Get the team update from the request
+ * 2) Check for required information in the update data
+ * 3) If present, get the team from the database
+ * 4) find the company from the team's company list.
+ * 5) delete the mod period in the company.
+ * 6) replace the modified company to the team's company list
+ * 7) Replace the team in the database
+ * 8) Respond with the updated team.
+ */
+router.delete('/team/company/mod/:team/:company/:year', auth, 
+  async(req: Request, res: Response) => {
+  try {
+    const teamid = req.params.team as string;
+    const companyid = req.params.company as string;
+    const sYear = req.params.year as string;
+    if (teamid !== '' && companyid !== '' && sYear !== '') {
+      if (collections.teams) {
+        const query = { _id: new ObjectId(teamid)};
+        const iTeam = await collections.teams.findOne<ITeam>(query);
+        if (iTeam) {
+          const team = new Team(iTeam);
+          team.companies.forEach((co, c) => {
+            if (co.id.toLowerCase() === companyid.toLowerCase()) {
+              const year = Number(sYear);
+              co.deleteModPeriod(year);
+              team.companies[c] = co;
+            }
+          });
+          await collections.teams.replaceOne(query, team);
+          res.status(200).json(team);
+        } else {
+          throw new Error('Team not found');
+        }
+      } else {
+        throw new Error('No team collection is provided');
+      }
+    } else {
+      throw new Error('Required data not present in request')
+    }
+  } catch (err) {
+    const error = err as Error;
+    if (logConnection.log) {
+      logConnection.log.log(`teamCompanyMod: Delete: Error: ${error.message}`);
+    }
+    res.status(400).json({'message': error.message});
+  }
+});

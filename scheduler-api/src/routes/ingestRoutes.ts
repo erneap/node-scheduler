@@ -68,7 +68,7 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: GetManualIngestFile: ${error.message}`);
+      logConnection.log.log(`ingest: Get: Error: GetManualIngestFile: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -242,7 +242,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
   } catch (err) {
     const error = err as Error;
     if (logConnection.log) {
-      logConnection.log.log(`Error: IngestFiles: ${error.message}`);
+      logConnection.log.log(`ingest: Post: Error: IngestFiles: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }

@@ -35,7 +35,7 @@ router.post('/employee/variation', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: CreateEmployeeVariation: ${error.message}`);
+      logConnection.employeeLog.log(`employeeVariation: Post: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -68,7 +68,7 @@ router.put('/employee/variation', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: UpdateEmployeeVariation: ${error.message}`);
+      logConnection.employeeLog.log(`employeeVariation: Put: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
@@ -100,7 +100,7 @@ router.delete('/employee/variation/:id/:vari', auth, async(req: Request, res: Re
   } catch (err) {
     const error = err as Error;
     if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`Error: DeleteEmployeeVariation: ${error.message}`);
+      logConnection.employeeLog.log(`employeeVariation: Delete: Error: ${error.message}`);
     }
     res.status(400).json({'message': error.message});
   }
