@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { DeleteNotices, Logger, NewNotice, Notice } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';
-import { mdbConnection } from "scheduler-node-models/config";
+import { mdbConnection, postLogEntry } from "scheduler-node-models/config";
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
@@ -39,9 +39,8 @@ router.get('/notices/:userid', auth, async(req: Request, res: Response) => {
     // respond with the list of notices
     res.status(200).json(notices);
   } catch (err) {
-    console.log(err);
     const error = err as Error;
-    logger.log(`Error: ${error.message}`);
+    await postLogEntry('general', `notices: get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   } finally {
     if (conn) conn.release();
@@ -70,7 +69,7 @@ router.post('/notice', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    logger.log(`Error: ${error.message}`);
+    await postLogEntry('general', `notice: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   } finally {
     if (conn) conn.release();
@@ -98,7 +97,7 @@ router.delete('/notice/:id', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    logger.log(`Error: ${error.message}`);
+    await postLogEntry('general', `notice: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   } finally {
     if (conn) conn.release();
@@ -131,7 +130,7 @@ router.delete('/notices', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    logger.log(`Error: ${error.message}`);
+    await postLogEntry('general', `notices: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   } finally {
     if (conn) conn.release();

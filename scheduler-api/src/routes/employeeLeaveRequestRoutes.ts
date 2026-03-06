@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "scheduler-node-models/config";
+import { logConnection, postLogEntry } from "scheduler-node-models/config";
 import { getEmployee, updateEmployee } from "./initialRoutes";
 import { NewEmployeeLeaveRequest } from "scheduler-node-models/scheduler/employees";
 import { UpdateRequest } from "scheduler-node-models/general";
@@ -46,9 +46,7 @@ router.post('/employee/request', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveRequest: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveRequest: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -80,9 +78,7 @@ router.put('/employee/request', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveRequest: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveRequest: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -112,9 +108,7 @@ router.delete('/employee/request/:id/:reqid', auth, async(req: Request, res: Res
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveRequest: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveRequest: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

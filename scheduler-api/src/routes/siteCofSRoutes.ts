@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { getAllDatabaseInfo } from "./initialRoutes";
@@ -71,6 +71,7 @@ router.post('/site/cofs', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
+    await postLogEntry('site', `siteCofS: Post: Error: ${error.message}`);
     if (logConnection.log) {
       logConnection.log.log(`siteCofS: Post: Error: ${error.message}`);
     }
@@ -143,9 +144,7 @@ router.post('/site/cofs/section', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteCofS: Section: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteCofS: Section: Post: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -304,9 +303,7 @@ router.put('/site/cofs', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteCofs: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteCofS: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -362,9 +359,7 @@ router.delete('/site/cofs/:team/:site/:id', auth, async(req: Request, res: Respo
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteCofS: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteCofS: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

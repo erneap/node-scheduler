@@ -1,12 +1,9 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
-import { getAllDatabaseInfo, getEmployee } from "./initialRoutes";
-import { SiteUpdate, NewSite } from 'scheduler-node-models/scheduler/sites/web';
-import { Site } from "scheduler-node-models/scheduler/sites";
+import { collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
-import { Employee } from "scheduler-node-models/scheduler/employees";
-import { Contact, ITeam, NewTeam, Specialty, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
+import { Contact, ITeam, NewTeam, Specialty, Team, UpdateTeam } 
+  from "scheduler-node-models/scheduler/teams";
 
 const router = Router();
 export default router;
@@ -40,9 +37,7 @@ router.get('/team/:team', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`team: Get: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `team: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -87,9 +82,7 @@ router.post('/team', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`team: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `team: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -294,9 +287,7 @@ router.put('/team', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`team: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `team: Delete: Put: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -330,9 +321,7 @@ router.delete('/team/:team', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`team: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `team: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { Logger } from "scheduler-node-models/general";
 import { InitialResponse } from 'scheduler-node-models/scheduler/web';
 import { ObjectId } from "mongodb";
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
@@ -45,6 +45,7 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
     res.status(200).json(initial);
   } catch (err) {
     const error = err as Error;
+    await postLogEntry('employee', `initial: Get: Error: ${error.message}`);
     if (logConnection.log) {
       logConnection.log.log(`initial: Get: Error: ${error.message}`);
     }

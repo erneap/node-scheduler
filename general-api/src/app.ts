@@ -23,8 +23,7 @@ app.use(cors({
     'https://osanscheduler.com', 
     'http://localhost:4200', 
     'https://docker', 
-    'null', 
-    'http://localhost:7006'],
+    'null'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
   exposedHeaders: [

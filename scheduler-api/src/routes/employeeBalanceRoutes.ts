@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "scheduler-node-models/config";
+import { logConnection, postLogEntry } from "scheduler-node-models/config";
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { AnnualLeave, Employee, IEmployee, NewLeaveBalance, UpdateLeaveBalance } from "scheduler-node-models/scheduler/employees";
 
@@ -37,9 +37,7 @@ router.post('/employee/balance', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveBalance: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveBalance: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -68,9 +66,7 @@ router.put('/employee/balance', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveBalance: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveBalance: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -100,9 +96,7 @@ router.delete('/employee/balance/:id/:year', auth, async(req: Request, res: Resp
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeLeaveBalance: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeLeaveBalance: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

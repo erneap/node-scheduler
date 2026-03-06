@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { Forecast, NewSiteForecast, NewSiteForecastChargeNumber, UpdateSiteForecastChargeNumber } from 'scheduler-node-models/scheduler/sites/reports';
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
@@ -77,9 +77,7 @@ router.post('/site/forecast', auth, async(req: Request, res: Response) => {
     res.status(200).json(initial.site);
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteForecast: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteForecast: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -156,9 +154,7 @@ router.post('/site/forecast/labor', auth, async(req: Request, res: Response) => 
     res.status(200).json(initial.site);
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteForecast: Labor: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteForecast: Labor: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -319,9 +315,7 @@ router.put('/site/forecast', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteForecast: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteForecast: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -398,9 +392,7 @@ router.delete('/site/forecast/:team/:site/:id', auth, async(req: Request, res: R
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteForecast: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteForecast: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -434,9 +426,7 @@ router.get('/site/forecast/labor/:team/:site/:start/:end', auth,
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteForecast: Labor: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteForecast: Labor: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 })

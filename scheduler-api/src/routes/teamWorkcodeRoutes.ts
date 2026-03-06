@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { ITeam, NewWorkcode, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
 import { Workcode } from "scheduler-node-models/scheduler/labor";
@@ -63,9 +63,7 @@ router.post('/team/workcode', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamWorkcodes: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamWorkcodes: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -138,9 +136,7 @@ router.put('/team/workcode', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamWorkcodes: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamWorkcodes: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -187,9 +183,7 @@ router.delete('/team/workcode/:team/:wcid', auth, async(req: Request, res: Respo
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamWorkcodes: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamWorkcodes: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

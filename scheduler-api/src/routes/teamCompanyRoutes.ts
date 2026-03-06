@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { ITeam, NewCompany, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
 import { Company } from "scheduler-node-models/scheduler/teams/company";
@@ -58,9 +58,7 @@ router.post('/team/company', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompany: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompany: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -124,9 +122,7 @@ router.put('/team/company', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompany: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompany: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -174,9 +170,7 @@ router.delete('/team/company/:team/:company', auth, async(req: Request, res: Res
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompany: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompany: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { getAllDatabaseInfo, getEmployee } from "./initialRoutes";
 import { SiteUpdate, NewSite } from 'scheduler-node-models/scheduler/sites/web';
 import { Site } from "scheduler-node-models/scheduler/sites";
@@ -34,9 +34,7 @@ router.get('/site/:id', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`site: Get: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `site: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -82,9 +80,7 @@ router.post('/site', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`site: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `site: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -154,9 +150,7 @@ router.put('/site', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`site: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `site: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -211,9 +205,7 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`site: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `site: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

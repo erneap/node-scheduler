@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Collection } from "mongodb";
-import { collections } from "scheduler-node-models/config";
+import { collections, postLogEntry } from "scheduler-node-models/config";
 import { IUser, User } from 'scheduler-node-models/users';
 import { Logger } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';
@@ -27,7 +27,7 @@ router.get('/users', auth, async(req: Request, res: Response) => {
     return res.status(200).json(list)
   } else {
     const now = new Date();
-    logger.log(`${now.toISOString()} - No user collections`);
+    await postLogEntry('authentication', 'users: Get: No user colleciton');
     return res.status(404).json({'message': 'Unable to find collection'});
   }
 });

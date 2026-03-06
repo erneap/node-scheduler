@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { Logger, sendMail } from "scheduler-node-models/general";
 import { ForgotPasswordRequest, IUser, PasswordResetRequest, SecurityQuestionResponse, 
   User } from "scheduler-node-models/users";
-import { collections } from "scheduler-node-models/config";
+import { collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
 
@@ -72,16 +72,16 @@ router.post('/reset', async(req: Request, res: Response) => {
       throw new Error("User Not Found");
     }
   } catch (error) {
+    let message = '';
     if (typeof error === 'string') {
-      logger.log(`${now.toISOString()} - ${error}`);
-      return res.status(401).send(error);
+      message = error;
     } else if (error instanceof Error) {
-      logger.log(`${now.toISOString()} - ${error.message}`);
-      return res.status(401).send(error.message);
+      message = error.message;
     } else {
-      logger.log(`${now.toISOString()} - ${error}`);
-      return res.status(500).send(error);
+      message = error as string;
     }
+    postLogEntry('authentication', `reset: Post: Error: ${message}`);
+    res.status(400).json({message: message });
   }
 });
 
@@ -124,16 +124,16 @@ router.post('/altreset', async(req: Request, res: Response) => {
       throw new Error("User Not Found");
     }
   } catch (error) {
+    let message = '';
     if (typeof error === 'string') {
-      logger.log(`${now.toISOString()} - ${error}`);
-      return res.status(401).send(error);
+      message = error;
     } else if (error instanceof Error) {
-      logger.log(`${now.toISOString()} - ${error.message}`);
-      return res.status(401).send(error.message);
+      message = error.message;
     } else {
-      logger.log(`${now.toISOString()} - ${error}`);
-      return res.status(500).send(error);
+      message = error as string;
     }
+    postLogEntry('authentication', `reset: altreset: Post: Error: ${message}`);
+    res.status(400).json({message: message });
   }
 });
 
@@ -145,36 +145,45 @@ router.post('/altreset', async(req: Request, res: Response) => {
  * password. 
  */
 router.put('/reset', async(req: Request, res: Response) => {
-  const now = new Date();
-  const colUser = collections.users;
-  if (colUser) {
-    const request = req.body as PasswordResetRequest;
-    if (request.emailAddress !== '') {
-      const query = { emailAddress: request.emailAddress };
-      const iUser = await colUser.findOne<IUser>(query);
-      if (iUser) {
-        if (iUser.resettoken && iUser.resettokenexp 
-          && iUser.resettoken === request.resettoken 
-          && iUser.resettokenexp.getTime() > now.getTime()) {
-          const user = new User(iUser);
-          user.setPassword(request.password);
-          await colUser.replaceOne(query, user);
-          return res.status(200).json(user);
+  try {
+    const now = new Date();
+    const colUser = collections.users;
+    if (colUser) {
+      const request = req.body as PasswordResetRequest;
+      if (request.emailAddress !== '') {
+        const query = { emailAddress: request.emailAddress };
+        const iUser = await colUser.findOne<IUser>(query);
+        if (iUser) {
+          if (iUser.resettoken && iUser.resettokenexp 
+            && iUser.resettoken === request.resettoken 
+            && iUser.resettokenexp.getTime() > now.getTime()) {
+            const user = new User(iUser);
+            user.setPassword(request.password);
+            await colUser.replaceOne(query, user);
+            return res.status(200).json(user);
+          } else {
+            throw new Error('Reset token mismatch');
+          }
         } else {
-          logger.log(`${now.toISOString()} - Reset token mismatch (${iUser.emailAddress})`)
-          return res.status(400).json({'message': 'Reset token mismatch'});
+          throw new Error(`User not found (${request.emailAddress})`);
         }
       } else {
-        logger.log(`${now.toISOString()} - User not found (${request.emailAddress})`);
-        return res.status(404).json({'message': `User not found (${request.emailAddress})`});
+        throw new Error('User email address not given');
       }
     } else {
-      logger.log(`${now.toISOString()} - Users email address not given`);
-      return res.status(404).json({'message': 'User email address not given'});
+      throw new Error('Unable to find collection');
     }
-  } else {
-    logger.log(`${now.toISOString()} - No user/employee collections`);
-    return res.status(404).json({'message': 'Unable to find collection'});
+  } catch (error) {
+    let message = '';
+    if (typeof error === 'string') {
+      message = error;
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else {
+      message = error as string;
+    }
+    postLogEntry('authentication', `reset: Put: Error: ${message}`);
+    res.status(404).json({message: message });
   }
 });
 
@@ -186,37 +195,47 @@ router.put('/reset', async(req: Request, res: Response) => {
  * password. 
  */
 router.put('/altreset', async(req: Request, res: Response) => {
-  const now = new Date();
-  const colUser = collections.users;
-  if (colUser) {
-    const request = req.body as PasswordResetRequest;
-    if (request.emailAddress !== '') {
-      const query = { emailAddress: request.emailAddress };
-      const iUser = await colUser.findOne<IUser>(query);
-      if (iUser) {
-        const user = new User(iUser);
-        if (request.subid) {
-          if (user.checkSecurityQuestion(request.subid, request.resettoken)) {
-            user.setPassword(request.password);
-            await colUser.replaceOne(query, user);
-            return res.status(200).json(user);
+  try {
+    const now = new Date();
+    const colUser = collections.users;
+    if (colUser) {
+      const request = req.body as PasswordResetRequest;
+      if (request.emailAddress !== '') {
+        const query = { emailAddress: request.emailAddress };
+        const iUser = await colUser.findOne<IUser>(query);
+        if (iUser) {
+          const user = new User(iUser);
+          if (request.subid) {
+            if (user.checkSecurityQuestion(request.subid, request.resettoken)) {
+              user.setPassword(request.password);
+              await colUser.replaceOne(query, user);
+              return res.status(200).json(user);
+            } else {
+              throw new Error('Question answer mismatch');
+            }
           } else {
-            return res.status(404).json({'message':'Question answer mismatch'});
+            throw new Error('Question answer no identifier');
           }
         } else {
-          return res.status(404).json({'message':'Question answer no identifier'});
+          throw new Error(`User not found (${request.emailAddress})`);
         }
       } else {
-        logger.log(`${now.toISOString()} - User not found (${request.emailAddress})`);
-        return res.status(404).json({'message': `User not found (${request.emailAddress})`});
+        throw new Error('User email address not given');
       }
     } else {
-      logger.log(`${now.toISOString()} - Users email address not given`);
-      return res.status(404).json({'message': 'User email address not given'});
+      throw new Error('Unable to find collection');
     }
-  } else {
-    logger.log(`${now.toISOString()} - No user/employee collections`);
-    return res.status(404).json({'message': 'Unable to find collection'});
+  } catch (error) {
+    let message = '';
+    if (typeof error === 'string') {
+      message = error;
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else {
+      message = error as string;
+    }
+    postLogEntry('authentication', `reset: Put: Error: ${message}`);
+    res.status(404).json({message: message });
   }
 });
 

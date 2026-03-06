@@ -14,7 +14,8 @@ const logger = new Logger(
  * This web api method will provide a list of available logs as the sub-directories
  * of the basic log directory from the environment.
  */
-router.get('/logs', auth, async(req: Request, res: Response) => {let conn;
+router.get('/logs', auth, async(req: Request, res: Response) => {
+  let conn;
   try {
     const list = new LogList();
     if (mdbConnection.pool) {
@@ -22,7 +23,7 @@ router.get('/logs', auth, async(req: Request, res: Response) => {let conn;
       conn = await mdbConnection.pool.getConnection();
 
       // execute a query for notices for the user
-      const query = `SELECT * FROM logentries WHERE ORDER BY application, messageid;`;
+      const query = `SELECT * FROM logentries ORDER BY application, messageid;`;
       const rows = await conn.query<any[]>(query);
 
       // compile the notice rows into the list of notices
@@ -111,29 +112,47 @@ const getEntriesFromLogs = (logDir: string, date?: Date): ILogEntry[] => {
  * single log, from a maximum date back 30 days.
  */
 router.get('/log/:log/:date', auth, async(req: Request, res: Response) => {
+  let conn;
   try {
     const logname = req.params.log as string;
-    let maxDate = new Date();
+    let maxDate = new Date(0);
     if (req.params.date) {
       maxDate = new Date(req.params.date as string);
     }
     const log = new Log();
-    const logDir = (process.env.LOG_DIR) ? process.env.LOG_DIR : '';
-    if (logDir !== '' && logname && logname !== '') {
-      log.name = logname;
-      const entries = getEntriesFromLogs(log.name, maxDate);
-      if (entries.length > 0) {
-        entries.forEach(entry => {
-          log.entries.push(new LogEntry(entry));
-        });
-        log.entries.sort((a,b) => b.compareTo(a));
+    log.name = logname;
+    if (mdbConnection.pool) {
+      // get a connection from the db.pool
+      conn = await mdbConnection.pool.getConnection();
+
+      // execute a query for notices for the user
+      const query = `SELECT * FROM logentries WHERE application = ? AND messageid > ? '
+        + ORDER BY messageid;`;
+      const values = [ logname, maxDate ];
+      const rows = await conn.query<any[]>(query, values);
+
+      // compile the notice rows into the list of notices
+      rows.forEach(row => {
+        log.entries.push(new LogEntry({
+          date: row.messageid,
+          entry: row.message
+        }));
+      });
+      if (log.entries.length > 0) {
+        log.entries.sort((b,a) => a.compareTo(b));
       }
-      return res.status(200).json(log);
+    } else {
+      throw new Error('No database connection');
     }
+
+    // respond with the list of notices
+    res.status(200).json(log);
   } catch (err) {
     const error = err as Error;
     logger.log(`Error: ${error.message}`);
     res.status(400).json({'message': error.message});
+  } finally {
+    if (conn) conn.release();
   }
 });
 
@@ -142,63 +161,44 @@ router.get('/log/:log/:date', auth, async(req: Request, res: Response) => {
  * single log, from a maximum date back 30 days.
  */
 router.get('/log/:log', auth, async(req: Request, res: Response) => {
+  let conn;
   try {
     const logname = req.params.log as string;
-    let maxDate = new Date();
+    let maxDate = new Date(0);
     const log = new Log();
-    const logDir = (process.env.LOG_DIR) ? process.env.LOG_DIR : '';
-    if (logDir !== '' && logname && logname !== '') {
-      log.name = logname;
-      const entries = getEntriesFromLogs(log.name, maxDate);
-      if (entries.length > 0) {
-        entries.forEach(entry => {
-          log.entries.push(new LogEntry(entry));
-        });
-        log.entries.sort((a,b) => b.compareTo(a));
-      }
-      return res.status(200).json(log);
-    }
-  } catch (err) {
-    const error = err as Error;
-    logger.log(`Error: ${error.message}`);
-    res.status(400).json({'message': error.message});
-  }
-});
+    log.name = logname;
+    if (mdbConnection.pool) {
+      // get a connection from the db.pool
+      conn = await mdbConnection.pool.getConnection();
 
-router.post('/log', async(req: Request, res: Response) => {
-  try {
-    const entry = req.body as AddLogEntry
-    if (entry.application !== '' && entry.message !== '') {
-      switch (entry.application.toLowerCase()) {
-        case "employee":
-          if (logConnection.employeeLog) {
-            logConnection.employeeLog.log(entry.message);
-          } else {
-            logger.log(entry.message);
-          }
-          break;
-        case "site":
-          if (logConnection.siteLog) {
-            logConnection.siteLog.log(entry.message);
-          } else {
-            logger.log(entry.message);
-          }
-          break;
-        case "team":
-          if (logConnection.teamLog) {
-            logConnection.teamLog.log(entry.message);
-          } else {
-            logger.log(entry.message);
-          }
-          break;
-        default:
-          logger.log(entry.message)
+      // execute a query for notices for the user
+      const query = `SELECT * FROM logentries WHERE application = ? AND messageid > ? '
+        + ORDER BY messageid;`;
+      const values = [ logname, maxDate ];
+      const rows = await conn.query<any[]>(query, values);
+
+      // compile the notice rows into the list of notices
+      rows.forEach(row => {
+        log.entries.push(new LogEntry({
+          date: row.messageid,
+          entry: row.message
+        }));
+      });
+      if (log.entries.length > 0) {
+        log.entries.sort((b,a) => a.compareTo(b));
       }
+    } else {
+      throw new Error('No database connection');
     }
+
+    // respond with the list of notices
+    res.status(200).json(log);
   } catch (err) {
     const error = err as Error;
     logger.log(`Error: ${error.message}`);
     res.status(400).json({'message': error.message});
+  } finally {
+    if (conn) conn.release();
   }
 });
 

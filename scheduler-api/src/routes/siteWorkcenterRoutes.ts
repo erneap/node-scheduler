@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { getAllDatabaseInfo, getEmployee } from "./initialRoutes";
 import { NewSiteWorkcenter, WorkcenterUpdate } from 'scheduler-node-models/scheduler/sites/web';
 import { Site } from "scheduler-node-models/scheduler/sites";
@@ -81,9 +81,7 @@ router.post('/site/workcenter', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteWorkcenter: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteWorkcenter: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -286,9 +284,7 @@ router.put('/site/workcenter', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteWorkcenter: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteWorkcenter: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -330,9 +326,7 @@ router.delete('/site/workcenter/:team/:site/:workcenter', auth, async(req: Reque
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`siteWorkcenter: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('site', `siteWorkcenter: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

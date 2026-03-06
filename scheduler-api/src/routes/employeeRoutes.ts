@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
 import { IUser, User } from "scheduler-node-models/users";
@@ -26,9 +26,7 @@ router.get('/employee/:id', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employee: Get: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employee: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -105,9 +103,7 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employee: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employee: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -175,9 +171,7 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employee: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employee: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -378,9 +372,7 @@ router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
     res.status(200).json({'message': 'employee deleted'});
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employee: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employee: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

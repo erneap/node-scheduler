@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection } from "scheduler-node-models/config";
+import { logConnection, postLogEntry } from "scheduler-node-models/config";
 import {  ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } 
   from "scheduler-node-models/scheduler/employees";
 import { ObjectId } from "mongodb";
@@ -34,9 +34,7 @@ router.post('/employee/variation', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeVariation: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeVariation: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -67,9 +65,7 @@ router.put('/employee/variation', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeVariation: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeVariation: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -99,9 +95,7 @@ router.delete('/employee/variation/:id/:vari', auth, async(req: Request, res: Re
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.employeeLog) {
-      logConnection.employeeLog.log(`employeeVariation: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('employee', `employeeVariation: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

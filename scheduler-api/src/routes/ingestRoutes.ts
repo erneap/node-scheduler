@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { collections } from "scheduler-node-models/config";
+import { collections, postLogEntry } from "scheduler-node-models/config";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
@@ -67,9 +67,7 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`ingest: Get: Error: GetManualIngestFile: ${error.message}`);
-    }
+    await postLogEntry('site', `ingest: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -241,9 +239,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`ingest: Post: Error: IngestFiles: ${error.message}`);
-    }
+    await postLogEntry('site', `ingest: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

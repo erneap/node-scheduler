@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { ITeam, NewCompanyHoliday, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
 import { HolidayType } from "scheduler-node-models/scheduler/teams/company";
@@ -57,9 +57,7 @@ router.post('/team/company/holiday', auth, async(req: Request, res: Response) =>
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyHoliday: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyHoliday: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -108,9 +106,7 @@ router.put('/team/company/holiday', auth, async(req: Request, res: Response) => 
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyHoliday: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyHoliday: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -160,9 +156,7 @@ router.delete('/team/company/holiday/:team/:company/:holid', auth,
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyHoliday: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyHoliday: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

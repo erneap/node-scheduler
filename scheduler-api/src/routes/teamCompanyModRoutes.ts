@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections } from "scheduler-node-models/config";
+import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { ITeam, NewModPeriod, Team, UpdateTeam } from "scheduler-node-models/scheduler/teams";
 import { getDateFromString } from "./employeeAssignmentRoutes";
@@ -48,9 +48,7 @@ router.post('/team/company/mod', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyMod: Post: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyMod: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -96,9 +94,7 @@ router.put('/team/company/mod', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyMod: Put: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyMod: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
@@ -147,9 +143,7 @@ router.delete('/team/company/mod/:team/:company/:year', auth,
     }
   } catch (err) {
     const error = err as Error;
-    if (logConnection.log) {
-      logConnection.log.log(`teamCompanyMod: Delete: Error: ${error.message}`);
-    }
+    await postLogEntry('team', `teamCompanyMod: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });
