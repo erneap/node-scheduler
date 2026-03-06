@@ -1,0 +1,17 @@
+<div class="app-container">
+  <mat-toolbar color="accent" style="border: solid 1px black;">
+    <button matIconButton (click)="toggleMenu()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  </mat-toolbar>
+  <mat-sidenav-container class="app-sidenav-container"
+    [class.marginTop.px]="56">
+    <mat-sidenav #sidenav [opened]="showMenu"
+    style="border: solid 1px black;">
+      Menu
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <router-outlet class="app-container"></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,5 +1,6 @@
 import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts';
 import { ISecurityQuestion, SecurityQuestion } from './question';
+import { IPermission, Permission } from './permission';
 
 /**
  * The user class and interface.
@@ -19,11 +20,12 @@ export interface IUser {
   firstName: string;
   middleName?: string;
   lastName: string;
-  workgroups: string[];
+  workgroups?: string[];
   resettoken?: string;
   resettokenexp?: Date;
   additionalEmails?: string[];
   questions?: ISecurityQuestion[];
+  permissions?: IPermission[];
 }
 
 /**
@@ -56,6 +58,7 @@ export class User implements IUser {
   public resettokenexp?: Date;
   public additionalEmails: string[];
   public questions: SecurityQuestion[];
+  public permissions: Permission[];
 
   constructor(user?: IUser) {
     this.id = (user && user.id ) ? user.id : '';
@@ -70,7 +73,7 @@ export class User implements IUser {
     this.middleName = (user) ? user.middleName : undefined;
     this.lastName = (user) ? user.lastName : '';
     this.workgroups = [];
-    if (user) {
+    if (user && user.workgroups) {
       user.workgroups.forEach(wg => {
         this.workgroups.push(wg);
       });
@@ -98,6 +101,20 @@ export class User implements IUser {
           id: i, question: '', answer: ''
         }))
       }
+    }
+    this.permissions = [];
+    if (user && user.permissions) {
+      user.permissions.forEach(perm => {
+        this.permissions.push(new Permission({
+          application: perm.application,
+          job: perm.job
+        }));
+      });
+    }
+    if (this.permissions.length === 0 && this.workgroups.length > 0) {
+      this.workgroups.forEach(wg => {
+        const parts = wg.split('-')
+      })
     }
   }
 
