@@ -1,5 +1,3 @@
-import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts';
-
 /**
  * This interface provides the framework for the security question.  
  * Namely, a security question and its encrypted answer.
@@ -42,38 +40,5 @@ export class SecurityQuestion implements ISecurityQuestion {
         return (this.id < other.id) ? -1 : 1;
     }
     return -1;
-  }
-
-  /**
-   * This function is used to update either the question or answer which
-   * is provided in the value.  If the field is answer, the value is 
-   * saved encrypted of its lower case equivalent.
-   * @param field A string value to indicate which object field is to be updated
-   * @param value A string value for the update.
-   */
-  update(field: string, value: string): void {
-    switch (field.toLowerCase()) {
-      case "question":
-        this.question = value;
-        break;
-      case "answer":
-        const salt = genSaltSync(12);
-        const result = hashSync(value.toLowerCase(), salt);
-        this.answer = result;
-        break;
-    }
-  }
-
-  /**
-   * This function will check a provided answer, during reset, with the
-   * answer in this object.  It will submit a lower case value for checking
-   * because the answer is orginally the lower case value of the provided
-   * answer.
-   * @param value A string value used during comparision.
-   * @returns A boolean value for whether or not the given value is equal to
-   * the saved value.
-   */
-  compare(value: string): boolean {
-    return compareSync(value.toLowerCase(), this.answer)
   }
 }

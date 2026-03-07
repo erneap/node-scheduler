@@ -5,6 +5,7 @@ import { AuthenticationRequest, IUser, User } from 'scheduler-node-models/users'
 import * as jwt from 'jsonwebtoken';
 import { Logger } from "scheduler-node-models/general";
 import { auth } from '../middleware/authorization.middleware';
+import { compareSync } from "bcrypt-ts";
 
 const router = Router();
 const logger = new Logger(
@@ -31,8 +32,21 @@ router.post('/authenticate', async(req: Request, res: Response) => {
       if (iUser && iUser !== null) {
         const user = new User(iUser);
         try {
-          user.checkPassword(aRequest.password);
+          let msg = '';
+          if (aRequest.password && user.password 
+            && compareSync(aRequest.password, user.password)) {
+            if (user.badAttempts > 2) {
+              msg = 'Account locked';
+            }
+            user.badAttempts = 0;
+          } else {
+            user.badAttempts++
+            msg = 'Account Mismatch';
+          }
           colUser.replaceOne(query, user);
+          if (msg !== '') {
+            throw new Error(msg);
+          }
         } catch (e) {
           colUser.replaceOne(query, user);
           const error = e as Error

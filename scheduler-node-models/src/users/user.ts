@@ -1,4 +1,3 @@
-import { genSaltSync, hashSync, compareSync } from 'bcrypt-ts';
 import { ISecurityQuestion, SecurityQuestion } from './question';
 import { IPermission, Permission } from './permission';
 
@@ -158,55 +157,6 @@ export class User implements IUser {
   }
 
   /**
-   * This function will reset the password, bad attemtps and expiration date.  The new 
-   * password will be excrypted for storage.
-   * @param passwd The string value for the new password
-   */
-  setPassword(passwd: string): void {
-    const salt = genSaltSync(12);
-    const result = hashSync(passwd, salt);
-    this.password = result;
-    this.passwordExpires = new Date();
-    this.badAttempts = 0;
-  }
-
-  /**
-   * This function will be used in authentication to verify if the password provided is
-   * equivelent to the stored one.
-   * @param pwd The string value to compare against the encrypted password.
-   * @throws An error if the account is locked or there is a mismatch with the password.
-   */
-  checkPassword(pwd: string): void {
-    if (this.password && compareSync(pwd, this.password)) {
-      if (this.badAttempts > 2) {
-        throw new Error("Account Locked")
-      }
-      this.badAttempts = 0;
-      return;
-    } else {
-      this.badAttempts++;
-      throw new Error("Account Mismatch");
-    }
-  }
-
-  /**
-   * This function will provide a random 16 character password.
-   * @returns A string value representing the new random password.
-   */
-  createRandomPassword(): string {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-      + '0123456789';
-    const charLength = characters.length;
-    for (let i = 0; i < 16; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charLength))
-    }
-    this.setPassword(result);
-    this.badAttempts = -1;
-    return result;
-  }
-
-  /**
    * This function will unlock the user account to allow for access.
    */
   unlock(): void {
@@ -316,40 +266,6 @@ export class User implements IUser {
     if (found >= 0) {
       this.additionalEmails.splice(found, 1);
     }
-  }
-
-  /**
-   * This function will update a security question question or answer
-   * based on the identifier, field and value provided.
-   * @param id A numeric value for the identifier of the question.
-   * @param field A string value for the field (question or answer) to be
-   * updated.
-   * @param value A string value for the updated value for the field.
-   */
-  updateSecurityQuestion(id: number, field: string, value: string) {
-    this.questions.forEach((quest, i) => {
-      if (quest.id === id) {
-        quest.update(field, value);
-        this.questions[i] = quest;
-      }
-    });
-  }
-
-  /**
-   * This function is used to check the response for a security question
-   * answer to the stored value.
-   * @param id A numeric value for the question to check against.
-   * @param value A string value for the answer to the question.
-   * @returns A boolean value for whether the answers match.
-   */
-  checkSecurityQuestion(id: number, value: string): boolean {
-    let answer = false;
-    this.questions.forEach(quest => {
-      if (quest.id === id) {
-        answer = quest.compare(value);
-      }
-    });
-    return answer;
   }
 
   /**

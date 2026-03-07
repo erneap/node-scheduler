@@ -5,6 +5,7 @@ import { Collection, ObjectId } from "mongodb";
 import { collections, postLogEntry } from "scheduler-node-models/config";
 import { AddUserRequest, IUser, UpdateUserRequest, User } from "scheduler-node-models/users";
 import { IEmployee } from 'scheduler-node-models/scheduler/employees';
+import { genSaltSync, hashSync } from "bcrypt-ts";
 
 const router = Router();
 const logger = new Logger(
@@ -72,7 +73,11 @@ router.post('/user', auth, async(req: Request, res: Response) => {
           newUser.workgroups.push(perm);
         });
       }
-      newUser.setPassword(adduser.password);
+      const salt = genSaltSync(12)
+      const hash = hashSync(adduser.password, salt);
+      newUser.password = hash;
+      newUser.passwordExpires = new Date();
+      newUser.badAttempts = 0;
 
       const result = await colUsers.insertOne(newUser);
 
@@ -120,7 +125,11 @@ router.put('/user', auth, async(req: Request, res: Response) => {
             }
             break;
           case "password":
-            user.setPassword(update.value);
+            const salt = genSaltSync(12)
+            const hash = hashSync(update.value, salt);
+            user.password = hash;
+            user.passwordExpires = new Date();
+            user.badAttempts = 0;
             break;
           case "unlock":
             user.badAttempts = 0;
@@ -175,7 +184,20 @@ router.put('/user', auth, async(req: Request, res: Response) => {
             break;
           case "securityquestion":
             if (update.subid) {
-              user.updateSecurityQuestion(update.subid, update.field, update.value);
+              user.questions.forEach((quest, i) => {
+                if (quest.id === update.subid) {
+                  switch (update.field.toLowerCase()) {
+                    case "question":
+                      quest.question = update.value;
+                      break;
+                    case "answer":
+                      const salt = genSaltSync(12);
+                      const result = hashSync(update.value.toLowerCase(), salt);
+                      quest.answer = result;
+                  }
+                  user.questions[i] = quest;
+                }
+              });
             }
             break;
         }

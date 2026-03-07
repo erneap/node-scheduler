@@ -5,6 +5,7 @@ import { ForgotPasswordRequest, IUser, PasswordResetRequest, SecurityQuestionRes
 import { collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
+import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 
 const router = Router();
 const logger = new Logger(
@@ -158,7 +159,11 @@ router.put('/reset', async(req: Request, res: Response) => {
             && iUser.resettoken === request.resettoken 
             && iUser.resettokenexp.getTime() > now.getTime()) {
             const user = new User(iUser);
-            user.setPassword(request.password);
+            const salt = genSaltSync(12)
+            const hash = hashSync(request.password, salt);
+            user.password = hash;
+            user.passwordExpires = new Date();
+            user.badAttempts = 0;
             await colUser.replaceOne(query, user);
             return res.status(200).json(user);
           } else {
@@ -206,12 +211,24 @@ router.put('/altreset', async(req: Request, res: Response) => {
         if (iUser) {
           const user = new User(iUser);
           if (request.subid) {
-            if (user.checkSecurityQuestion(request.subid, request.resettoken)) {
-              user.setPassword(request.password);
+            let found = false;
+            user.questions.forEach(quest => {
+              if (quest.id === request.subid) {
+                if (compareSync(request.resettoken.toLowerCase(), quest.answer)) {
+                  found = true;
+                }
+              }
+            });
+            if (found) {
+              const salt = genSaltSync(12)
+              const hash = hashSync(request.password, salt);
+              user.password = hash;
+              user.passwordExpires = new Date();
+              user.badAttempts = 0;
               await colUser.replaceOne(query, user);
               return res.status(200).json(user);
             } else {
-              throw new Error('Question answer mismatch');
+              throw new Error('Question-answer mismatch');
             }
           } else {
             throw new Error('Question answer no identifier');
