@@ -1,4 +1,4 @@
 export * from './logging';
-export * from './mariadb';
+export * from './sqldb';
 export * from './mongoconnect';
 export * from './logPosting';

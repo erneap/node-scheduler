@@ -1,12 +1,8 @@
 import { Logger } from 'scheduler-node-models/general';
 import app from './app';
-import dotenv from 'dotenv';
 import fs from 'fs';
   
 (async() => {
-  await dotenv.config();
-
-  console.log(process.env.LOG_DIR);
 
   const authDir = `${process.env.LOG_DIR}/authenticate`;
   if (!fs.existsSync(authDir)) {

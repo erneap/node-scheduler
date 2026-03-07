@@ -21,6 +21,7 @@ export class Workday implements IWorkday {
   public workcenter: string;
   public code: string;
   public hours: number;
+  public date?: Date;
 
   constructor(wd?: IWorkday) {
     this.id = (wd) ? wd.id : 0;

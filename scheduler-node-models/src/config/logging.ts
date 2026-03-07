@@ -1,5 +1,5 @@
 import { LogEntry, Logger } from '../general';
-import { mdbConnection } from './mariadb';
+import { mdbConnection } from './sqldb';
 
 export const logConnection: {
   log?: Logger,

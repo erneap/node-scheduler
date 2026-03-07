@@ -177,112 +177,112 @@ export class User implements IUser {
    * @throws An error if the account is locked or there is a mismatch with the password.
    */
   checkPassword(pwd: string): void {
-      if (this.password && compareSync(pwd, this.password)) {
-        if (this.badAttempts > 2) {
-          throw new Error("Account Locked")
-        }
-        this.badAttempts = 0;
-        return;
-      } else {
-        this.badAttempts++;
-        throw new Error("Account Mismatch");
+    if (this.password && compareSync(pwd, this.password)) {
+      if (this.badAttempts > 2) {
+        throw new Error("Account Locked")
       }
-    }
-
-    /**
-     * This function will provide a random 16 character password.
-     * @returns A string value representing the new random password.
-     */
-    createRandomPassword(): string {
-      let result = '';
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        + '0123456789';
-      const charLength = characters.length;
-      for (let i = 0; i < 16; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charLength))
-      }
-      this.setPassword(result);
-      this.badAttempts = -1;
-      return result;
-    }
-
-    /**
-     * This function will unlock the user account to allow for access.
-     */
-    unlock(): void {
       this.badAttempts = 0;
+      return;
+    } else {
+      this.badAttempts++;
+      throw new Error("Account Mismatch");
     }
+  }
 
-    /**
-     * This function will provide the user's name in the form first middle and last.
-     * @returns A string value for the user's name.
-     */
-    getFullName(): string {
-      if (!this.middleName) {
-        return this.firstName + ' ' + this.lastName;
-      }
-      return this.firstName + ' ' + this.middleName.substring(0,1) + '. '
-        + this.lastName;
+  /**
+   * This function will provide a random 16 character password.
+   * @returns A string value representing the new random password.
+   */
+  createRandomPassword(): string {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+      + '0123456789';
+    const charLength = characters.length;
+    for (let i = 0; i < 16; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charLength))
     }
+    this.setPassword(result);
+    this.badAttempts = -1;
+    return result;
+  }
 
-    /**
-     * This function will provide the user's name in the form first last.
-     * @returns A string value for the user's name.
-     */
-    getFirstLast(): string {
+  /**
+   * This function will unlock the user account to allow for access.
+   */
+  unlock(): void {
+    this.badAttempts = 0;
+  }
+
+  /**
+   * This function will provide the user's name in the form first middle and last.
+   * @returns A string value for the user's name.
+   */
+  getFullName(): string {
+    if (!this.middleName) {
       return this.firstName + ' ' + this.lastName;
     }
+    return this.firstName + ' ' + this.middleName.substring(0,1) + '. '
+      + this.lastName;
+  }
 
-    /**
-     * This function will provide the user's name in the form last, first.
-     * @returns A string value for the user's name.
-     */
-    getLastFirst(): string {
-      return this.lastName + ', ' + this.firstName;
+  /**
+   * This function will provide the user's name in the form first last.
+   * @returns A string value for the user's name.
+   */
+  getFirstLast(): string {
+    return this.firstName + ' ' + this.lastName;
+  }
+
+  /**
+   * This function will provide the user's name in the form last, first.
+   * @returns A string value for the user's name.
+   */
+  getLastFirst(): string {
+    return this.lastName + ', ' + this.firstName;
+  }
+
+  /**
+   * This function will create a random string used as a token to reset the user's 
+   * password when the user had forgotten it.  It will be emailed to the user's
+   * email addresses.  The token will be good for 1 hour, so an expiration date/time
+   * is also set.
+   * @returns A string value for the reset token.
+   */
+  createResetToken(): string {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+      + '0123456789';
+    const charLength = characters.length;
+    for (let i = 0; i < 16; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charLength))
     }
+    let now = new Date();
+    this.resettokenexp = new Date(now.getTime() + 3600000);
+    this.resettoken = result;
+    return result;
+  }
 
-    /**
-     * This function will create a random string used as a token to reset the user's 
-     * password when the user had forgotten it.  It will be emailed to the user's
-     * email addresses.  The token will be good for 1 hour, so an expiration date/time
-     * is also set.
-     * @returns A string value for the reset token.
-     */
-    createResetToken(): string {
-      let result = '';
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        + '0123456789';
-      const charLength = characters.length;
-      for (let i = 0; i < 16; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charLength))
-      }
-      let now = new Date();
-      this.resettokenexp = new Date(now.getTime() + 3600000);
-      this.resettoken = result;
-      return result;
-    }
-
-    /**
-     * This function will verify the provided string token in comparison to that recorded
-     * in the user's record.  The process also checks to ensure the token isn't expired.
-     * @param token A string value for the comparison token.
-     * @returns A boolean value to indicate if the token matches and not expired.
-     */
-    checkResetToken(token: string): boolean {
-      const now = new Date();
-      if (this.resettoken && this.resettokenexp) {
-        if (this.resettoken === token 
-          && now.getTime() < this.resettokenexp?.getTime()) {
-          return true;
-        } else {
-          if (this.resettokenexp.getTime() < now.getTime()) {
-            throw new Error("Reset Token Expired");
-          }
-          throw new Error("Reset Token Error");
+  /**
+   * This function will verify the provided string token in comparison to that recorded
+   * in the user's record.  The process also checks to ensure the token isn't expired.
+   * @param token A string value for the comparison token.
+   * @returns A boolean value to indicate if the token matches and not expired.
+   */
+  checkResetToken(token: string): boolean {
+    const now = new Date();
+    if (this.resettoken && this.resettokenexp) {
+      if (this.resettoken === token 
+        && now.getTime() < this.resettokenexp?.getTime()) {
+        return true;
+      } else {
+        if (this.resettokenexp.getTime() < now.getTime()) {
+          throw new Error("Reset Token Expired");
         }
+        throw new Error("Reset Token Error");
       }
-      return false;
     }
+    return false;
+  }
 
   /**
    * This function will add a new email address, if it isn't already in the list
@@ -347,6 +347,24 @@ export class User implements IUser {
     this.questions.forEach(quest => {
       if (quest.id === id) {
         answer = quest.compare(value);
+      }
+    });
+    return answer;
+  }
+
+  /**
+   * This function will be used to look to ensure the user has a particular job/permission
+   * for an application.  All checks are done with lower case strings.
+   * @param application The string value for the application
+   * @param job The string value the job and/or permission to check against.
+   * @returns The boolean value for the user having that permission group.
+   */
+  hasPermission(application: string, job: string): boolean {
+    let answer = false;
+    this.permissions.forEach(perm => {
+      if (perm.application.toLowerCase() === application.toLowerCase()
+        && perm.job.toLowerCase() === job.toLowerCase()) {
+        answer = true;
       }
     });
     return answer;

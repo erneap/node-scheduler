@@ -1,0 +1,36 @@
+<div class="flexlayout column center" [style]="getPageStyle()">
+  <mat-card>
+    <mat-card-header style="text-align: center;">
+      <mat-card-title style="color: white;padding-bottom: 10px;">
+        User Login
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="flexlayout column center">
+      <form class="flexlayout column center" [formGroup]="loginForm">
+        <div class="flexlayout row center" style="vertical-align: middle;">
+          <mat-icon>email</mat-icon>
+          <mat-form-field style="width: 300px;margin-left: 10px;">
+            <input matInput placeholder="E-mail"
+              formControlName="email">
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center">
+          <mat-icon>vpn_key</mat-icon>
+          <mat-form-field style="width: 300px;margin-left: 10px;">
+            <input matInput placeholder="Password"
+              type="password" formControlName="password">
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center">
+          <button mat-raised-button type="submit" color="accent"
+            [disabled]="loginForm.invalid" (click)="login()"
+          >Login</button>
+        </div>
+        <div class="flexlayout row topright"
+          style="margin-top: 3px;width: 99%">
+          <a routerLink="/reset/start" class="forgot">Forgot Password</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

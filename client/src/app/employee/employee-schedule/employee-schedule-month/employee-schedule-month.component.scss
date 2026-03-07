@@ -1,0 +1,50 @@
+.weekend {
+  background-color: aqua;
+  color: black;
+  border: solid 1px aqua;
+}
+
+.weekday {
+  background-color: white;
+  color: black;
+  border: solid 1px black;
+}
+
+.daycell {
+  margin: 0px;
+  padding: 0px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.movement {
+  margin: 0px;
+  padding: 0px;
+  background-color: darkblue;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: solid 1px darkblue;
+  cursor: pointer;
+}
+
+.month {
+  margin: 0px;
+  padding: 0px;
+  background-color: darkblue;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 304px;
+  border: solid 1px darkblue;
+}
+
+.week {
+  position: relative;
+}

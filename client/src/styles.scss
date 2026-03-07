@@ -49,9 +49,74 @@ body {
   @include mat.sidenav-overrides((
     container-background-color: darkmagenta,
     container-text-color: white,
+  ));
+  @include mat.card-overrides((
+    elevated-container-color: darkmagenta,
+    elevated-container-elevation: magenta
   ))
+}
+
+.mat-card-title {
+  color: white !important;
 }
 
 .margin-top { margin-top: 16px; }
 .horizontal-padding { margin-left: 16px; margin-right: 16px; }
 .flex-spacer { flex: 1 1 auto; }
+
+.fxLayout {
+    margin-top: 32px;
+}
+
+.flexlayout {
+    display: flex;
+}
+
+.column {
+    flex-direction: column;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.center {
+    justify-content: center;
+    align-items: center;
+}
+
+.topcenter {
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.centertop {
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.topleft {
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.topright {
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.flexgap {
+    gap: 5px;
+}
+
+.flexwrap {
+    flex-wrap: wrap;
+}
+
+.noflexgap {
+    gap: 0px;
+}
+
+.noflexwrap {
+    flex-wrap: no-wrap;
+}
