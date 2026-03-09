@@ -40,6 +40,6 @@
     "mongodb": "^6.20.0",
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.9",
-    "scheduler-node-models": "^1.2.126"
+    "scheduler-node-models": "^1.2.128"
   }
 }
