@@ -1,0 +1,25 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1.0.0",
+    "title": "OsanScheduler Authentication API",
+    "description": "OsanScheduler provides team/site scheduling information"
+  },
+  "host": "localhost:7010",
+  "basePath": "/api/v1",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/users/users": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

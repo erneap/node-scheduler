@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
+    "swagger": "ts-node src/swagger.ts",
     "build": "tsc",
     "serve": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,6 +24,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.15",
     "@types/nodemailer": "^7.0.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
@@ -30,14 +32,16 @@
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.3.1",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.5",
-    "soap-models": "^1.5.19"
+    "soap-models": "^1.5.19",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1"
   },
   "engines": {
     "node": ">=22.0.0"

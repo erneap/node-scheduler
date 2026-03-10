@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
+    "swagger": "ts-node src/swagger.ts",
     "build": "tsc",
     "serve": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,8 +23,10 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongodb": "^4.0.6",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^24.8.1",
+    "@types/node": "^24.12.0",
     "@types/nodemailer": "^7.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
@@ -40,6 +43,8 @@
     "mongodb": "^6.20.0",
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.9",
-    "scheduler-node-models": "^1.2.128"
+    "scheduler-node-models": "^1.2.128",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }
