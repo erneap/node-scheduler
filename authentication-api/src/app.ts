@@ -1,11 +1,9 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import { connectToDB, createPool } from 'scheduler-node-models/config';
 import authenticateRoutes from './routes/authenticateRoutes';
 import resetRoutes from './routes/resetRoutes';
 import userRoutes from './routes/userRoutes';
@@ -13,30 +11,25 @@ import usersRoutes from './routes/usersRoutes';
 
 const app = express();
 
-(async() => {
-  await dotenv.config();
-  connectToDB();
-  createPool();
+app.use(cookieParser());
+app.use(morgan("dev"));
+app.use(helmet());
+app.use(cors({
+  origin: ['https://www.osanscheduler.com', 'https://osanscheduler.com', 
+    'http://localhost:7010', 'https://docker'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
+}));
+app.use(express.json({ limit: '10mb'}));
 
-  app.use(cookieParser());
-  app.use(morgan("dev"));
-  app.use(helmet());
-  app.use(cors({
-    origin: ['https://www.osanscheduler.com', 'https://osanscheduler.com', 'http://localhost:4200', 'https://docker'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-    exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
-  }));
-  app.use(express.json({ limit: '10mb'}));
+// add routes to the application interface
+app.use('/api', authenticateRoutes);
+app.use('/api/authentication', resetRoutes);
+app.use('/api/authentication', userRoutes);
+app.use('/api/authentication', usersRoutes);
 
-  // add routes to the application interface
-  app.use('/api/authentication', authenticateRoutes);
-  app.use('/api/authentication', resetRoutes);
-  app.use('/api/authentication', userRoutes);
-  app.use('/api/authentication', usersRoutes);
-
-  app.use(notFound);
-  app.use(errorHandler);
-})();
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

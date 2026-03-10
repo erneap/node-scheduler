@@ -15,3 +15,7 @@ scheduler-api/dist
 scheduler-api/.env
 /node_modules
 /testing-app/node_modules
+
+/authApi/node_modules
+/authApi/dist
+/authApi/.env

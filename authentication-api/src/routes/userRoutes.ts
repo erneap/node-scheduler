@@ -18,7 +18,7 @@ const logger = new Logger(
  * errors will annotated in the log, plus messages will be passed to the application 
  * interface.
  */
-router.get('/user/:id', auth, async(req: Request, res: Response) => {
+router.get('/user/:id', async(req: Request, res: Response) => {
   const id = req?.params?.id as string;
   const colUser = collections.users;
   const now = new Date();

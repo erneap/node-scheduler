@@ -23,18 +23,22 @@ const accessLog = new Logger(
  */
 router.post('/authenticate', async(req: Request, res: Response) => {
   try {
+    console.log('Starting');
     const colUser: Collection | undefined = collections.users;
     const aRequest = req.body as AuthenticationRequest;
+    console.log(JSON.stringify(aRequest));
     const now = new Date();
     if (colUser && aRequest) {
       const query = { 'emailAddress': aRequest.emailAddress };
       const iUser = await colUser.findOne<IUser>(query);
       if (iUser && iUser !== null) {
         const user = new User(iUser);
+        console.log('Found User');
         try {
           let msg = '';
           if (aRequest.password && user.password 
             && compareSync(aRequest.password, user.password)) {
+            console.log('Comparison Complete');
             if (user.badAttempts > 2) {
               msg = 'Account locked';
             }
@@ -90,6 +94,7 @@ router.post('/authenticate', async(req: Request, res: Response) => {
     } else {
       message = error as string;
     }
+    console.log(error);
     postLogEntry('authentication', `authenticate: Post: Error: ${message}`);
     res.status(404).json({message: message });
   }

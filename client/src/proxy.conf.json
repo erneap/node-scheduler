@@ -1,0 +1,6 @@
+{
+  "/api/authentication/**": {
+    "target": "http://localhost:7004/api/authentication",
+    "secure": false
+  }
+}

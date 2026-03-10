@@ -1,0 +1,62 @@
+<div>
+  <mat-toolbar>
+    @if (authService.isAuthenticated()) {
+      <button matIconButton (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
+    }
+    <mat-icon svgIcon="calendar"></mat-icon>
+    <a mat-button routerLink="home"><h1>{{title()}}</h1></a>
+    <span class="flex-spacer"></span>
+    @if (this.authService.isAuthenticated()) {
+      <span class="user">
+      {{this.authService.getUser()?.firstName}}</span>
+    }
+    @if (!this.authService.isAuthenticated()) {
+      <button mat-icon-button
+        matTooltip="Show Login Form" routerLink="home">
+        <mat-icon>lock_open</mat-icon>
+      </button>
+    }
+    @if (this.authService.isAuthenticated()) {
+      <button mat-icon-button
+        matTooltip="Log out the current user">
+        <mat-icon>lock</mat-icon>
+      </button>
+    }
+    @if (this.authService.isAuthenticated()) {
+      <button mat-icon-button
+        matTooltip="Get Assistance">
+        <mat-icon>help</mat-icon>
+      </button>
+    }
+  </mat-toolbar>
+  <mat-sidenav-container class="app-sidenav-container">
+    <mat-sidenav #sidenav mode="side"
+      [opened]="authService.isAuthenticated()">
+      Menu
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+  <div class="statusbar">
+    <div class="metrics" >Go To Metrics</div>
+    <div class="message">
+      Message
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="notices">
+      <!--@if (this.msgService.showAlerts) {-->
+        <button mat-icon-button
+          matTooltip="Notifications Available"
+          routerLink="/notifications">
+          <mat-icon class="warning-icon">notification_important</mat-icon>
+        </button>
+      <!--}-->
+    </div>
+    <div class="version">
+      v{{appVersion()}}
+    </div>
+  </div>
+</div>
