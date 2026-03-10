@@ -6,8 +6,16 @@ const doc = {
     title: 'OsanScheduler Authentication API',
     description: 'OsanScheduler provides team/site scheduling information'
   },
-  host: `localhost:${process.env.PORT || 7010}`,
-  basePath: '/api/v1',
+  host: `localhost:${process.env.PORT || 7004}`,
+  basePath: '/api/authentication',
+  securityDefinitions: {
+    authorization: {
+      type: 'apiKey',
+      name: 'authorization',
+      in: 'header',
+      description: 'Authentication token'
+    }
+  },
   schemes: ['http'],
 };
 
