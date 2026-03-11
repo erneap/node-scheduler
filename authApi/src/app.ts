@@ -4,15 +4,18 @@ import cors from 'cors';
 import routes from './routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger-output.json';
-import { connectToDB } from 'scheduler-node-models/config';
+import { connectToDB, createPool } from 'scheduler-node-models/config';
 
 dotenv.config();
 connectToDB();
+createPool();
 
 const app = express();
 
+const origins = (process.env.CORS_ORIGIN as string).split(', ');
+
 app.use(cors({ 
-  origin: process.env.CORS_ORIGIN, 
+  origin: origins, 
   credentials: true,
   exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
 }));

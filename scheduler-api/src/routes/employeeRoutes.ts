@@ -7,6 +7,7 @@ import { IUser, User } from "scheduler-node-models/users";
 import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-node-models/general";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
+import { genSaltSync, hashSync } from "bcrypt-ts";
 
 const router = Router();
 
@@ -65,7 +66,13 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
           newUser.lastName = data.name.lastname;
           newUser.workgroups.push('scheduler-employee');
           
-          newUser.setPassword((data.user && data.user.password) ? data.user.password : '');
+          const salt = genSaltSync(12)
+          const hash = hashSync((data.user && data.user.password) 
+            ? data.user.password : '', salt);
+          newUser.password = hash;
+          newUser.passwordExpires = new Date();
+          newUser.badAttempts = 0;
+
           const result = await colUsers.insertOne(newUser);
           newUser.id = result.insertedId.toString();
           user = new User(newUser);
@@ -219,7 +226,11 @@ async function modifyUser(id: string, field: string, value: string,
       user.addAdditionalEmail(value);
       break;
     case "password":
-      user.setPassword(value);
+      const salt = genSaltSync(12)
+      const hash = hashSync(value, salt);
+      user.password = hash;
+      user.passwordExpires = new Date();
+      user.badAttempts = 0;
       break;
     case "unlock":
       user.badAttempts = 0;

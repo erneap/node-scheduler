@@ -8,6 +8,7 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { AuthService } from '../../services/auth-service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { IUser, User } from 'scheduler-node-models/users';
 
 @Component({
   selector: 'app-login',
@@ -46,13 +47,22 @@ export class Login {
       const passwd = this.loginForm.value.password;
       this.authService.login(email, passwd).subscribe({
         next: (res) => {
-
+          this.authService.statusMessage.set('User logged in');
+          const user = new User(res.body as IUser);
+          const now = new Date();
+          const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);
+          if (user.badAttempts < 0 || pwdAge > 180) {
+            // must change actions page
+            this.authService.statusMessage.set('User must change password');
+            this.authService.isAuthenticated.set(false);
+            this.router.navigate(['/mustchange']);
+          }
         },
         error: (err) => {
           console.log(err);
           if (err instanceof HttpErrorResponse) {
             if (err.status >= 400 && err.status < 500) {
-              this.authService.statusMessage.set(`${err.status}`)
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
             }
           }
         }

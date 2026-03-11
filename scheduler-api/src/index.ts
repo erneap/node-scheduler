@@ -1,12 +1,8 @@
-import 'dotenv/config';
 import app from './app';
-import { postMessage } from 'scheduler-node-models/config';
 
-(async() => {
+const PORT = process.env.PORT || 7006;
 
-  const now = new Date();
-  const PORT = process.env.PORT || 7006;
-  app.listen(PORT, () => {
-    postMessage('scheduler', `Server is running on port ${PORT}`);
-  });
-})();
+app.listen(PORT, () => {
+  console.log(`Server is running on: http://localhost:${PORT}`);
+  console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+});

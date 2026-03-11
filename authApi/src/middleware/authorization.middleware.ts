@@ -4,7 +4,6 @@ import { Request, Response, NextFunction } from 'express';
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   let aToken = req.headers['authorization'];
   const rToken = req.headers['refreshtoken'];
-  console.log(aToken);
   if (!aToken && !rToken) {
     return res.status(401).send('Access Denied.  No Token Provided.');
   }

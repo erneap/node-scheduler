@@ -5,7 +5,7 @@
 export interface ISecurityQuestion {
   id: number;
   question: string;
-  answer: string;
+  answer?: string;
 }
 
 /**
@@ -22,7 +22,7 @@ export class SecurityQuestion implements ISecurityQuestion {
   constructor(q?: ISecurityQuestion) {
     this.id = (q) ? q.id : 0;
     this.question = (q) ? q.question : '';
-    this.answer = (q) ? q.answer : '';
+    this.answer = (q && q.answer) ? q.answer : '';
   }
 
   /**

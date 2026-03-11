@@ -3,7 +3,8 @@
   "version": "4.0.0a",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 7010",
+    "start": "ng serve --port 7010 --configuration development",
+    "prod": "ng serve --port 7010 --configuration production",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -20,7 +21,7 @@
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
     "rxjs": "~7.8.0",
-    "scheduler-node-models": "^1.2.128",
+    "scheduler-node-models": "^1.2.131",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

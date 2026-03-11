@@ -1,0 +1,2420 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1.0.0",
+    "title": "OsanScheduler Scheduler API",
+    "description": "OsanScheduler provides team/site scheduling information"
+  },
+  "host": "localhost:7006",
+  "basePath": "/api/scheduler",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "authorization": {
+      "type": "apiKey",
+      "name": "authorization",
+      "in": "header",
+      "description": "Authentication token"
+    },
+    "refreshtoken": {
+      "type": "apiKey",
+      "name": "refreshtoken",
+      "in": "header",
+      "description": "Refresh token"
+    }
+  },
+  "paths": {
+    "/initial/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "user": {
+                  "example": "any"
+                },
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                },
+                "optional": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/{id}/{by}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "by",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/assignment": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "example": "any"
+                },
+                "employee": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "workcenter": {
+                  "example": "any"
+                },
+                "scheduledays": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "asgmt": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                },
+                "schedule": {
+                  "example": "any"
+                },
+                "workday": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/assignment/{id}/{asgmt}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "asgmt",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/variation": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "asgmt": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                },
+                "workday": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/variation/{id}/{vari}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vari",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/balance": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "year": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "year": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/balance/{id}/{year}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/specialty": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                },
+                "typeid": {
+                  "example": "any"
+                },
+                "contactid": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/specialties": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "action": {
+                  "example": "any"
+                },
+                "specialties": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/contact": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "contactid": {
+                  "example": "any"
+                },
+                "typeid": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/work/{id}/{year}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/ingest/{team}/{site}/{company}/{date}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "company",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/ingest": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamid": {
+                  "example": "any"
+                },
+                "siteid": {
+                  "example": "any"
+                },
+                "companyid": {
+                  "example": "any"
+                },
+                "date": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/site/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamid": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "utcoffset": {
+                  "example": "any"
+                },
+                "showMids": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/{team}/{site}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/forecast": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "company": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                },
+                "end": {
+                  "example": "any"
+                },
+                "sortFirst": {
+                  "example": "any"
+                },
+                "period": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "forecast": {
+                  "example": "any"
+                },
+                "chargeNumber": {
+                  "example": "any"
+                },
+                "extension": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/forecast/labor": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "forecast": {
+                  "example": "any"
+                },
+                "chargeNumber": {
+                  "example": "any"
+                },
+                "extension": {
+                  "example": "any"
+                },
+                "clin": {
+                  "example": "any"
+                },
+                "slin": {
+                  "example": "any"
+                },
+                "location": {
+                  "example": "any"
+                },
+                "wbs": {
+                  "example": "any"
+                },
+                "minimum": {
+                  "example": "any"
+                },
+                "vacantName": {
+                  "example": "any"
+                },
+                "hoursPerEmployee": {
+                  "example": "any"
+                },
+                "exercise": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                },
+                "end": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/forecast/{team}/{site}/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/forecast/labor/{team}/{site}/{start}/{end}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "start",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "end",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/workcenter": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamid": {
+                  "example": "any"
+                },
+                "siteid": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamid": {
+                  "example": "any"
+                },
+                "siteid": {
+                  "example": "any"
+                },
+                "workcenterid": {
+                  "example": "any"
+                },
+                "shiftPosid": {
+                  "example": "any"
+                },
+                "shiftPos": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/workcenter/{team}/{site}/{workcenter}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workcenter",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/cofs": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                },
+                "end": {
+                  "example": "any"
+                },
+                "shortname": {
+                  "example": "any"
+                },
+                "unit": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "reportid": {
+                  "example": "any"
+                },
+                "sectionid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/cofs/section": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "site": {
+                  "example": "any"
+                },
+                "reportid": {
+                  "example": "any"
+                },
+                "label": {
+                  "example": "any"
+                },
+                "company": {
+                  "example": "any"
+                },
+                "signature": {
+                  "example": "any"
+                },
+                "showunit": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/cofs/{team}/{site}/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "site",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/{team}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                },
+                "optid": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/workcode": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                },
+                "title": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                },
+                "shiftCode": {
+                  "example": "any"
+                },
+                "altcode": {
+                  "example": "any"
+                },
+                "search": {
+                  "example": "any"
+                },
+                "isLeave": {
+                  "example": "any"
+                },
+                "textcolor": {
+                  "example": "any"
+                },
+                "backcolor": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "optid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/workcode/{team}/{wcid}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "wcid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/leave": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "leavedate": {
+                  "example": "any"
+                },
+                "employee": {
+                  "example": "any"
+                },
+                "code": {
+                  "example": "any"
+                },
+                "status": {
+                  "example": "any"
+                },
+                "hours": {
+                  "example": "any"
+                },
+                "holcode": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "leaveid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "employee/leave/{id}/{leave}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "leave",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "id": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "ingest": {
+                  "example": "any"
+                },
+                "ingestPeriod": {
+                  "example": "any"
+                },
+                "startDay": {
+                  "example": "any"
+                },
+                "ingestPwd": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "companyid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company/{team}/{company}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "company",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company/holiday": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "company": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "holidayType": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "companyid": {
+                  "example": "any"
+                },
+                "optid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company/holiday/{team}/{company}/{holid}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "company",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "holid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company/mod": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "companyid": {
+                  "example": "any"
+                },
+                "year": {
+                  "example": "any"
+                },
+                "start": {
+                  "example": "any"
+                },
+                "end": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "team": {
+                  "example": "any"
+                },
+                "companyid": {
+                  "example": "any"
+                },
+                "optid": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/team/company/mod/{team}/{company}/{year}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "company",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "authorization": [],
+            "refreshtoken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}

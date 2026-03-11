@@ -31,6 +31,7 @@ export interface AddUserRequest {
 export interface UpdateUserRequest {
   id: string;
   field: string;
+  subfield?: string;
   value: string;
   subid?: number;
 }

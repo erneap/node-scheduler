@@ -42,6 +42,7 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
     } else {
       throw new Error('No Userid provided')
     }
+    
     res.status(200).json(initial);
   } catch (err) {
     const error = err as Error;
@@ -73,7 +74,7 @@ export async function getAllDatabaseInfo(teamid: string, siteid: string,
   try {
     if (teamid && teamid !== '' && siteid && siteid !== '') {
       const team = await getTeam(teamid, siteid);
-      const site = new Site(team.sites.find(s => s.id.toLowerCase() === siteid.toLowerCase()))
+      const site = new Site(team.sites.find(s => s.id.toLowerCase() === siteid.toLowerCase()));
       const employees = await getEmployees(teamid, siteid, start, end);
       site.employees = employees;
       const employeeWorkPromises = 

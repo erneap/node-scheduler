@@ -3,10 +3,10 @@ import swaggerAutogen from "swagger-autogen";
 const doc = {
   info: {
     version: 'v1.0.0',
-    title: 'OsanScheduler Authentication API',
+    title: 'OsanScheduler Scheduler API',
     description: 'OsanScheduler provides team/site scheduling information'
   },
-  host: `localhost:${process.env.PORT || 7004}`,
+  host: `localhost:${process.env.PORT || 7006}`,
   basePath: '/api/authentication',
   securityDefinitions: {
     authorization: {
@@ -26,6 +26,6 @@ const doc = {
 };
 
 const outputFile = './swagger-output.json';
-const endpointsFiles = ['src/routes/index.ts'];
+const endpointsFiles = ['src/routes/index.routes.ts'];
 
 swaggerAutogen()(outputFile, endpointsFiles, doc);
