@@ -1524,6 +1524,11 @@ export class Employee implements IEmployee {
               req.status = 'DRAFT';
               req.approvalDate = new Date(0);
               req.approvedby = '';
+              answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                + `(${req.startdate.toLocaleDateString('en-US')}-`
+                + `${req.enddate.toLocaleDateString('en-US')}) start date was changed to `
+                + `before original date.  This converted the leave request back to draft `
+                + `for resubmittal.`;
             } else {
               if (req.status.toLowerCase() === 'approved') {
                 // remove approved leaves from before the new date that have the 
@@ -1546,6 +1551,11 @@ export class Employee implements IEmployee {
                   this.leaves.splice(startpos, count);
                 }
               }
+              answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                + `(${req.startdate.toLocaleDateString('en-US')}-`
+                + `${req.enddate.toLocaleDateString('en-US')}) start date was changed `
+                + `within the original dates.  Approved Leave days were updated in the database `
+                + 'as approved.';
             }
             req.startdate = new Date(date);
             req.setLeaveDays(this);
@@ -1589,6 +1599,11 @@ export class Employee implements IEmployee {
               req.status = 'DRAFT';
               req.approvalDate = new Date(0);
               req.approvedby = '';
+              answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                + `(${req.startdate.toLocaleDateString('en-US')}-`
+                + `${req.enddate.toLocaleDateString('en-US')}) ending date was changed to `
+                + `after original date.  This converted the leave request back to draft `
+                + `for resubmittal.`;
             } else {
               if (req.status.toLowerCase() === 'approved') {
                 // remove approved leaves from before the new date that have the 
@@ -1610,6 +1625,11 @@ export class Employee implements IEmployee {
                 if (startpos >= 0 && count > 0) {
                   this.leaves.splice(startpos, count);
                 }
+                answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                  + `(${req.startdate.toLocaleDateString('en-US')}-`
+                  + `${req.enddate.toLocaleDateString('en-US')}) start date was changed `
+                  + `within the original dates.  Approved leave dates were updated in the`
+                  + 'database as approved';
               }
             }
             req.enddate = new Date(date);
@@ -1660,6 +1680,11 @@ export class Employee implements IEmployee {
               req.status = 'DRAFT';
               req.approvalDate = new Date(0);
               req.approvedby = '';
+              answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                + `(${req.startdate.toLocaleDateString('en-US')}-`
+                + `${req.enddate.toLocaleDateString('en-US')}) start date was changed to `
+                + `outside the original dates.  This converted the leave request back to draft `
+                + `for resubmittal.`;
             } else {
               if (req.status.toLowerCase() === 'approved') {
                 // remove approved leaves from before the new date that have the 
@@ -1694,6 +1719,11 @@ export class Employee implements IEmployee {
                 if (endpos >= 0 && endcount > 0) {
                   this.leaves.splice(endpos, endcount);
                 }
+                answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+                  + `(${req.startdate.toLocaleDateString('en-US')}-`
+                  + `${req.enddate.toLocaleDateString('en-US')}) both dates were changed to `
+                  + `within the original dates.  All approved leave dates were updated in `
+                  + 'the database.';
               }
             }
             req.startdate = new Date(newstart);
@@ -1748,6 +1778,10 @@ export class Employee implements IEmployee {
               comment: value
             }));
             req.comments.sort((a,b) => a.compareTo(b));
+          
+            answer.message = `Leave Request: ${this.name.getFirstLast()} leave request `
+              + `(${req.startdate.toLocaleDateString('en-US')}-`
+              + `${req.enddate.toLocaleDateString('en-US')}) was declined by approver.`;
             break;
           case 'day':
           case 'requestday':

@@ -19,3 +19,7 @@ scheduler-api/.env
 /authApi/node_modules
 /authApi/dist
 /authApi/.env
+
+/convertData/node_modules
+/convertData/dist
+/convertData/.env

@@ -69,7 +69,7 @@ router.put('/employee/request', auth, async(req: Request, res: Response) => {
     if (data) {
       const employee = await getEmployee(data.id);
       if (data.optional) {
-        employee.updateLeaveRequest(data.optional, data.field, data.value);
+        const ans = employee.updateLeaveRequest(data.optional, data.field, data.value);
         await updateEmployee(employee);
         res.status(200).json(employee);
       } else {
