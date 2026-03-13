@@ -77,7 +77,7 @@ export class ExcelRowIngest {
                 const rowPromises = monthDates.map(async(day,d) => {
                   const erow = await this.readCell(row, d+3, day, emp);
                   if (erow !== null) {
-                    result.rows.push(new ExcelRow(erow));
+                    result.addRow(erow);
                   }
                 });
                 await Promise.allSettled(rowPromises);
@@ -91,7 +91,6 @@ export class ExcelRowIngest {
     } else {
       throw new Error('No worksheet');
     }
-    result.rows.sort((a,b) => a.compareTo(b));
     return result;
   }
 

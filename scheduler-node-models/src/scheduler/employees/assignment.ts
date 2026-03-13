@@ -127,6 +127,9 @@ export class Assignment {
           }
         }
       });
+    } else if (date2) {
+      answer = (date.getTime() <= this.endDate.getTime()
+        && date2.getTime() >= this.startDate.getTime())
     } else {
       answer = (this.startDate.getTime() <= date.getTime()
         && this.endDate.getTime() >= date.getTime());

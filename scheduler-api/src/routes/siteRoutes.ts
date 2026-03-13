@@ -7,6 +7,7 @@ import { Site } from "scheduler-node-models/scheduler/sites";
 import { ObjectId } from "mongodb";
 import { Employee } from "scheduler-node-models/scheduler/employees";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { BuildInitial } from "scheduler-node-models/services";
 
 const router = Router();
 export default router;
@@ -20,10 +21,8 @@ router.get('/site/:id', auth, async(req: Request, res: Response) => {
   try {
     const userid = req.params.id as string;
     if (userid) {
-      const now = new Date();
-      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-      const employee = await getEmployee(userid);
-      const initial = await getAllDatabaseInfo(employee.team, employee.site, begin, now);
+      const build = new BuildInitial(userid);
+      const initial = await build.build();
       if (initial.site) {
         res.status(200).json(initial.site)
       } else {
@@ -120,12 +119,14 @@ router.put('/site', auth, async(req: Request, res: Response) => {
         }
 
         // update the team, then update the team in the database
-        initial.team.sites.forEach((s, pos) => {
-          if (s.id === initial.site.id) {
-            initial.team.sites[pos] = site;
-          }
-        });
-        if (collections.teams) {
+        if (initial.team && initial.team.sites) {
+          initial.team.sites.forEach((s, pos) => {
+            if (initial.team && initial.site && s.id === initial.site.id) {
+              initial.team.sites[pos] = site;
+            }
+          });
+        }
+        if (collections.teams && initial.team) {
           const teamQuery = { _id: new ObjectId(initial.team.id)};
           const result = await collections.teams.replaceOne(teamQuery, initial.team);
           if (result.matchedCount <= 0) {

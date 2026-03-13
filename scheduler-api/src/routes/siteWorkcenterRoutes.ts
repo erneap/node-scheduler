@@ -65,7 +65,8 @@ router.post('/site/workcenter', auth, async(req: Request, res: Response) => {
       const site = new Site(initial.site);
       site.employees = [];
       initial.team.sites.forEach((s, pos) => {
-        if (s.id.toLowerCase() === initial.site.id.toLowerCase()) {
+        if (initial.team && initial.site 
+          && s.id.toLowerCase() === initial.site.id.toLowerCase()) {
           initial.team.sites[pos] = site;
         }
       });

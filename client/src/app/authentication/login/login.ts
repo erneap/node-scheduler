@@ -8,7 +8,14 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { AuthService } from '../../services/auth-service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { IUser, User } from 'scheduler-node-models/users';
+import { IUser, SecurityQuestion, User } from 'scheduler-node-models/users';
+import { EmployeeService } from '../../services/employee-service';
+import { SiteService } from '../../services/site-service';
+import { TeamService } from '../../services/team-service';
+import { InitialResponse } from 'scheduler-node-models/scheduler/web';
+import { Employee } from 'scheduler-node-models/scheduler/employees';
+import { Site } from 'scheduler-node-models/scheduler/sites';
+import { Team } from 'scheduler-node-models/scheduler/teams';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +35,9 @@ export class Login {
 
   constructor(
     public authService: AuthService,
+    public employeeService: EmployeeService,
+    public siteService: SiteService,
+    public teamService: TeamService,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -49,13 +59,15 @@ export class Login {
         next: (res) => {
           this.authService.statusMessage.set('User logged in');
           const user = new User(res.body as IUser);
-          const now = new Date();
-          const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);
-          if (user.badAttempts < 0 || pwdAge > 180) {
-            // must change actions page
-            this.authService.statusMessage.set('User must change password');
-            this.authService.isAuthenticated.set(false);
-            this.router.navigate(['/mustchange']);
+          let permission = false;
+          user.permissions.forEach(perm => {
+            if (perm.application.toLowerCase() === 'scheduler') {
+              permission = true;
+            }
+          });
+          if (permission) {
+          } else {
+            this.authService.statusMessage.set('No Permission for Application');
           }
         },
         error: (err) => {
@@ -68,5 +80,52 @@ export class Login {
         }
       })
     }
+  }
+
+  authorized() {
+    const user = this.authService.getUser();
+    this.employeeService.getInitial(user.id).subscribe({
+      next: (res) => {
+        const initial = (res.body as InitialResponse);
+        if (initial) {
+          if (initial.employee) {
+            this.employeeService.employee.set(new Employee(initial.employee));
+          }
+          if (initial.site) {
+            this.siteService.site.set(new Site(initial.site));
+          }
+          if (initial.team) {
+            this.teamService.team.set(new Team(initial.team));
+          }
+          if (initial.questions) {
+            this.teamService.questions = [];
+            initial.questions.forEach(quest => {
+              this.teamService.questions.push(new SecurityQuestion(quest));
+            });
+            this.teamService.questions.sort((a,b) => a.compareTo(b));
+          }
+          const now = new Date();
+          const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);
+          if (user.badAttempts < 0 || pwdAge > 180) {
+            // must change actions page
+            this.authService.statusMessage.set('User must change password');
+            this.authService.isAuthenticated.set(false);
+            this.router.navigate(['/mustchange']);
+          } else {
+            
+          }
+        } else {
+          this.authService.statusMessage.set('No initial data provided');
+        }
+      },
+      error: (err) => {
+        console.log(err);
+        if (err instanceof HttpErrorResponse) {
+          if (err.status >= 400 && err.status < 500) {
+            this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+          }
+        }
+      }
+    })
   }
 }

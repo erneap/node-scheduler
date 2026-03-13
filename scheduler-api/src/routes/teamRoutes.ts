@@ -4,6 +4,7 @@ import { collections, postLogEntry } from "scheduler-node-models/config";
 import { ObjectId } from "mongodb";
 import { Contact, ITeam, NewTeam, Specialty, Team, UpdateTeam } 
   from "scheduler-node-models/scheduler/teams";
+import { BuildInitial } from "scheduler-node-models/services";
 
 const router = Router();
 export default router;
@@ -19,15 +20,27 @@ export default router;
 router.get('/team/:team', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
+    const userid = (req as any).user;
     if (collections.teams) {
       if (teamid && teamid !== '') {
-        const query = { _id: new ObjectId(teamid) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
+        let found = false;
+        if (userid && userid !== '') {
+          const build = new BuildInitial(userid);
+          const initial = await build.build();
+          if (initial.team && initial.team.id && initial.team.id === teamid) {
+            found = true;
+            res.status(200).json(initial.team);
+          }
+        }
+        if (!found) {
+          const query = { _id: new ObjectId(teamid) };
+          const iTeam = await collections.teams.findOne<ITeam>(query);
+          if (iTeam) {
+            const team = new Team(iTeam);
+            res.status(200).json(team);
+          } else {
+            throw new Error('Team not found');
+          }
         }
       } else {
         throw new Error('Team id not provided.')

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { collections, postLogEntry } from "scheduler-node-models/config";
+import { collections, mdbConnection, postLogEntry } from "scheduler-node-models/config";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
@@ -8,8 +8,11 @@ import { logConnection } from "scheduler-node-models/config";
 import multer from 'multer';
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { getAllDatabaseInfo } from "./initialRoutes";
-import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } from 'scheduler-node-models/scheduler/ingest'
-import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } 
+  from 'scheduler-node-models/scheduler/ingest'
+import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } 
+  from "scheduler-node-models/scheduler/employees";
+import { PoolConnection } from "mariadb/*";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -73,6 +76,7 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
 });
 
 router.post('/ingest', upload.array('files'), async(req: Request, res: Response) => {
+  let conn: PoolConnection | undefined;
   try {
     // ensure the upload file is present
     const files = req.files as Express.Multer.File[];
@@ -106,7 +110,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     const start = new Date(Date.UTC(now.getUTCFullYear() - 1, 0, 1));
     const end = new Date(Date.UTC(now.getUTCFullYear(), 11, 31));
     const initial = await getAllDatabaseInfo(teamid, siteid, start, end);
-    if (initial.team.companies) {
+    if (initial.team && initial.team.companies) {
       initial.team.companies.forEach(co => {
         if (co.id.toLowerCase() === companyid.toLowerCase()) {
           ingestMethod = co.ingest;
@@ -153,72 +157,44 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
           employeeWork.push(new WorkRecord(iWR));
         });
       }
-      results.forEach(period => {
-        let employee = new Employee();
-        let empID = -1;
-        let work1 = new WorkRecord();
-        let work1ID = -1;
-        let work2: WorkRecord | undefined = undefined;
-        let work2ID = -1;
-        period.rows.forEach(row => {
-          if (employee.companyinfo.employeeid !== row.employee 
-            && employee.companyinfo.alternateid !== row.employee) {
-            if (empID >= 0) {
-              employees[empID] = employee
+      const updatePromises = results.map(async(period) => {
+        const employeePromises = period.employees.map(async(eEmp) => {
+          const ePromises = employees.map(async(emp, e) => {
+            if (emp.id === eEmp.employeeID) {
+              // remove leaves for employee for period.
+              emp.removeLeaves(period.start, period.end);
+
+              // remove work records for the employee for a period from sql database
+              let sql = "DELETE FROM employeeWork WHERE employeeID = ? AND dateworked "
+                + " >= ? and dateworked <= ?;";
+              const perVals = [ eEmp.employeeID, period.start, period.end ];
+              await conn?.query(sql, perVals)
+
+              // now add the rows (leaves and work) to either the employee record or to the
+              // sql database
+              const rowPromises = eEmp.rows.map(async(row) => {
+                if (row.code !== '') {
+                  // code field of the row indicates whether or not this is a leave type.
+                  // If not empty, we assume it is work.  At this point all leaves are 
+                  // recorded as actual
+                  emp.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', 
+                    row.holidayID);
+                } else {
+                  sql = "INSERT INTO employeeWork (employeeID, dateworked, chargenumber, "
+                    + "extension, paycode, modtime, hours) VALUES (?, ?, ?, ?, ?, ?, ?);";
+                  const wkVals = [eEmp.employeeID, row.date, row.chargeNumber, 
+                    row.extension, row.premium, row.modified, row.hours];
+                  await conn?.query(sql, wkVals);
+                }
+              });
+              await Promise.allSettled(rowPromises);
+              employees[e] = emp;
             }
-            if (work1ID >= 0) {
-              employeeWork[work1ID] = work1;
-            }
-            if (work2ID >= 0 && work2) {
-              employeeWork[work2ID] = work2;
-            }
-            employees.forEach((emp, e) => {
-              if (emp.companyinfo.employeeid.toLowerCase() === row.employee.toLowerCase()
-                || emp.companyinfo.alternateid?.toLowerCase() === row.employee.toLowerCase()) {
-                employee = emp;
-                emp.removeLeaves(period.start, period.end);
-                empID = e;
-              }
-            });
-            work2 = undefined;
-            work2ID = -1;
-            employeeWork.forEach((wr, w) => {
-              if (wr.empID === employee.id && wr.year === period.start.getUTCFullYear()) {
-                work1ID = w;
-                work1 = wr;
-                work1.removeWork(period.start, period.end);
-              }
-              if (period.start.getUTCFullYear() !== period.end.getUTCFullYear()
-                && wr.empID === employee.id && wr.year === period.end.getUTCFullYear()) {
-                work2ID = w;
-                work2 = wr;
-                work2.removeWork(period.start, period.end);
-              }
-            });
-          }
-          if (row.code !== '') {
-            // code field of the row indicates whether or not this is a leave type.  If 
-            // not empty, we assume it is work.  At this point all leaves are recorded as
-            // actual
-            employee.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', row.holidayID);
-          } else {
-            const work = new Work({
-              dateworked: new Date(row.date),
-              chargenumber: row.chargeNumber,
-              extension: row.extension,
-              paycode: Number(row.premium),
-              hours: row.hours
-            });
-            if (work1.year === row.date.getUTCFullYear()) {
-              work1.work.push(work);
-              work1.work.sort((a,b) => a.compareTo(b));
-            } else if (work2 && work2.year === row.date.getUTCFullYear()) {
-              work2.work.push(work);
-              work2.work.sort((a,b) => a.compareTo(b));
-            }
-          }
-        });
+          });
+          await Promise.allSettled(ePromises);
+        });        
       });
+      await Promise.allSettled(updatePromises);
 
       // after going through all the results, write each employee and employee work record
       // to the database.
@@ -228,14 +204,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
           await collections.employees.replaceOne(query, emp);
         }
       });
-
-      const workWritePromises = employeeWork.map(async(wr) => {
-        const query = {_id: new ObjectId(wr.id)};
-        if (collections.work) {
-          await collections.work.replaceOne(query, wr);
-        }
-      });
-      await Promise.allSettled([employeeWritePromises, workWritePromises]);
+      await Promise.allSettled(employeeWritePromises);
     }
   } catch (err) {
     const error = err as Error;

@@ -8,6 +8,7 @@ import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-node-models/general";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
 import { genSaltSync, hashSync } from "bcrypt-ts";
+import { BuildInitial } from "scheduler-node-models/services";
 
 const router = Router();
 
@@ -18,12 +19,15 @@ router.get('/employee/:id', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id as string;
     if (empID) {
-      const emp = await getEmployee(empID);
-      res.status(200).json(emp);
-    } else {
-      if (logConnection.employeeLog) {
-        logConnection.employeeLog.log(`Error: GetEmployee: No employee identifier`);
+      const build = new BuildInitial(empID);
+      const initial = await build.build();
+      if (initial.employee) {
+        res.status(200).json(initial.employee);
+      } else {
+        throw new Error('Employee not found');
       }
+    } else {
+      throw new Error('Employee ID not provided')
     }
   } catch (err) {
     const error = err as Error;

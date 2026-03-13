@@ -25,8 +25,8 @@ export class Company implements ICompany {
   public id: string;
   public name: string;
   public ingest: string;
-  public ingestPeriod?: number | undefined;
-  public startDay?: number | undefined;
+  public ingestPeriod: number;
+  public startDay: number;
   public ingestPwd: string;
   public holidays: Holiday[];
   public modperiods: ModPeriod[];

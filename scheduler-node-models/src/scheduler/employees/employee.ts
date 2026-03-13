@@ -281,6 +281,16 @@ export class Employee implements IEmployee {
     return result;
   }
 
+  isActiveBetween(start: Date, end: Date): boolean {
+    let result = false;
+    this.assignments.forEach(a => {
+      if (a.useAssignment(start, end)) {
+        result = true;
+      }
+    });
+    return result;
+  }
+
   /**
    * This function is used to determine if the employee is active during a particular
    * period of time at a site and workcenter.

@@ -78,6 +78,46 @@ export class ExcelRow implements IExcelRow {
 }
 
 /**
+ * This interface will contain all the rows of information for an employee for 
+ * the period of time.
+ */
+export interface IExcelRowEmployee {
+  employeeID: string;
+  rows: IExcelRow[];
+}
+
+/**
+ * This class implements the IExcelRowEmployee for employees reported on a single
+ * SAP Ingest spreadsheet or a Manual Excel spreadsheet,
+ */
+export class ExcelRowEmployee implements IExcelRowEmployee {
+  public employeeID: string;
+  public rows: ExcelRow[];
+
+  constructor(emp?: IExcelRowEmployee) {
+    this.employeeID = (emp) ? this.employeeID : '';
+    this.rows = [];
+    if (emp) {
+      this.rows.forEach(row => {
+        this.rows.push(new ExcelRow(row));
+      });
+      this.rows.sort((a,b) => a.compareTo(b));
+    }
+  }
+
+  compareTo(other?: ExcelRowEmployee): number {
+    if (other) {
+      return (this.employeeID < other.employeeID) ? -1 : 1;
+    }
+    return -1;
+  }
+
+  addRow(row: ExcelRow) {
+    this.rows.push(new ExcelRow(row));
+  }
+}
+
+/**
  * This interface will contain the rows of information for employees reported on a single
  * SAP Ingest spreadsheet or a Manual Excel spreadsheet, plus the start and ending dates
  * for the spreadsheet, which equates to the first date reported on the sheet and the last.
@@ -85,7 +125,7 @@ export class ExcelRow implements IExcelRow {
 export interface IExcelRowPeriod {
   start: Date;
   end: Date;
-  rows: IExcelRow[];
+  employees: IExcelRowEmployee[];
 }
 
 /**
@@ -95,17 +135,34 @@ export interface IExcelRowPeriod {
 export class ExcelRowPeriod implements IExcelRowPeriod {
   public start: Date;
   public end: Date;
-  public rows: ExcelRow[];
+  public employees: ExcelRowEmployee[];
 
   constructor(period?: IExcelRowPeriod) {
     this.start = (period) ? new Date(period.start) : new Date(Date.UTC(9999, 11, 30));
     this.end = (period) ? new Date(period.end) : new Date(0);
-    this.rows = [];
-    if (period && period.rows.length > 0) {
-      period.rows.forEach(row => {
-        this.rows.push(new ExcelRow(row));
+    this.employees = [];
+    if (period) {
+      period.employees.forEach(emp => {
+        this.employees.push(new ExcelRowEmployee(emp));
       });
-      this.rows.sort((a,b) => a.compareTo(b));
+    }
+  }
+
+  addRow(row: ExcelRow) {
+    let found = false;
+    this.employees.forEach((emp, e) => {
+      if (emp.employeeID === row.employee) {
+        found = true;
+        emp.addRow(row);
+        emp.rows.sort((a,b) => a.compareTo(b));
+        this.employees[e] = emp;
+      }
+    });
+    if (!found) {
+      const newEmp = new ExcelRowEmployee();
+      newEmp.employeeID = row.employee;
+      newEmp.addRow(row);
+      this.employees.sort((a,b) => a.compareTo(b));
     }
   }
 }

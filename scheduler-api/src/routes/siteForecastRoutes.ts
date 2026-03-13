@@ -374,16 +374,18 @@ router.delete('/site/forecast/:team/:site/:id', auth, async(req: Request, res: R
         site.forecasts.splice(found, 1);
       }
       found = -1;
-      initial.team.sites.forEach((tsite, s) => {
-        if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
-          found = s;
-        }
-      });
-      if (found >= 0) {
-        initial.team.sites[found] = site;
-        const query = { _id: new ObjectId(initial.team.id)};
-        if (collections.teams) {
-          await collections.teams.replaceOne(query, initial.team);
+      if (initial.team) {
+        initial.team.sites.forEach((tsite, s) => {
+          if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
+            found = s;
+          }
+        });
+        if (found >= 0) {
+          initial.team.sites[found] = site;
+          const query = { _id: new ObjectId(initial.team.id)};
+          if (collections.teams) {
+            await collections.teams.replaceOne(query, initial.team);
+          }
         }
       }
       res.status(200).json(site);

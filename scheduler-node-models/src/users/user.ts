@@ -112,7 +112,13 @@ export class User implements IUser {
     }
     if (this.permissions.length === 0 && this.workgroups.length > 0) {
       this.workgroups.forEach(wg => {
-        const parts = wg.split('-')
+        const parts = wg.split('-');
+        if (parts.length >= 2) {
+          this.permissions.push(new Permission({
+            application: parts[0],
+            job: parts[1]
+          }));
+        }
       })
     }
   }

@@ -126,11 +126,10 @@ export class SAPIngest {
             if (eRow.date.getTime() > result.end.getTime()) {
               result.end = new Date(eRow.date);
             }
-            result.rows.push(eRow)
+            result.addRow(eRow);
           }
         });
       }
-      result.rows.sort((a,b) => a.compareTo(b));
     }
 
     return result;

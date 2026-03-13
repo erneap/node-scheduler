@@ -1,6 +1,6 @@
 {
   "name": "scheduler-node-models",
-  "version": "1.2.132",
+  "version": "1.2.144",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -28,7 +28,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "mariadb": "^3.4.5",
-    "mongodb": "^6.18.0",
+    "mongodb": "^7.1.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5"
   }

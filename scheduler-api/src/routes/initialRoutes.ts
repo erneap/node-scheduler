@@ -7,6 +7,7 @@ import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-no
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { IUser, User } from "scheduler-node-models/users";
+import { BuildInitial } from "scheduler-node-models/services";
 import { auth } from '../middleware/authorization.middleware';
 
 const router = Router();
@@ -22,7 +23,6 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
       employee: new Employee(),
       site: new Site(),
       team: new Team(),
-      exception: ''
     };
     const userid = req.params.id as string;
 
@@ -31,14 +31,8 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
     // get the employee's site.  After this we will get the employees for the site and
     // then get work for each employee in the site's list, one at a time.
     if (userid) {
-      const now = new Date();
-      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-      const employee = await getEmployee(userid);
-      const iData: InitialResponse = await getAllDatabaseInfo(employee.team, 
-        employee.site, begin, now);
-      initial.employee = employee;
-      initial.site = iData.site;
-      initial.team = iData.team;
+      const build = new BuildInitial(userid);
+      initial = await build.build();
     } else {
       throw new Error('No Userid provided')
     }
@@ -68,8 +62,7 @@ export async function getAllDatabaseInfo(teamid: string, siteid: string,
   let answer: InitialResponse = {
     employee: new Employee(),
     site: new Site(),
-    team: new Team(),
-    exception: ''
+    team: new Team()
   }
   try {
     if (teamid && teamid !== '' && siteid && siteid !== '') {
