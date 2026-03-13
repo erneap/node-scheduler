@@ -23,3 +23,4 @@ scheduler-api/.env
 /convertData/node_modules
 /convertData/dist
 /convertData/.env
+~$Flow.pptx
