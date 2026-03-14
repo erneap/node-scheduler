@@ -1,8 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { NewLeaveRequest, UpdateLeave } from "scheduler-node-models/scheduler/employees";
+import { NewLeaveRequest, UpdateLeave } from "scheduler-models/scheduler/employees";
 import { getEmployee, updateEmployee } from "./initialRoutes";
-import { postLogEntry } from "../services/logging";
+import { postLogEntry } from "scheduler-services";
 
 const router = Router();
 

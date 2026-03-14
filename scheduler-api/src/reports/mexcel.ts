@@ -1,10 +1,10 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { Formula, Report } from "scheduler-node-models/general";
-import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
-import { User } from "scheduler-node-models/users";
-import { collections } from "scheduler-node-models/config";
+import { Formula, Report } from "scheduler-models/general";
+import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { User } from "scheduler-models/users";
+import { collections } from "scheduler-models/config";
 import { ObjectId } from "mongodb";
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
 
 export class ManualExcelReport extends Report {
   private fonts: Map<string, Partial<Font>>;

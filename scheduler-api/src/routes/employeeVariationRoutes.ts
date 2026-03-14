@@ -1,12 +1,12 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import {  ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment } 
-  from "scheduler-node-models/scheduler/employees";
+  from "scheduler-models/scheduler/employees";
 import { ObjectId } from "mongodb";
-import { IUser, User } from "scheduler-node-models/users";
+import { IUser, User } from "scheduler-models/users";
 import { getDateFromString } from "./employeeAssignmentRoutes";
 import { getEmployee, updateEmployee } from "./initialRoutes";
-import { postLogEntry } from "../services/logging";
+import { postLogEntry } from "scheduler-services";
 
 const router = Router();
 

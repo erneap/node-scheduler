@@ -2,9 +2,9 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { getEmployee, getTeam, updateEmployee } from "./initialRoutes";
 import { EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, EmployeeWorkResponse, 
-  IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+  IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
 import { ObjectId } from "mongodb";
-import { postLogEntry } from "../services/logging";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -145,27 +145,7 @@ router.get('/employee/work/:id/:year', auth, async(req: Request, res: Response) 
     const sYear = req.params.year as string;
     if (empID && sYear) {
       const year = Number(sYear);
-      if (collections.work) {
-        const query = { employeeID: new ObjectId(empID), year: year }
-        const iWorkRecord = await collections.work.findOne<IWorkRecord>(query);
-        if (iWorkRecord && iWorkRecord !== null) {
-          const wRecord = new WorkRecord(iWorkRecord);
-          const result: EmployeeWorkResponse = {
-            employee: empID,
-            year: year,
-            work: []
-          };
-          wRecord.work.forEach(wk => {
-            result.work.push(new Work(wk));
-          });
-          wRecord.work.sort((a,b) => a.compareTo(b));
-          res.status(200).json(result);
-        } else {
-          throw new Error('No work available for employee and year');
-        }
-      } else {
-        throw new Error('Work database collection missing');
-      }
+      const employeeService = new EmployeeService()
     } else {
       throw new Error('Employee ID and/or year missing');
     }

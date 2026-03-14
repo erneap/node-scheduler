@@ -5,8 +5,7 @@ import { notFound, errorHandler } from "./middleware/index.middleware";
 import indexRoutes from './routes/index.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger-output.json';
-import { connectToDB } from './services/mongoconnect';
-import { createPool } from './services/sqldb';
+import { connectToDB, createPool } from 'scheduler-services';
 
 
 dotenv.config();

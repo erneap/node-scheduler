@@ -1,4 +1,4 @@
-import { Employee, IEmployee, Work } from "scheduler-models/scheduler/employees";
+import { Employee, IEmployee, IWork, Work } from "scheduler-models/scheduler/employees";
 import { collections } from "./mongoconnect";
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-models/users";
@@ -178,6 +178,64 @@ export class EmployeeService {
       }
     } else {
       throw new Error('No employee collection');
+    }
+  }
+
+  /**
+   * This method is used to pull an employee's work records for a period of 
+   * time.
+   * @param empID The string value for the employee identifier.
+   * @param start The date value for the first day of the query.
+   * @param end The date value for the last day of the query.
+   * @returns A list of work records for the employee.
+   */
+  async getWork(empID: string, start: Date, end: Date): Promise<Work[]> {
+    const answer: Work[] = [];
+    if (mdbConnection.pool) {
+      let conn: PoolConnection | undefined;
+      try {
+        conn = await mdbConnection.pool.getConnection();
+        const sql = 'SELECT * FROM employeeWork WHERE employeeID=? AND '
+          + 'dateworked >= ? AND dateworked <= ? ORDER BY dateworked, '
+          + 'chargenumber, extension, paycode;';
+        const wkVals = [ empID, start, end ];
+        const results = await conn.query(sql, wkVals);
+        results.forEach((row: any) => {
+          answer.push(new Work({
+            dateworked: new Date(row.dateworked),
+            chargenumber: row.chargenumber,
+            extension: row.extension,
+            paycode: row.paycode,
+            modtime: (row.modtime === '1' || row.modtime === 1),
+            hours: Number(row.hours)
+          }));
+        });
+        answer.sort((a,b) => a.compareTo(b));
+      } catch (err) {
+        throw err;
+      } finally {
+        if (conn) conn.release();
+      }
+    } else {
+      throw new Error('No sql connection pool')
+    }
+    return answer;
+  }
+
+  async insertWork(empID: string, worklist: IWork[]): Promise<void> {
+    let conn: PoolConnection | undefined;
+    try {
+      if (mdbConnection.pool) {
+        conn = await mdbConnection.pool.getConnection();
+        const workPromises = worklist.map(async(work) => {
+
+        });
+        await Promise.allSettled(workPromises);
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      if (conn) conn.release();
     }
   }
 }

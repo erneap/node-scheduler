@@ -1,15 +1,13 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
-import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
-import { IUser, User } from "scheduler-node-models/users";
+import { Employee, IEmployee } from "scheduler-models/scheduler/employees";
+import { IUser, User } from "scheduler-models/users";
 import { ObjectId } from "mongodb";
-import { UpdateRequest } from "scheduler-node-models/general";
-import { SecurityQuestion } from "scheduler-node-models/users/question";
+import { UpdateRequest } from "scheduler-models/general";
+import { SecurityQuestion } from "scheduler-models/users/question";
 import { genSaltSync, hashSync } from "bcrypt-ts";
-import { BuildInitial } from "../services/buildInitial";
-import { logConnection, postLogEntry } from "../services/logging";
-import { collections } from "../services/mongoconnect";
+import { BuildInitial, collections, logConnection, postLogEntry } from "scheduler-services";
 
 const router = Router();
 

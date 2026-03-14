@@ -74,6 +74,16 @@ export class EmployeeScheduleMonth {
           wd.id = wd.id % 7;
         }
         wd.date = new Date(start);
+        if (wd.code.toLowerCase() === 'v') {
+          emp.leaves.forEach(lv => {
+            if (start.getUTCFullYear() === lv.leavedate.getUTCFullYear()
+              && start.getUTCMonth() === lv.leavedate.getUTCMonth()
+              && start.getUTCDate() === lv.leavedate.getUTCDate()
+              && lv.code.toLowerCase() === 'v') {
+              wd.workcenter = (lv.tagday) ? lv.tagday : '';
+            }
+          });
+        }
         workweek.setWorkday(wd, start);
         start = new Date(start.getTime() + (24 * 3600000));
       }

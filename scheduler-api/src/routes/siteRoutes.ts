@@ -1,13 +1,12 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { getAllDatabaseInfo, getEmployee } from "./initialRoutes";
-import { SiteUpdate, NewSite } from 'scheduler-node-models/scheduler/sites/web';
-import { Site } from "scheduler-node-models/scheduler/sites";
+import { SiteUpdate, NewSite } from 'scheduler-models/scheduler/sites/web';
+import { Site } from "scheduler-models/scheduler/sites";
 import { ObjectId } from "mongodb";
-import { Employee } from "scheduler-node-models/scheduler/employees";
-import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
-import { BuildInitial } from "scheduler-node-models/services";
+import { Employee } from "scheduler-models/scheduler/employees";
+import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { BuildInitial, collections, postLogEntry } from "scheduler-services";
 
 const router = Router();
 export default router;
