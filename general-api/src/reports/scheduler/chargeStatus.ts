@@ -8,8 +8,8 @@ import { User } from "scheduler-node-models/users";
 import { Forecast, Period } from "scheduler-node-models/scheduler/sites/reports";
 import { Holiday } from "scheduler-node-models/scheduler/teams/company";
 import { ObjectId } from "mongodb";
-import { collections } from "../../config/mongoconnect";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { collections } from "../../services/mongoconnect";
 
 export class ChargeStatusReport extends Report {
   private site: Site;

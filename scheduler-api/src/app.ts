@@ -2,10 +2,11 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import { connectToDB, createPool, createLogs } from 'scheduler-node-models/config';
 import indexRoutes from './routes/index.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger-output.json';
+import { connectToDB } from './services/mongoconnect';
+import { createPool } from './services/sqldb';
 
 
 dotenv.config();

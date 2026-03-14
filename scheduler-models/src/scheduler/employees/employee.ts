@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { EmployeeName, IEmployeeName } from "./employeename";
 import { ICompanyInfo } from "./companyinfo";
 import { Assignment, IAssignment } from "./assignment";
@@ -15,12 +14,13 @@ import { AnnualLeave, IAnnualLeave } from "./balance";
 import { CompareWorkCode, Workcode } from '../labor/workcode';
 import { ChangeLeaveRequestResponse } from "./web"
 import { LaborCode } from "../labor/laborcode";
+import { v4 as uuidv4} from 'uuid';
 
 /**
  * The employee is recorded by 
  */
 export interface IEmployee {
-  _id?: ObjectId;
+  _id?: any;
   id?: string;
   team: string;
   site: string;
@@ -41,6 +41,7 @@ export interface IEmployee {
 }
 
 export class Employee implements IEmployee {
+  public _id?: any;
   public id: string;
   public team: string;
   public site: string;
@@ -1450,7 +1451,7 @@ export class Employee implements IEmployee {
 
     // if not found, create a new leave request
     if (!answer) {
-      const id = new ObjectId().toString();
+      const id = uuidv4().toString();
       answer = new LeaveRequest({
         id: id,
         employeeid: this.id,

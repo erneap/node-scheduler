@@ -1,10 +1,8 @@
-import { ObjectId } from "mongodb";
-
 /**
  * This interface defines the data members associated with a ground outage
  */
 export interface IOutage {
-  _id?: ObjectId;
+  _id?: any;
   id?: string;
   outageDate: Date;
   groundSystem: string;

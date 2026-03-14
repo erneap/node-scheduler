@@ -1,6 +1,5 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
 import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
 import { IUser, User } from "scheduler-node-models/users";
@@ -8,7 +7,9 @@ import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-node-models/general";
 import { SecurityQuestion } from "scheduler-node-models/users/question";
 import { genSaltSync, hashSync } from "bcrypt-ts";
-import { BuildInitial } from "scheduler-node-models/services";
+import { BuildInitial } from "../services/buildInitial";
+import { logConnection, postLogEntry } from "../services/logging";
+import { collections } from "../services/mongoconnect";
 
 const router = Router();
 
@@ -373,8 +374,8 @@ router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
       const query = { _id: new ObjectId(empID)};
       if (collections.employees) {
         let result = await collections.employees.deleteOne(query);
-        if (result.deletedCount > 0 && logConnection.employeeLog) {
-          logConnection.employeeLog.log(`Employee Deleted: ${name}, by: ${byName}`);
+        if (result.deletedCount > 0) {
+          await postLogEntry('employee', `Employee Deleted: ${name}, by: ${byName}`);
         }
       }
       if (collections.users) { 

@@ -6,7 +6,8 @@ import { Report, ReportRequest } from 'scheduler-node-models/general';
 import { MissionDay } from "./missionDay";
 import { OutageDay } from "./outageDay";
 import fs from 'fs';
-import { collections } from '../../config/mongoconnect';
+
+import { collections } from "../../services/mongoconnect";
 
 export class DrawSummary extends Report {
   private reportType: GeneralTypes;

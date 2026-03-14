@@ -1,10 +1,8 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { collections, mdbConnection, postLogEntry } from "scheduler-node-models/config";
 import { IUser, User } from "scheduler-node-models/users";
 import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
-import { logConnection } from "scheduler-node-models/config";
 import multer from 'multer';
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { getAllDatabaseInfo } from "./initialRoutes";
@@ -13,6 +11,8 @@ import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod }
 import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } 
   from "scheduler-node-models/scheduler/employees";
 import { PoolConnection } from "mariadb/*";
+import { collections } from "../services/mongoconnect";
+import { postLogEntry } from "../services/logging";
 
 const router = Router();
 const storage = multer.memoryStorage();

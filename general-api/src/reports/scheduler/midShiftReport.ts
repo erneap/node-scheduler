@@ -3,8 +3,8 @@ import { ObjectId } from "mongodb";
 import { Report, ReportRequest } from "scheduler-node-models/general";
 import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
 import { User } from "scheduler-node-models/users";
-import { collections } from "../../config/mongoconnect";
 import { MidShift } from "./midshift";
+import { collections } from "../../services/mongoconnect";
 
 export class MidShiftReport extends Report {
   private currentAsOf: Date;

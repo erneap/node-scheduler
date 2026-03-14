@@ -1,5 +1,5 @@
 <div class="cell" [style]="cellStyle()">
-  <div [class]="dateClass()">{{workday().date.getUTCDate()}}</div>
-  <div class="code">{{workday.code}}</div>
-  <div class="workcenter">{{workday.workcenter}}</div>
+  <div [class]="dateClass()">{{workday().date?.getUTCDate()}}</div>
+  <div class="code">{{workday().code}}</div>
+  <div class="workcenter">{{workday().workcenter}}</div>
 </div>

@@ -1,5 +1,5 @@
-scheduler-node-models/node_modules
-scheduler-node-models/dist
+scheduler-models/node_modules
+scheduler-models/dist
 testing-app/node_modules
 .env
 /testing-app/dist
@@ -24,3 +24,5 @@ scheduler-api/.env
 /convertData/dist
 /convertData/.env
 ~$Flow.pptx
+scheduler-services/node_modules
+scheduler-services/dist

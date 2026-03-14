@@ -1,6 +1,5 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { collections, postLogEntry } from 'scheduler-node-models/config';
 import { IUser, User } from 'scheduler-node-models/users';
 import { Logger, ReportRequest } from "scheduler-node-models/general";
 import { ChargeStatusReport, CofSReports, EnterpriseSchedule, LeaveReport, ScheduleReport } 
@@ -8,6 +7,8 @@ import { ChargeStatusReport, CofSReports, EnterpriseSchedule, LeaveReport, Sched
 import { DrawSummary, MissionSummary } from "../reports/metrics";
 import { MidShiftReport } from "../reports/scheduler/midShiftReport";
 import { ModTimeReport } from "../reports/scheduler/modtimeReport";
+import { collections } from "../services/mongoconnect";
+import { postLogEntry } from "../services/logging";
 
 const router = Router();
 const logger = new Logger(

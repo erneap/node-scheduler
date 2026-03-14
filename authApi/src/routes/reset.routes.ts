@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { collections, mdbConnection, postLogEntry } from 'scheduler-node-models/config';
 import { compareSync, genSaltSync, hashSync } from 'bcrypt-ts';
-import { ForgotPasswordRequest, ISecurityQuestion, IUser, PasswordResetRequest, SecurityQuestion, SecurityQuestionResponse, User } from 'scheduler-node-models/users';
-import { sendMail } from 'scheduler-node-models/general';
+import { ForgotPasswordRequest, ISecurityQuestion, IUser, PasswordResetRequest, SecurityQuestion, SecurityQuestionResponse, User } from 'scheduler-models/users';
+import { sendMail } from 'scheduler-models/general';
+import { collections, mdbConnection, postLogEntry, UserService } from 'scheduler-services';
 
 const router = express.Router();
 
@@ -46,58 +46,52 @@ router.get('/questions', async (req: Request, res: Response) => {
 router.post('/reset', async(req: Request, res: Response) => {
   const now = new Date();
   try {
+    const uService = new UserService();
     const request = req.body as ForgotPasswordRequest;
     const email = request.emailAddress;
 
-    const query = { emailAddress: email };
-    const iUser = await collections.users?.findOne<IUser>(query);
-    if (iUser) {
-      const user = new User(iUser)
-      const result = user.createResetToken();
-      const nquery = { _id: new ObjectId(user.id)};
-      await collections.users?.replaceOne(nquery, user);
+    const user = await uService.getByEmail(email);
+    const result = user.createResetToken();
+    await uService.replace(user);
 
-      let message = '<!DOCTYPE html>\n<html>\n<head>\n<style>\n'
-        + 'body { background-color:lightblue;display:flex;flex-direction:column;'
-        + 'justify-content:center;align-items:center;padding:10px;}\n'
-        + 'div.main {display:flex;flex-direction:column;justify-content:center;'
-        + 'align-items: center;}\n'
-        + 'div.password {background-color:blue;color:white;display:flex;'
-        + 'flex-direction:column;justify-content:center;align-items:center;'
-        + 'padding: 10px;}\n'
-        + '</style>\n</head>\n<body>\n'
-        + '<h1>Team Scheduler Web Application</h1>\n'
-        + '<h2>Forgot Your Password</h2>\n'
-        + '<div class="main">\n<p>\n'
-        + "You have notified the site that you've forgotten your password.  The "
-        + "process for re-establishing log in privileges is in effect.  Please "
-        + "copy the token string below and click the link to get you back to a "
-        + "web page to change your forgotten password.\n</p>\n"
-        + "<p>We are glad that you've choosen to enrich your life through faith!</p>\n"
-        + '<div class="password">\n'
-        + '<p>The following is your token string to verify you are the account '
-        + `holder:</p>\n<h2 style="color: yellow;">${result}</h2>\n`
-        + '<p style="color:lightpink;text-decoration: underline;">\n'
-        + '<a href="http://www.osanscheduler.com/forgot">Link back to site</a>\n'
-        + '</p>\n</div>\n<div style="margin-top: 25px;">'
-        + 'Thanks again, the webmaster.</div>\n</div>\n</body>\n</html>';
+    let message = '<!DOCTYPE html>\n<html>\n<head>\n<style>\n'
+      + 'body { background-color:lightblue;display:flex;flex-direction:column;'
+      + 'justify-content:center;align-items:center;padding:10px;}\n'
+      + 'div.main {display:flex;flex-direction:column;justify-content:center;'
+      + 'align-items: center;}\n'
+      + 'div.password {background-color:blue;color:white;display:flex;'
+      + 'flex-direction:column;justify-content:center;align-items:center;'
+      + 'padding: 10px;}\n'
+      + '</style>\n</head>\n<body>\n'
+      + '<h1>Team Scheduler Web Application</h1>\n'
+      + '<h2>Forgot Your Password</h2>\n'
+      + '<div class="main">\n<p>\n'
+      + "You have notified the site that you've forgotten your password.  The "
+      + "process for re-establishing log in privileges is in effect.  Please "
+      + "copy the token string below and click the link to get you back to a "
+      + "web page to change your forgotten password.\n</p>\n"
+      + "<p>We are glad that you've choosen to enrich your life through faith!</p>\n"
+      + '<div class="password">\n'
+      + '<p>The following is your token string to verify you are the account '
+      + `holder:</p>\n<h2 style="color: yellow;">${result}</h2>\n`
+      + '<p style="color:lightpink;text-decoration: underline;">\n'
+      + '<a href="http://www.osanscheduler.com/forgot">Link back to site</a>\n'
+      + '</p>\n</div>\n<div style="margin-top: 25px;">'
+      + 'Thanks again, the webmaster.</div>\n</div>\n</body>\n</html>';
 
-      try {
-        let to = user.emailAddress;
-        user.additionalEmails.forEach(email => {
-          if (user.emailAddress.toLowerCase() !== email.toLowerCase()) {
-            to += `, ${email}`;
-          }
-        });
-      
-        await sendMail(to, 'Forgot Password Token', message);
-      } catch (error) {
-        throw error;
-      }
-      return res.status(200).json(user);
-    } else {
-      throw new Error("User Not Found");
+    try {
+      let to = user.emailAddress;
+      user.additionalEmails.forEach(email => {
+        if (user.emailAddress.toLowerCase() !== email.toLowerCase()) {
+          to += `, ${email}`;
+        }
+      });
+    
+      await sendMail(to, 'Forgot Password Token', message);
+    } catch (error) {
+      throw error;
     }
+    return res.status(200).json(user);
   } catch (error) {
     let message = '';
     if (typeof error === 'string') {
@@ -121,34 +115,30 @@ router.post('/reset', async(req: Request, res: Response) => {
 router.post('/altreset', async(req: Request, res: Response) => {
   const now = new Date();
   try {
+    const uService = new UserService();
     const request = req.body as ForgotPasswordRequest;
     const email = request.emailAddress;
 
-    const query = { emailAddress: email };
-    const iUser = await collections.users?.findOne<IUser>(query);
-    if (iUser) {
-      const user = new User(iUser);
-      let question: SecurityQuestionResponse = {
-        emailAddress: user.emailAddress,
-        questionid: 0,
-        question: ''
-      };
-      let randQuest = Math.floor(Math.random() * 3) + 1;
-      user.questions.sort((a,b) => a.compareTo(b));
-      user.questions.forEach(quest => {
-        if (quest.id <= randQuest && quest.question !== '') {
-          const q = new SecurityQuestion(quest);
-          question.questionid = q.id;
-          question.question = q.question;
-        }
-      });
-      if (question.questionid > 0) {
-        res.status(201).json(question);
-      } else {
-        throw new Error("No Question available");
+    const user = await uService.getByEmail(email);
+
+    let question: SecurityQuestionResponse = {
+      emailAddress: user.emailAddress,
+      questionid: 0,
+      question: ''
+    };
+    let randQuest = Math.floor(Math.random() * 3) + 1;
+    user.questions.sort((a,b) => a.compareTo(b));
+    user.questions.forEach(quest => {
+      if (quest.id <= randQuest && quest.question !== '') {
+        const q = new SecurityQuestion(quest);
+        question.questionid = q.id;
+        question.question = q.question;
       }
+    });
+    if (question.questionid > 0) {
+      res.status(201).json(question);
     } else {
-      throw new Error("User Not Found");
+      throw new Error("No Question available");
     }
   } catch (error) {
     let message = '';
@@ -173,36 +163,26 @@ router.post('/altreset', async(req: Request, res: Response) => {
  */
 router.put('/reset', async(req: Request, res: Response) => {
   try {
+    const userService = new UserService();
     const now = new Date();
-    const colUser = collections.users;
-    if (colUser) {
-      const request = req.body as PasswordResetRequest;
-      if (request.emailAddress !== '') {
-        const query = { emailAddress: request.emailAddress };
-        const iUser = await colUser.findOne<IUser>(query);
-        if (iUser) {
-          if (iUser.resettoken && iUser.resettokenexp 
-            && iUser.resettoken === request.resettoken 
-            && iUser.resettokenexp.getTime() > now.getTime()) {
-            const user = new User(iUser);
-            const salt = genSaltSync(12)
-            const hash = hashSync(request.password, salt);
-            user.password = hash;
-            user.passwordExpires = new Date();
-            user.badAttempts = 0;
-            await colUser.replaceOne(query, user);
-            return res.status(200).json(user);
-          } else {
-            throw new Error('Reset token mismatch');
-          }
-        } else {
-          throw new Error(`User not found (${request.emailAddress})`);
-        }
+    const request = req.body as PasswordResetRequest;
+    if (request.emailAddress !== '') {
+      const user = await userService.getByEmail(request.emailAddress);
+      if (user.resettoken && user.resettokenexp 
+        && user.resettoken === request.resettoken 
+        && user.resettokenexp.getTime() > now.getTime()) {
+        const salt = genSaltSync(12)
+        const hash = hashSync(request.password, salt);
+        user.password = hash;
+        user.passwordExpires = new Date();
+        user.badAttempts = 0;
+        await userService.replace(user);
+        return res.status(200).json(user);
       } else {
-        throw new Error('User email address not given');
+        throw new Error('Reset token mismatch');
       }
     } else {
-      throw new Error('Unable to find collection');
+      throw new Error('User email address not given');
     }
   } catch (error) {
     let message = '';
@@ -227,46 +207,36 @@ router.put('/reset', async(req: Request, res: Response) => {
  */
 router.put('/altreset', async(req: Request, res: Response) => {
   try {
+    const userService = new UserService();
     const now = new Date();
-    const colUser = collections.users;
-    if (colUser) {
-      const request = req.body as PasswordResetRequest;
-      if (request.emailAddress !== '') {
-        const query = { emailAddress: request.emailAddress };
-        const iUser = await colUser.findOne<IUser>(query);
-        if (iUser) {
-          const user = new User(iUser);
-          if (request.subid) {
-            let found = false;
-            user.questions.forEach(quest => {
-              if (quest.id === request.subid) {
-                if (compareSync(request.resettoken.toLowerCase(), quest.answer)) {
-                  found = true;
-                }
-              }
-            });
-            if (found) {
-              const salt = genSaltSync(12)
-              const hash = hashSync(request.password, salt);
-              user.password = hash;
-              user.passwordExpires = new Date();
-              user.badAttempts = 0;
-              await colUser.replaceOne(query, user);
-              return res.status(200).json(user);
-            } else {
-              throw new Error('Question-answer mismatch');
+    const request = req.body as PasswordResetRequest;
+    if (request.emailAddress !== '') {
+      const user = await userService.getByEmail(request.emailAddress);
+      if (request.subid) {
+        let found = false;
+        user.questions.forEach(quest => {
+          if (quest.id === request.subid) {
+            if (compareSync(request.resettoken.toLowerCase(), quest.answer)) {
+              found = true;
             }
-          } else {
-            throw new Error('Question answer no identifier');
           }
+        });
+        if (found) {
+          const salt = genSaltSync(12)
+          const hash = hashSync(request.password, salt);
+          user.password = hash;
+          user.passwordExpires = new Date();
+          user.badAttempts = 0;
+          await userService.replace(user);
+          return res.status(200).json(user);
         } else {
-          throw new Error(`User not found (${request.emailAddress})`);
+          throw new Error('Question-answer mismatch');
         }
       } else {
-        throw new Error('User email address not given');
+        throw new Error('Question answer no identifier');
       }
     } else {
-      throw new Error('Unable to find collection');
+      throw new Error('User email address not given');
     }
   } catch (error) {
     let message = '';

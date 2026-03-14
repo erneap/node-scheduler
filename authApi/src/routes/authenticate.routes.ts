@@ -1,10 +1,10 @@
 import { compare, compareSync } from 'bcrypt-ts';
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { collections, postLogEntry } from 'scheduler-node-models/config';
-import { AuthenticationRequest, IUser, User } from 'scheduler-node-models/users';
+import { AuthenticationRequest, IUser, User } from 'scheduler-models/users';
 import * as jwt from 'jsonwebtoken';
 import { auth } from '../middleware/authorization.middleware';
+import { collections, postLogEntry, UserService } from 'scheduler-services';
 
 const router = express.Router();
 
@@ -18,57 +18,47 @@ const router = express.Router();
  */
 router.post('/authenticate', async (req: Request, res: Response) => {
   try {
+    const userService = new UserService();
     const data = req.body as AuthenticationRequest;
-    const colUsers = collections.users;
-    if (colUsers) {
-      if (data.emailAddress !== '' && data.password !== '') {
-        const query = { emailAddress: data.emailAddress };
-        const iUser = await colUsers.findOne<IUser>(query);
-        if (iUser) {
-          let msg = '';
-          const user = new User(iUser);
-          if (user.password && await compareSync(data.password, user.password)) {
-            if (user.badAttempts > 2) {
-              postLogEntry('Authentication', `Account Locked: ${user.getFirstLast()}`)
-              return res.status(400).json({message: 'Account locked'});
-            } else if (user.badAttempts >= 0) {
-              user.badAttempts = 0;
-            }
-            if (user.id) {
-              const key = process.env.JWT_SECRET;
-              const expires = process.env.JWT_EXPIRES;
-              if (key && expires) {
-                const accessToken = jwt.sign({ _id: user.id.toString() }, key,
-                  { expiresIn: expires as any});
-                res.setHeader('authorization', accessToken);
-              }
-              const rKey = process.env.JWT_REFRESH_SECRET;
-              const rExpires = process.env.JWT_REFRESH_EXPIRES;
-              if (rKey && rExpires) {
-                const refreshToken = jwt.sign({ _id: user.id.toString() }, rKey, {
-                  expiresIn: rExpires as any,
-                });
-                res.setHeader('refreshToken', refreshToken);
-              }
-            }
-            postLogEntry('Authentication', `User logged in: ${user.getFirstLast()}`)
-            res.status(200).json(user);
-          } else {
-            user.badAttempts++;
-            msg = 'User ID/Password mismatch';
-          }
-          await colUsers.replaceOne(query, user);
-          if (msg !== '') {
-            throw new Error(msg);
-          }
-        } else {
-          throw new Error('User not found');
+    if (data.emailAddress !== '' && data.password !== '') {
+      const user = await userService.getByEmail(data.emailAddress);
+      let msg = '';
+      if (user.password && await compareSync(data.password, user.password)) {
+        if (user.badAttempts > 2) {
+          postLogEntry('Authentication', `Account Locked: ${user.getFirstLast()}`)
+          return res.status(400).json({message: 'Account locked'});
+        } else if (user.badAttempts >= 0) {
+          user.badAttempts = 0;
         }
+        if (user.id) {
+          const key = process.env.JWT_SECRET;
+          const expires = process.env.JWT_EXPIRES;
+          if (key && expires) {
+            const accessToken = jwt.sign({ _id: user.id.toString() }, key,
+              { expiresIn: expires as any});
+            res.setHeader('authorization', accessToken);
+          }
+          const rKey = process.env.JWT_REFRESH_SECRET;
+          const rExpires = process.env.JWT_REFRESH_EXPIRES;
+          if (rKey && rExpires) {
+            const refreshToken = jwt.sign({ _id: user.id.toString() }, rKey, {
+              expiresIn: rExpires as any,
+            });
+            res.setHeader('refreshToken', refreshToken);
+          }
+        }
+        postLogEntry('Authentication', `User logged in: ${user.getFirstLast()}`)
+        res.status(200).json(user);
       } else {
-        throw new Error('Required data missing');
+        user.badAttempts++;
+        msg = 'User ID/Password mismatch';
+      }
+      await userService.replace(user);
+      if (msg !== '') {
+        throw new Error(msg);
       }
     } else {
-      throw new Error('No users collection')
+      throw new Error('Required data missing');
     }
   } catch (err) {
     const error = err as Error;
@@ -85,26 +75,16 @@ router.post('/authenticate', async (req: Request, res: Response) => {
  */
 router.delete('/authenticate/:id', auth, async (req: Request, res: Response ) => {
   try {
+    const userService = new UserService();
     const id = req.params.id as string;
-    const colUsers = collections.users;
-    if (colUsers) {
-      if (id && id !== '') {
-        const query = { _id: new ObjectId(id) };
-        const iUser = await colUsers.findOne<IUser>(query);
-        if (iUser) {
-          res.removeHeader('authorization');
-          res.removeHeader('refreshToken');
-          const user = new User(iUser);
-          postLogEntry('Authentication', `User logged out: ${user.getFirstLast()}`);
-          res.status(200).json({message: 'logged out'})
-        } else {
-          throw new Error('User not found');
-        }
-      } else {
-        throw new Error('Required data missing');
-      }
+    if (id && id !== '') {
+      const user = await userService.get(id);
+      res.removeHeader('authorization');
+      res.removeHeader('refreshToken');
+      postLogEntry('Authentication', `User logged out: ${user.getFirstLast()}`);
+      res.status(200).json({message: 'logged out'})
     } else {
-      throw new Error('No users collection')
+      throw new Error('Required data missing');
     }
   } catch (err) {
     const error = err as Error;

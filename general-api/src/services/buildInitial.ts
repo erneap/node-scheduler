@@ -1,11 +1,12 @@
 import { PoolConnection } from "mariadb/*";
-import { InitialResponse } from "../scheduler/web";
-import { collections, mdbConnection } from "../config";
 import { ObjectId } from "mongodb";
-import { Employee, IEmployee, Work } from "../scheduler/employees";
-import { IUser, SecurityQuestion, User } from "../users";
-import { ITeam, Team } from "../scheduler/teams";
-import { Site } from "../scheduler/sites";
+import { InitialResponse } from 'scheduler-node-models/scheduler/web';
+import { collections } from "./mongoconnect";
+import { Employee, IEmployee, Work } from "scheduler-node-models/scheduler/employees";
+import { IUser, SecurityQuestion, User } from "scheduler-node-models/users";
+import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { mdbConnection } from "./sqldb";
+import { Site } from "scheduler-node-models/scheduler/sites";
 
 
 export class BuildInitial {

@@ -2,13 +2,15 @@ import { Request, Response, Router } from "express";
 import { Logger } from "scheduler-node-models/general";
 import { InitialResponse } from 'scheduler-node-models/scheduler/web';
 import { ObjectId } from "mongodb";
-import { logConnection, collections, postLogEntry } from "scheduler-node-models/config";
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
+import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } 
+  from "scheduler-node-models/scheduler/employees";
 import { Site } from "scheduler-node-models/scheduler/sites";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { IUser, User } from "scheduler-node-models/users";
-import { BuildInitial } from "scheduler-node-models/services";
 import { auth } from '../middleware/authorization.middleware';
+import { BuildInitial } from "../services/buildInitial";
+import { postLogEntry } from "../services/logging";
+import { collections } from "../services/mongoconnect";
 
 const router = Router();
 
@@ -41,9 +43,6 @@ router.get('/initial/:id', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     await postLogEntry('employee', `initial: Get: Error: ${error.message}`);
-    if (logConnection.log) {
-      logConnection.log.log(`initial: Get: Error: ${error.message}`);
-    }
     res.status(400).json({'message': error.message});
   }
 });

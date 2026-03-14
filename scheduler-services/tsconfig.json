@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2022",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "rootDir": "./src",                                  /* Specify the root folder within your source files. */
+    "declaration": true,                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+    "noImplicitAny": true,
+    "removeComments": true,
+    "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
+    "preserveConstEnums": true,
+    "sourceMap": true,
+  },
+  "include": ["src/**/*"]
+}

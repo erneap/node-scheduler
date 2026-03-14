@@ -4,10 +4,10 @@ import { Site } from "scheduler-node-models/scheduler/sites";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { User } from "scheduler-node-models/users";
 import { Style, Workbook, Worksheet } from "exceljs";
-import { collections } from "../../config/mongoconnect";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { Holiday } from "scheduler-node-models/scheduler/teams/company";
+import { collections } from "../../services/mongoconnect";
 
 export class ScheduleReport extends Report{
   private styles: Map<string, Partial<Style>>;

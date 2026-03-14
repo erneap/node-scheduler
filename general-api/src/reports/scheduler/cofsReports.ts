@@ -5,8 +5,8 @@ import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-no
 import { Workcode } from "scheduler-node-models/scheduler/labor";
 import { ISite, Site } from "scheduler-node-models/scheduler/sites";
 import { Holiday } from "scheduler-node-models/scheduler/teams/company";
-import { collections } from "../../config/mongoconnect";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { collections } from "../../services/mongoconnect";
 
 /**
  * This report formatter will be used by the application to compile the site's Certificate

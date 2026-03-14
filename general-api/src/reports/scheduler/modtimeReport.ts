@@ -2,10 +2,10 @@ import { Alignment, Borders, Fill, Font, Style, Workbook } from "exceljs";
 import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
 import { User } from "scheduler-node-models/users";
-import { collections } from "../../config/mongoconnect";
 import { ObjectId } from "mongodb";
 import { ModMonth, ModWeek } from "./modPeriods";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
+import { collections } from "../../services/mongoconnect";
 
 export class ModTimeReport extends Report {
   private currentAsOf: Date;

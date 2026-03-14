@@ -4,7 +4,7 @@ import cors from 'cors';
 import routes from './routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger-output.json';
-import { connectToDB, createPool } from 'scheduler-node-models/config';
+import { connectToDB, createPool } from 'scheduler-services';
 
 dotenv.config();
 connectToDB();

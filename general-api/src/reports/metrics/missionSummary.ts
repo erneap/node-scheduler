@@ -5,8 +5,8 @@ import { IMission, IOutage, Mission } from "scheduler-node-models/metrics";
 import { Outage } from "scheduler-node-models/metrics";
 import { MissionType } from "./missionType";
 import { Report, ReportRequest } from "scheduler-node-models/general";
-import { collections } from '../../config/mongoconnect';
 import fs from 'fs';
+import { collections } from "../../services/mongoconnect";
 
 export class MissionSummary extends Report {
   private reportType: GeneralTypes;

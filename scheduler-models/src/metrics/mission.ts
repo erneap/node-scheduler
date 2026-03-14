@@ -1,11 +1,10 @@
-import { ObjectId } from "mongodb";
 import { IMissionSensor, MissionSensor } from "./missionsensor";
 
 /**
  * This interfcae defines the data members for a mission.
  */
 export interface IMission {
-  _id?: ObjectId;
+  _id?: any;
   id?: string;
   missionDate: Date;
   platformID: string;

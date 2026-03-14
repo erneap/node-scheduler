@@ -5,10 +5,11 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import { connectToDB, createPool } from 'scheduler-node-models/config';
 import printRoutes from './routes/printRoutes';
 import logsRoutes from './routes/logsRoutes';
 import noticeRoutes from './routes/noticeRoutes';
+import { connectToDB } from './services/mongoconnect';
+import { createPool } from './services/sqldb';
 
 connectToDB();
 createPool();

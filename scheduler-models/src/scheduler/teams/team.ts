@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { IWorkcode, Workcode } from "../labor";
 import { ISite, Site } from "../sites";
 import { Company, ICompany } from "./company";
@@ -6,7 +5,7 @@ import { Contact, IContact } from "./contact";
 import { ISpecialty, Specialty } from "./specialty";
 
 export interface ITeam {
-  _id?: ObjectId;
+  _id?: any;
   id?: string;
   name: string;
   workcodes: IWorkcode[];

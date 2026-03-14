@@ -1,6 +1,6 @@
 {
-  "name": "scheduler-node-models",
-  "version": "1.2.144",
+  "name": "scheduler-models",
+  "version": "1.3.11",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -18,6 +18,7 @@
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
     "@types/express": "^5.0.6",
+    "@types/mongodb": "^4.0.6",
     "@types/multer": "^2.0.0",
     "@types/nodemailer": "^7.0.0",
     "typescript": "^5.9.2"
@@ -27,9 +28,11 @@
     "bcrypt-ts": "^7.1.0",
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
-    "mariadb": "^3.4.5",
+    "mariadb": "^3.5.2",
     "mongodb": "^7.1.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^8.0.2",
+    "scheduler-models": "^1.3.6",
+    "uuid": "^13.0.0"
   }
 }

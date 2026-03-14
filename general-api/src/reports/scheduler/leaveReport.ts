@@ -5,7 +5,8 @@ import { Holiday, IHoliday } from "scheduler-node-models/scheduler/teams/company
 import { IWorkcode, Workcode } from "scheduler-node-models/scheduler/labor";
 import { User } from "scheduler-node-models/users";
 import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
-import { collections } from '../../config/mongoconnect';
+
+import { collections } from "../../services/mongoconnect";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
 import { Site } from "scheduler-node-models/scheduler/sites";

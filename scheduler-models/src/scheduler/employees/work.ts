@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 /**
  * Work interface and class descriptions
  */
@@ -82,9 +80,9 @@ export class Work implements IWork {
  * This interface describes the data members of a Work Record.
  */
 export interface IWorkRecord {
-  _id?: ObjectId;
+  _id?: any;
   id?: string;
-  employeeID?: ObjectId;
+  employeeID?: any;
   empID?: string;
   year: number;
   work?: IWork[];
