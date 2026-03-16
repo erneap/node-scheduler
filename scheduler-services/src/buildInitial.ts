@@ -8,7 +8,11 @@ import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { mdbConnection } from "./sqldb";
 import { Site } from "scheduler-models/scheduler/sites";
 
-
+/**
+ * This class definition is used for building an employee's initial data, which
+ * consists of the employee with user attached, the employee's team with sites
+ * and employees, and the employee's site.
+ */
 export class BuildInitial {
   private employeeID: string;
   private initialData: InitialResponse;
@@ -18,6 +22,27 @@ export class BuildInitial {
     this.initialData = { };
   }
 
+  /**
+   * This method is used to start the build. 
+   * STEPS:
+   * 1) Get the employee for the given employee ID.
+   * 2) Determine a period for pulling associated work records for all employees
+   *  pulled from the database.
+   * 3) Pull the team from the database.  This will include all the sites for 
+   *  the team.
+   * 4) Pull all the employees for the team, then add them to their respective
+   *  sites.  Compile a list of employees from this list.
+   * 5) Use the compile list of employees to pull employee work records from the
+   *  sql database.  Then step through them to add them to their associate site/
+   *  employee records.
+   * 6) Go through the team sites for the employee's site and add it to the 
+   *  response object.
+   * 7) Go through the employees for the employee's site and add it to the 
+   *  response object.
+   * 6) Pull all the available security questions from the sql database and 
+   *  add them to the end of the response object.
+   * @returns 
+   */
   async build(): Promise<InitialResponse> {
     let conn: PoolConnection | undefined;
     try {

@@ -222,15 +222,49 @@ export class EmployeeService {
     return answer;
   }
 
+  /**
+   * This method will be used to add a group of work records to the database.
+   * @param empID The string value for the employee identifier.
+   * @param worklist An array of work records to be added to the database.
+   */
   async insertWork(empID: string, worklist: IWork[]): Promise<void> {
     let conn: PoolConnection | undefined;
     try {
       if (mdbConnection.pool) {
         conn = await mdbConnection.pool.getConnection();
         const workPromises = worklist.map(async(work) => {
-
+          const sql = "INSERT INTO employeeWork (employeeID, dateworked, "
+            + "chargenumber, extension, paycode, modtime, hours) VALUES ( ?, ?, "
+            + "?, ?, ?, ?, ?);";
+          const workVals = [ empID, work.dateworked, work.chargenumber, 
+            work.extension, work.paycode, work.modtime, work.hours ];
+          await conn.query(sql, workVals);
         });
         await Promise.allSettled(workPromises);
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      if (conn) conn.release();
+    }
+  }
+
+  /**
+   * This method is used to delete a group of employee work records for the 
+   * employee between (and including) a start and end dates.
+   * @param empID The string value for the employee identifier
+   * @param start The Date object for the start of the period for deletion.
+   * @param end The Date object for the end of the period for deletion.
+   */
+  async deleteWork(empID: string, start: Date, end: Date): Promise<void> {
+    let conn: PoolConnection | undefined;
+    try {
+      if (mdbConnection.pool) {
+        conn = await mdbConnection.pool.getConnection();
+        const sql = "DELETE FROM employeeWork WHERE employeeID = ? AND "
+          + "dateworked >= ? AND dateworked <= ?;";
+        const delVals = [ empID, start, end ];
+        await conn.query(sql, delVals);
       }
     } catch (err) {
       throw err;
