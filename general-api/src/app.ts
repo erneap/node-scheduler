@@ -1,44 +1,33 @@
-import { config } from 'dotenv';
+import dotenv from 'dotenv';
 import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
-import printRoutes from './routes/printRoutes';
-import logsRoutes from './routes/logsRoutes';
-import noticeRoutes from './routes/noticeRoutes';
-import { connectToDB } from './services/mongoconnect';
-import { createPool } from './services/sqldb';
+import { connectToDB, createPool } from 'scheduler-services';
+import indexRoutes from './routes/index.routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger-output.json';
 
+dotenv.config();
 connectToDB();
 createPool();
 
 const app = express();
 
-app.use(cookieParser());
-app.use(morgan("dev"));
-app.use(helmet());
-app.use(cors({
-  origin: ['https://www.osanscheduler.com', 
-    'https://osanscheduler.com', 
-    'http://localhost:4200', 
-    'https://docker', 
-    'null'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+app.use(cors({ 
+  origin: process.env.CORS_ORIGIN, 
   credentials: true,
-  exposedHeaders: [
-    'Content-Type', 'Authorization', 
-    'refreshToken', 'X-Custom-Header',
-    'Content-Disposition'
-  ]
+  exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
 }));
-app.use(express.json({ limit: '10mb'}));
+app.use(express.json({limit: '16kb'}));
+app.use(express.urlencoded({extended: true, limit: '16kb'}));
+app.use(express.static('public'));
 
 // add routes to the application interface
-app.use('/api/general', printRoutes);
-app.use('/api/general', logsRoutes);
-app.use('/api/general', noticeRoutes);
+app.use('/api/general', indexRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(notFound);
 app.use(errorHandler);

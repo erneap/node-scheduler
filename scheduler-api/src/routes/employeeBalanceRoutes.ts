@@ -1,8 +1,7 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
-import { AnnualLeave, Employee, IEmployee, NewLeaveBalance, UpdateLeaveBalance } from "scheduler-models/scheduler/employees";
-import { postLogEntry } from "scheduler-services";
+import { NewLeaveBalance, UpdateLeaveBalance } from "scheduler-models/scheduler/employees";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -28,9 +27,10 @@ router.post('/employee/balance', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewLeaveBalance;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.createLeaveBalance(data.year);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(201).json(employee);
     } else {
       throw new Error('New Leave Balance data missing');
@@ -57,9 +57,10 @@ router.put('/employee/balance', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateLeaveBalance;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.updateLeaveBalance(data.year, data.field, data.value);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Update Leave Balance data missing');
@@ -87,9 +88,10 @@ router.delete('/employee/balance/:id/:year', auth, async(req: Request, res: Resp
     const syear = req.params.year as string;
     if (empID && syear) {
       const year = Number(syear);
-      const employee = await getEmployee(empID);
+      const empService = new EmployeeService();
+      const employee = await empService.get(empID);
       employee.deleteLeaveBalance(year);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Employee ID or year missing');

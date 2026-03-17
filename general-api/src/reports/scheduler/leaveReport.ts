@@ -1,15 +1,14 @@
 import { Alignment, Borders, Fill, Font, RichText, Style, Workbook, Worksheet } from "exceljs";
 import { LeaveMonth, LeavePeriod } from "./leaves";
-import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
-import { Holiday, IHoliday } from "scheduler-node-models/scheduler/teams/company";
-import { IWorkcode, Workcode } from "scheduler-node-models/scheduler/labor";
-import { User } from "scheduler-node-models/users";
-import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
-
-import { collections } from "../../services/mongoconnect";
+import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "scheduler-models/scheduler/employees";
+import { Holiday, IHoliday } from "scheduler-models/scheduler/teams/company";
+import { IWorkcode, Workcode } from "scheduler-models/scheduler/labor";
+import { User } from "scheduler-models/users";
+import { Formula, Report, ReportRequest } from "scheduler-models/general";
 import { ObjectId } from "mongodb";
-import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
-import { Site } from "scheduler-node-models/scheduler/sites";
+import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { Site } from "scheduler-models/scheduler/sites";
+import { BuildInitial } from "scheduler-services";
 
 export class LeaveReport extends Report {
   private site: Site;
@@ -58,7 +57,9 @@ export class LeaveReport extends Report {
     const end = new Date(Date.UTC(start.getUTCFullYear() + 1, 0, 1));
     
     try {
-      await this.getAllDatabaseInfo(data.teamid, data.siteid, data.companyid, start, end);
+      if (data.companyid && data.siteid) {
+        await this.getAllDatabaseInfo(user.id, data.companyid, data.siteid);
+      }
 
       this.createStyles();
 
@@ -71,130 +72,60 @@ export class LeaveReport extends Report {
     }
     return workbook;
   }
-  
+      
   /**
    * This method will control all pulling of the database information in a more or less
    * synchronized way, based on team, site, company, and a start and end dates.  It will
    * throw an error if the team and site identifier is not provided.
-   * @param teamid The string value (or undefined) for the team identifer. 
-   * @param siteid The string value (or undefined) for the site identifier.
+   * @param userid The string value (or undefined) for the requesting user identifer. 
    * @param companyid The string value (or undefined) for any associated company identifier.
-   * @param start The date object for the start of the report period.
-   * @param end The date object for the end of the report period.
+   * @param siteid The string value (or undefined) for the site identifier.
    */
-  async getAllDatabaseInfo(teamid: string | undefined, siteid: string | undefined, 
-    companyid: string | undefined, start: Date, end: Date): Promise<void> {
+  async getAllDatabaseInfo(userid: string, companyid: string, siteid: string): Promise<void> {
     try {
-      if (teamid && teamid !== '' && siteid && siteid !== '') {
-        const team = await this.getTeam(teamid, siteid, companyid);
-        const employees = await this.getEmployees(teamid, siteid, start, end);
-        this.employees = employees;
-        const employeeWorkPromises = 
-          this.employees.map(async (emp, e) => {
-            const work = await this.getEmployeeWork(emp.id, start.getFullYear(), 
-              end.getFullYear());
-            emp.work = work;
-            this.employees[e] = emp;
+      const builder = new BuildInitial(userid);
+      const initial = await builder.build();
+      if (initial.team) {
+        this.workcodes = new Map<string, Workcode>();
+        this.holidays = [];
+        initial.team.workcodes.forEach(wc => {
+          this.workcodes.set(wc.id, new Workcode(wc));
+        });
+        if (initial.team.companies && companyid) {
+          initial.team.companies.forEach(co => {
+            if (co.id.toLowerCase() === companyid?.toLowerCase()) {
+              if (co.holidays) {
+                co.holidays.forEach(hol => {
+                  this.holidays.push(new Holiday(hol));
+                });
+              }
+            }
           });
-        await Promise.allSettled(employeeWorkPromises);
-      } else {
-        throw new Error('TeamID or SiteID empty');
+        }
+
+        if (initial.site && siteid 
+          && initial.site.id.toLowerCase() === siteid.toLowerCase()) {
+          this.site = new Site(initial.site);
+        } else {
+          initial.team.sites.forEach(site => {
+            if (site.id.toLowerCase() === siteid.toLowerCase()) {
+              this.site = new Site(site);
+            }
+          });
+        }
+
+        this.employees = [];
+        if (this.site.employees) {
+          this.site.employees.forEach(emp => {
+            this.employees.push(new Employee(emp));
+          });
+          this.employees.sort((a,b) => a.compareTo(b));
+        }
       }
     } catch (error) {
       console.log(error)
     }
   }
-
-  /**
-   * This method will provide team and site information while filling in the team's
-   * workcodes and an associated company's holidays.
-   * @param teamid The string value for the team identifier.
-   * @param siteid The string value for the site assocated with the team
-   * @param companyid (Optional) a string value for the associated company
-   * @returns Nothing, but only returns after all values are placed in their respective
-   * class members.
-   */
-  async getTeam(teamid: string, siteid: string, companyid?: string): Promise<void> {
-    try {
-      const teamQuery = { _id: new ObjectId(teamid) };
-      const iteam = await collections.teams!.findOne<ITeam>(teamQuery);
-      if (iteam) {
-        const team = new Team(iteam);
-        team.workcodes.forEach(wc => {
-          this.workcodes.set(wc.id, new Workcode(wc));
-        });
-        if (companyid && companyid !== '') {
-          team.companies.forEach(co => {
-            if (co.id.toLowerCase() === companyid.toLowerCase()) {
-              co.holidays.forEach(hol => {
-                this.holidays.push(new Holiday(hol));
-              });
-              this.holidays.sort((a,b) => a.compareTo(b));
-            }
-          });
-        }
-        team.sites.forEach(s => {
-          if (s.id.toLowerCase() === siteid.toLowerCase()) {
-            this.site = new Site(s);
-          }
-        });
-        return;
-      } else {
-        throw new Error('no team for id')
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getEmployees(team: string, site: string, start: Date, end: Date): Promise<Employee[]> {
-    const employees: Employee[] = [];
-    if (collections.employees) {
-      const empQuery = { team: new ObjectId(team), site: site };
-      const empCursor = await collections.employees.find<IEmployee>(empQuery);
-      const result = await empCursor.toArray();
-      result.forEach(async(iEmp) => {
-        employees.push(new Employee(iEmp));
-      });
-      employees.sort((a,b) => a.compareTo(b));
-    }
-    return employees;
-  }
-
-  /**
-   * This function will pull the requested employee's work records from the database to
-   * provide a single array.
-   * @param empid The string value for the employee for the work records to be pulled
-   * @param start The numeric value for the starting year for the pull query
-   * @param end The number value for the ending year for the pull query
-   * @returns An array of work objects to signify the work accompllished by charge number
-   * within the start and end years.
-   */
-  async getEmployeeWork(empid: string, start: number, end: number): Promise<Work[]> {
-    const work: Work[] = [];
-    if (collections.work) {
-      const empID = new ObjectId(empid);
-      const workQuery = { 
-        employeeID: empID,
-        year: { $gte: start, $lte: end }
-      };
-      const workCursor = collections.work.find<IWorkRecord>(workQuery);
-      const workResult = await workCursor.toArray();
-      try {
-        workResult.forEach(wr => {
-          const wRecord = new WorkRecord(wr);
-          wRecord.work.forEach(wk => {
-            work.push(new Work(wk));
-          });
-        });
-      } catch (error) {
-        throw error;
-      }
-      work.sort((a,b) => a.compareTo(b));
-    }
-    return work;
-  }
-
 
   /**
    * This function will create the basic style information to be used within the sheet

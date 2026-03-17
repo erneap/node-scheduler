@@ -1,14 +1,8 @@
-import 'dotenv/config';
-import { Logger } from 'scheduler-node-models/general';
 import app from './app';
 
-(async() => {
+const PORT = process.env.PORT || 7005;
 
-  const now = new Date();
-  const logger = new Logger(
-    `${process.env.LOG_DIR}/general/process_${now.getMonth()}-${now.getFullYear()}.log`);
-  const PORT = process.env.PORT || 7005;
-  app.listen(PORT, () => {
-    logger.log(`Server is running on port ${PORT}`);
-  });
-})();
+app.listen(PORT, () => {
+  console.log(`Server is running on: http://localhost:${PORT}`);
+  console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+});

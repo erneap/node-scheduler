@@ -1,10 +1,8 @@
 import { Request, Response, Router } from "express";
-import { DeleteNotices, Logger, NewNotice, Notice } from "scheduler-node-models/general";
+import { DeleteNotices, Logger, NewNotice, Notice } from "scheduler-models/general";
 import { auth } from '../middleware/authorization.middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { mdbConnection } from "../services/sqldb";
-import { postLogEntry } from "../services/logging";
-
+import { mdbConnection, postLogEntry } from "scheduler-services";
 const router = Router();
 const logger = new Logger(
   `${process.env.LOG_DIR}/general/process_${(new Date().toDateString())}.log`);

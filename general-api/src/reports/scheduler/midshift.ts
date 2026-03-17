@@ -1,4 +1,4 @@
-import { EmployeeName, IEmployeeName, IVariation, Variation } from "scheduler-node-models/scheduler/employees";
+import { EmployeeName, IEmployeeName, IVariation, Variation } from "scheduler-models/scheduler/employees";
 
 export class MidShift {
   public name: EmployeeName;

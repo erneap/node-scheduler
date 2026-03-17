@@ -1,5 +1,5 @@
-import { Mission } from "scheduler-node-models/metrics";
-import { GroundSystem } from "scheduler-node-models/metrics/systemdata";
+import { Mission } from "scheduler-models/metrics";
+import { GroundSystem } from "scheduler-models/metrics/systemdata";
 
 export class MissionType {
   public exploitation: string;

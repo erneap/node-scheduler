@@ -1,9 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { getEmployee, updateEmployee } from "./initialRoutes";
 import { NewEmployeeLeaveRequest } from "scheduler-models/scheduler/employees";
 import { UpdateRequest } from "scheduler-models/general";
-import { postLogEntry } from "scheduler-services";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -22,7 +21,8 @@ router.post('/employee/request', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewEmployeeLeaveRequest;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       // check to see if a leave request is present for the same dates, if found, send
       // an error message
       const start = new Date(data.startdate);
@@ -39,7 +39,7 @@ router.post('/employee/request', auth, async(req: Request, res: Response) => {
       }
       employee.createLeaveRequest(start, end, data.code, data.comment);
 
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(201).json(employee);
     } else {
       throw new Error('New Leave Request data missing')
@@ -67,10 +67,11 @@ router.put('/employee/request', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateRequest;
     if (data) {
-      const employee = await getEmployee(data.id);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.id);
       if (data.optional) {
         const ans = employee.updateLeaveRequest(data.optional, data.field, data.value);
-        await updateEmployee(employee);
+        await empService.replace(employee);
         res.status(200).json(employee);
       } else {
         throw new Error('Leave Request ID missing from update');
@@ -99,9 +100,10 @@ router.delete('/employee/request/:id/:reqid', auth, async(req: Request, res: Res
     const empID = req.params.id as string;
     const reqID = req.params.reqid as string;
     if (empID && reqID) {
-      const employee = await getEmployee(empID);
+      const empService = new EmployeeService();
+      const employee = await empService.get(empID);
       employee.deleteLeaveRequest(reqID);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Employee and/or request id missing');

@@ -1,10 +1,10 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook } from "exceljs";
 import { ObjectId } from "mongodb";
-import { Report, ReportRequest } from "scheduler-node-models/general";
-import { Employee, IEmployee } from "scheduler-node-models/scheduler/employees";
-import { User } from "scheduler-node-models/users";
+import { Report, ReportRequest } from "scheduler-models/general";
+import { Employee, IEmployee } from "scheduler-models/scheduler/employees";
+import { User } from "scheduler-models/users";
 import { MidShift } from "./midshift";
-import { collections } from "../../services/mongoconnect";
+import { BuildInitial } from "scheduler-services";
 
 export class MidShiftReport extends Report {
   private currentAsOf: Date;
@@ -38,7 +38,9 @@ export class MidShiftReport extends Report {
 
     workbook.addWorksheet('Sheet1');
     try {
-      await this.getEmployees(data.teamid, data.siteid);
+      if (data.siteid) {
+        await this.getAllDatabaseInfo(user.id, data.siteid);
+      }
 
       this.createStyles();
       this.createMidShiftListSheet(workbook, this.currentAsOf.getFullYear());
@@ -54,17 +56,42 @@ export class MidShiftReport extends Report {
 
     return workbook;
   }
-
-  async getEmployees(teamid?: string, siteid?: string): Promise<void> {
-    if (teamid && siteid && collections.employees) {
-      // pull the employees for the team and site
-      this.employees = [];
-      const empQuery = { team: new ObjectId(teamid), site: siteid };
-      const empCursor = collections.employees.find<IEmployee>(empQuery);
-      const empResults = await empCursor.toArray();
-      empResults.forEach(emp => {
-        this.employees.push(new Employee(emp));
-      });
+      
+  /**
+   * This method will control all pulling of the database information in a more or less
+   * synchronized way, based on team, site, company, and a start and end dates.  It will
+   * throw an error if the team and site identifier is not provided.
+   * @param userid The string value (or undefined) for the requesting user identifer. 
+   * @param companyid The string value (or undefined) for any associated company identifier.
+   * @param siteid The string value (or undefined) for the site identifier.
+   */
+  async getAllDatabaseInfo(userid: string, siteid: string): Promise<void> {
+    try {
+      const builder = new BuildInitial(userid);
+      const initial = await builder.build();
+      if (initial.team) { 
+        this.employees = [];
+        if (initial.site && initial.site.id.toLowerCase() === siteid.toLowerCase()) {
+          if (initial.site.employees) {
+            initial.site.employees.forEach(emp => {
+              this.employees.push(new Employee(emp));
+            });
+          }
+        } else if (initial.team && initial.team.sites) {
+          initial.team.sites.forEach(site => {
+            if (site.id.toLowerCase() === siteid.toLowerCase()) {
+              if (site.employees) {
+                site.employees.forEach(emp => {
+                  this.employees.push(new Employee(emp));
+                });
+              }
+            }
+          })
+        }
+        this.employees.sort((a,b) => a.compareTo(b));
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 

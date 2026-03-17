@@ -1,4 +1,4 @@
-import { Mission } from "scheduler-node-models/metrics";
+import { Mission } from "scheduler-models/metrics";
 
 export class MissionDay {
   public missionDate: Date;

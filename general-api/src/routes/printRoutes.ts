@@ -1,15 +1,13 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { IUser, User } from 'scheduler-node-models/users';
-import { Logger, ReportRequest } from "scheduler-node-models/general";
+import { IUser, User } from 'scheduler-models/users';
+import { Logger, ReportRequest } from "scheduler-models/general";
 import { ChargeStatusReport, CofSReports, EnterpriseSchedule, LeaveReport, ScheduleReport } 
   from "../reports/scheduler";
 import { DrawSummary, MissionSummary } from "../reports/metrics";
 import { MidShiftReport } from "../reports/scheduler/midShiftReport";
 import { ModTimeReport } from "../reports/scheduler/modtimeReport";
-import { collections } from "../services/mongoconnect";
-import { postLogEntry } from "../services/logging";
-
+import { collections, postLogEntry } from "scheduler-services";
 const router = Router();
 const logger = new Logger(
   `${process.env.LOG_DIR}/general/process_${(new Date().toDateString())}.log`);

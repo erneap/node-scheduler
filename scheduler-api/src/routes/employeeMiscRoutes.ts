@@ -1,10 +1,9 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { getEmployee, getTeam, updateEmployee } from "./initialRoutes";
 import { EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, EmployeeWorkResponse, 
   IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
 import { ObjectId } from "mongodb";
-import { EmployeeService, postLogEntry } from "scheduler-services";
+import { EmployeeService, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 
@@ -24,20 +23,24 @@ router.put('/employee/specialty', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as EmployeeContactSpecialtyUpdate;
     if (data) {
-      const employee = await getEmployee(data.employee);
-      const team = await getTeam(employee.team, employee.site);
-      if (Boolean(data.value)) {
-        let sortid = 0;
-        team.specialties.forEach(sp => {
-          if (sp.id === data.typeid) {
-            sortid = sp.sort;
-          }
-        });
-        employee.addSpecialty(data.typeid, true, sortid);
-      } else {
-        employee.deleteSpecialty(data.contactid);
+      const empService = new EmployeeService();
+      const teamService = new TeamService();
+      const employee = await empService.get(data.employee);
+      const team = await teamService.getTeam(employee.team);
+      if (team) {
+        if (Boolean(data.value)) {
+          let sortid = 0;
+          team.specialties.forEach(sp => {
+            if (sp.id === data.typeid) {
+              sortid = sp.sort;
+            }
+          });
+          employee.addSpecialty(data.typeid, true, sortid);
+        } else {
+          employee.deleteSpecialty(data.contactid);
+        }
       }
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Specialty update data missing');
@@ -62,24 +65,28 @@ router.put('/employee/specialties', auth, async(req: Request, res: Response) => 
   try {
     const data = req.body as EmployeeSpecialtiesUpdate;
     if (data) {
-      const employee = await getEmployee(data.employee);
-      const team = await getTeam(employee.team, employee.site);
-      if (data.action.toLowerCase() === 'add') {
-        data.specialties.forEach(sid => {
-          let sortid = 0;
-          team.specialties.forEach(sp => {
-            if (sp.id === sid) {
-              sortid = sp.sort;
-            }
+      const empService = new EmployeeService();
+      const teamService = new TeamService();
+      const employee = await empService.get(data.employee);
+      const team = await teamService.getTeam(employee.team);
+      if (team) {
+        if (data.action.toLowerCase() === 'add') {
+          data.specialties.forEach(sid => {
+            let sortid = 0;
+            team.specialties.forEach(sp => {
+              if (sp.id === sid) {
+                sortid = sp.sort;
+              }
+            });
+            employee.addSpecialty(sid, true, sortid);
+          })
+        } else {
+          data.specialties.forEach(sid => {
+            employee.deleteSpecialty(sid);
           });
-          employee.addSpecialty(sid, true, sortid);
-        })
-      } else {
-        data.specialties.forEach(sid => {
-          employee.deleteSpecialty(sid);
-        });
+        }
       }
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Specialties update data missing');
@@ -105,20 +112,24 @@ router.put('/employee/contact', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as EmployeeContactSpecialtyUpdate;
     if (data) {
-      const employee = await getEmployee(data.employee);
-      const team = await getTeam(employee.team, employee.site);
-      if (data.contactid === 0) {
-        let sortid = 0;
-        team.contacttypes.forEach(sp => {
-          if (sp.id === data.typeid) {
-            sortid = sp.sort;
-          }
-        });
-        employee.addContactInfo(data.typeid, data.value, sortid);
-      } else {
-        employee.deleteContactInfo(data.contactid);
+      const empService = new EmployeeService();
+      const teamService = new TeamService();
+      const employee = await empService.get(data.employee);
+      const team = await teamService.getTeam(employee.team);
+      if (team) {
+        if (data.contactid === 0) {
+          let sortid = 0;
+          team.contacttypes.forEach(sp => {
+            if (sp.id === data.typeid) {
+              sortid = sp.sort;
+            }
+          });
+          employee.addContactInfo(data.typeid, data.value, sortid);
+        } else {
+          employee.deleteContactInfo(data.contactid);
+        }
       }
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Contact Info update data missing');
@@ -145,7 +156,11 @@ router.get('/employee/work/:id/:year', auth, async(req: Request, res: Response) 
     const sYear = req.params.year as string;
     if (empID && sYear) {
       const year = Number(sYear);
-      const employeeService = new EmployeeService()
+      const start = new Date(Date.UTC(year, 0, 1));
+      const end = new Date(Date.UTC(year+1, 0, 1))
+      const employeeService = new EmployeeService();
+      const work = await employeeService.getWork(empID, start, end);
+      res.status(200).json(work);
     } else {
       throw new Error('Employee ID and/or year missing');
     }

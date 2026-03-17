@@ -1,5 +1,5 @@
-import { Leave } from "scheduler-node-models/scheduler/employees";
-import { Holiday } from "scheduler-node-models/scheduler/teams/company";
+import { Leave } from "scheduler-models/scheduler/employees";
+import { Holiday } from "scheduler-models/scheduler/teams/company";
 
 export class LeavePeriod {
   public code: string;

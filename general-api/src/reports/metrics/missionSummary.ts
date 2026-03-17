@@ -1,12 +1,12 @@
 import { Alignment, Border, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { GeneralTypes, ISystemInfo, SystemInfo } from "scheduler-node-models/metrics/systemdata";
-import { User } from "scheduler-node-models/users";
-import { IMission, IOutage, Mission } from "scheduler-node-models/metrics";
-import { Outage } from "scheduler-node-models/metrics";
+import { GeneralTypes, ISystemInfo, SystemInfo } from "scheduler-models/metrics/systemdata";
+import { User } from "scheduler-models/users";
+import { IMission, IOutage, Mission } from "scheduler-models/metrics";
+import { Outage } from "scheduler-models/metrics";
 import { MissionType } from "./missionType";
-import { Report, ReportRequest } from "scheduler-node-models/general";
+import { Report, ReportRequest } from "scheduler-models/general";
 import fs from 'fs';
-import { collections } from "../../services/mongoconnect";
+import { collections } from "scheduler-services";
 
 export class MissionSummary extends Report {
   private reportType: GeneralTypes;

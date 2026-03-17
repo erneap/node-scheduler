@@ -2,8 +2,8 @@ import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exce
 import { Formula, Report } from "scheduler-models/general";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { User } from "scheduler-models/users";
-import { collections } from "scheduler-models/config";
 import { ObjectId } from "mongodb";
+import { TeamService } from 'scheduler-services';
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
 
 export class ManualExcelReport extends Report {
@@ -67,102 +67,34 @@ export class ManualExcelReport extends Report {
   async getAllDatabaseInfo(teamid: string | undefined, siteid: string | undefined, 
     companyid: string | undefined, start: Date, end: Date): Promise<void> {
     try {
-      if (this.teamID !== '' && this.siteID !== '' && this.companyID !== '') {
-        await this.getTeam(this.teamID);
-        const employees = await this.getEmployees(this.teamID, this.siteID, 
-          this.companyID, start, end);
-        this.employees = employees;
-        const employeeWorkPromises = 
-          this.employees.map(async (emp, e) => {
-            const work = await this.getEmployeeWork(emp.id, start.getFullYear(), 
-              end.getFullYear());
-            emp.work = work;
-            this.employees[e] = emp;
+      this.employees = [];
+      if (teamid && teamid !== '' && siteid && siteid !== '' && companyid 
+        && companyid !== '') {
+        this.teamID = teamid;
+        this.siteID = siteid;
+        this.companyID = companyid;
+        const teamService = new TeamService();
+        const team = await teamService.getTeam(teamid);
+        if (team) {
+          this.team = team;
+          this.team.sites.forEach(site => {
+            if (site.id.toLowerCase() === siteid.toLowerCase()) {
+              if (site.employees) {
+                site.employees.forEach(emp => {
+                  if (emp.companyinfo.company.toLowerCase() === this.companyID.toLowerCase()) {
+                    this.employees.push(new Employee(emp));
+                  }
+                });
+              }
+            }
           });
-        await Promise.allSettled(employeeWorkPromises);
+        }
       } else {
         throw new Error('TeamID or SiteID empty');
       }
     } catch (error) {
       console.log(error)
     }
-  }
-
-  /**
-   * This method will provide team and site information while filling in the team's
-   * workcodes and an associated company's holidays.
-   * @param teamid The string value for the team identifier.
-   * @param siteid The string value for the site assocated with the team
-   * @param companyid (Optional) a string value for the associated company
-   * @returns Nothing, but only returns after all values are placed in their respective
-   * class members.
-   */
-  async getTeam(teamid: string): Promise<void> {
-    try {
-      const teamQuery = { _id: new ObjectId(teamid) };
-      const iteam = await collections.teams!.findOne<ITeam>(teamQuery);
-      if (iteam) {
-        this.team = new Team(iteam);
-        return;
-      } else {
-        throw new Error('no team for id')
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getEmployees(team: string, site: string, company: string, start: Date, end: Date): Promise<Employee[]> {
-    const employees: Employee[] = [];
-    if (collections.employees) {
-      const end = new Date(Date.UTC(this.date.getFullYear(), this.date.getMonth() + 1, 1));
-      const empQuery = { team: new ObjectId(team), site: site };
-      const empCursor = await collections.employees.find<IEmployee>(empQuery);
-      const result = await empCursor.toArray();
-      result.forEach(async(iEmp) => {
-        const emp = new Employee(iEmp);
-        if (emp.companyinfo.company.toLowerCase() === company.toLowerCase()
-          && emp.atSite(this.siteID, this.date, end)) {
-          employees.push(emp);
-        }
-      });
-      employees.sort((a,b) => a.compareTo(b));
-    }
-    return employees;
-  }
-
-  /**
-   * This function will pull the requested employee's work records from the database to
-   * provide a single array.
-   * @param empid The string value for the employee for the work records to be pulled
-   * @param start The numeric value for the starting year for the pull query
-   * @param end The number value for the ending year for the pull query
-   * @returns An array of work objects to signify the work accompllished by charge number
-   * within the start and end years.
-   */
-  async getEmployeeWork(empid: string, start: number, end: number): Promise<Work[]> {
-    const work: Work[] = [];
-    if (collections.work) {
-      const empID = new ObjectId(empid);
-      const workQuery = { 
-        employeeID: empID,
-        year: { $gte: start, $lte: end }
-      };
-      const workCursor = collections.work.find<IWorkRecord>(workQuery);
-      const workResult = await workCursor.toArray();
-      try {
-        workResult.forEach(wr => {
-          const wRecord = new WorkRecord(wr);
-          wRecord.work.forEach(wk => {
-            work.push(new Work(wk));
-          });
-        });
-      } catch (error) {
-        throw error;
-      }
-      work.sort((a,b) => a.compareTo(b));
-    }
-    return work;
   }
 
   createStyles() {

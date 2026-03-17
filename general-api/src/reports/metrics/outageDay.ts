@@ -1,4 +1,4 @@
-import { Outage } from "scheduler-node-models/metrics";
+import { Outage } from "scheduler-models/metrics";
 
 export class OutageDay {
   public outageDate: Date;

@@ -23,7 +23,7 @@ export class TeamService {
    * @param teamid The string value for the team identifier.
    * @returns The team object for the identifier given.
    */
-  async GetTeam(teamid: string): Promise<Team | undefined> {
+  async getTeam(teamid: string): Promise<Team | undefined> {
     let team: Team | undefined = undefined;
     let conn: PoolConnection | undefined;
     try {
@@ -133,11 +133,120 @@ export class TeamService {
         throw new Error('No team collection provided');
       }
     } catch (err) {
-
+      throw err;
     } finally {
       if (conn) conn.release();
     }
 
     return team;
+  }
+
+  /**
+   * This method is used to create a new team in the database.  A new team usually 
+   * consists of just a name for the team, so it is processed as the object without any
+   * other preparation.
+   * @param team The team interface containing the new team values.
+   * @returns A team object for the new team.
+   */
+  async insertTeam(iTeam: ITeam): Promise<Team> {
+    try {
+      if (collections.teams) {
+        let team = new Team(iTeam);
+        if (!iTeam._id || iTeam._id.toString() === '' || iTeam._id.toString() === '0') {
+          const result = await collections.teams.insertOne(team);
+          team.id = result.insertedId.toString();
+        } else {
+          if (team.sites.length > 0) {
+            // sites are included so remove employees from each site before update
+            team.sites.forEach((site, s) => {
+              site.employees = undefined;
+              team.sites[s] = site;
+            });
+          }
+          const query = { _id: new ObjectId(team.id)};
+          const result = await collections.teams.replaceOne(query, team);
+        }
+        team = await this.getTeam(team.id);
+        return team;
+      } else {
+        throw new Error('No team collection provided');
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * This method is used to update/replace a team in the database.
+   * @param iTeam The team interface with the updated data.
+   * @returns A team object with the new data included.
+   */
+  async replaceTeam(iTeam: ITeam): Promise<Team> {
+    try {
+      let team = new Team(iTeam);
+      // since sites can include employees and this isn't a part of the team object, 
+      // we must remove them from the object before replacement, 
+      if (collections.teams) {
+        const query = { _id: new ObjectId(team.id) };
+        team.sites.forEach((site, s) => {
+          site.employees = undefined;
+          team.sites[s] = site;
+        });
+        await collections.teams.replaceOne(query, team);
+        team = await this.getTeam(team.id);
+        return team;
+      } else {
+        throw new Error('No team collections provided');
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * The method is used to remove a team from the database.  Almost all data in the 
+   * databases are associated with a team or an employee, and to prevent orphan records 
+   * for employees and associated data, all employee records for this team will be 
+   * removed at the same time.  This will be done via a list of employees.
+   * @param teamid The string value for the team identifier.
+   */
+  async deleteTeam(teamid: string): Promise<void> {
+    let conn: PoolConnection | undefined;
+    try {
+      if (collections.teams) {
+        // first get a list of employees associated with this team.
+        const empList: string[] = [];
+        if (collections.employees) {
+          const empQuery = { team: new ObjectId(teamid)};
+          const empCursor = collections.employees.find<IEmployee>(empQuery);
+          const empArray = await empCursor.toArray();
+          empArray.forEach(emp => {
+            empList.push(emp._id.toString());
+          });
+          await collections.employees.deleteMany(empQuery);
+        }
+        if (mdbConnection.pool) {
+          conn = await mdbConnection.pool.getConnection();
+          // delete all work for team employees
+          let sql = 'DELETE FROM employeeWork WHERE employeeID in ( ? );';
+          const empVals = [ empList ];
+          await conn.query(sql, empVals );
+
+          // delete all notices for employees in list, both sender and receiver
+          sql = "DELETE FROM notices WHERE sender in ( ? ) OR receiver in ( ? )";
+          const empVals2 = [empList, empList];
+
+          await conn.query(sql, empVals2);
+        }
+        const query = { _id: new ObjectId(teamid)};
+        await collections.teams.deleteOne(query);
+      } else {
+        throw new Error('No team collections provided')
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      if (conn) conn.release;
+    }
   }
 }

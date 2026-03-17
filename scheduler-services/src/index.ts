@@ -5,3 +5,4 @@ export * from './mongoconnect';
 export * from './sqldb';
 export * from './userService';
 export * from './employeeService';
+export * from './teamService';

@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { NewLeaveRequest, UpdateLeave } from "scheduler-models/scheduler/employees";
 import { getEmployee, updateEmployee } from "./initialRoutes";
-import { postLogEntry } from "scheduler-services";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -21,10 +21,11 @@ router.post('/employee/leave', auth, async(req: Request, res: Response) => {
     const data = req.body as NewLeaveRequest;
     if (data) {
       const lvDate = new Date(data.leavedate);
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.addLeave(0, lvDate, data.code, data.status, data.hours, '', 
         data.holcode);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('No new employee leave request data');
@@ -50,9 +51,10 @@ router.put('/employee/leave', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateLeave;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.updateLeave(data.leaveid, data.field, data.value);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('No employee leave update data');
@@ -81,9 +83,10 @@ router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Respon
     const empID = req.params.id as string;
     const leaveID = req.params.leave as string;
     if (empID && leaveID) {
-      const employee = await getEmployee(empID);
+      const empService = new EmployeeService();
+      const employee = await empService.get(empID);
       employee.deleteLeave(Number(leaveID));
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('No employee and/or leave identifier');

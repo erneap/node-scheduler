@@ -2,8 +2,7 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { ChangeAssignment, NewEmployeeAssignment } 
   from "scheduler-models/scheduler/employees";
-import { getEmployee, updateEmployee } from "./initialRoutes";
-import { postLogEntry } from "scheduler-services";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -16,7 +15,8 @@ router.post('/employee/assignment', auth, async(req: Request, res: Response) => 
     const data = req.body as NewEmployeeAssignment;
     if (data) {
       const start = new Date(data.start);
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.assignments.sort((a,b) => a.compareTo(b));
       employee.addAssignment(data.site, data.workcenter, start);
       employee.assignments.sort((a,b) => a.compareTo(b));
@@ -24,7 +24,7 @@ router.post('/employee/assignment', auth, async(req: Request, res: Response) => 
         employee.assignments[employee.assignments.length - 1]
           .changeScheduleDays(0, data.scheduledays)
       }
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(201).json(employee);
     } else {
       throw new Error('No new employee assignment request data');
@@ -50,10 +50,11 @@ router.put('/employee/assignment', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as ChangeAssignment;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.updateAssignment(data.asgmt, data.field, data.value, data.schedule, 
         data.workday);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     }
   } catch (err) {
@@ -88,9 +89,10 @@ router.delete('/employee/assignment/:id/:asgmt', auth, async(req: Request, res: 
     const asgmtID = req.params.asgmt as string;
 
     if (empID !== '' && asgmtID !== '') {
-      const employee = await getEmployee(empID);
+      const empService = new EmployeeService();
+      const employee = await empService.get(empID);
       employee.removeAssignment(Number(asgmtID));
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Employee or Assignment ID missing')

@@ -1,11 +1,10 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook } from "exceljs";
-import { Formula, Report, ReportRequest } from "scheduler-node-models/general";
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-node-models/scheduler/employees";
-import { User } from "scheduler-node-models/users";
-import { ObjectId } from "mongodb";
+import { Formula, Report, ReportRequest } from "scheduler-models/general";
+import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
+import { User } from "scheduler-models/users";
 import { ModMonth, ModWeek } from "./modPeriods";
-import { ITeam, Team } from "scheduler-node-models/scheduler/teams";
-import { collections } from "../../services/mongoconnect";
+import { Team } from "scheduler-models/scheduler/teams";
+import { TeamService } from "scheduler-services";
 
 export class ModTimeReport extends Report {
   private currentAsOf: Date;
@@ -78,16 +77,12 @@ export class ModTimeReport extends Report {
     companyid?: string): Promise<void> {
     try {
       if (teamid && teamid !== '' && siteid && siteid !== '' && companyid) {
-        await this.getModPeriods(teamid, companyid)
-        await this.getEmployees(teamid, siteid);
-        const employeeWorkPromises = 
-          this.employees.map(async (emp, e) => {
-            const work = await this.getEmployeeWork(emp.id, this.minDate.getFullYear(), 
-              this.maxDate.getFullYear());
-            emp.work = work;
-            this.employees[e] = emp;
-          });
-        await Promise.allSettled(employeeWorkPromises);
+        const teamService = new TeamService();
+        const team = await teamService.getTeam(teamid);
+        if (team) {
+          await this.setModPeriods(team, companyid);
+          await this.setEmployees(team, siteid);
+        }
       } else {
         throw new Error('TeamID, SiteID, or CompanyID empty');
       }
@@ -101,55 +96,17 @@ export class ModTimeReport extends Report {
    * @param teamid The string value for the team identifier.
    * @param siteid The string value for the site identifier.
    */
-  async getEmployees(teamid?: string, siteid?: string): Promise<void> {
-    if (teamid && siteid && collections.employees) {
-      // pull the employees for the team and site
-      this.employees = [];
-      const empQuery = { team: new ObjectId(teamid), site: siteid };
-      const empCursor = collections.employees.find<IEmployee>(empQuery);
-      const empResults = await empCursor.toArray();
-      empResults.forEach(iEmp => {
-        const emp = new Employee(iEmp);
-        if (emp.atSite(siteid, this.minDate, this.maxDate)) {
-          this.employees.push(new Employee(emp));
-        }
-      });
-      this.employees.sort((a,b) => a.compareTo(b));
-    }
-  }
-  
-  /**
-   * This function will pull the requested employee's work records from the database to
-   * provide a single array.
-   * @param empid The string value for the employee for the work records to be pulled
-   * @param start The numeric value for the starting year for the pull query
-   * @param end The number value for the ending year for the pull query
-   * @returns An array of work objects to signify the work accompllished by charge number
-   * within the start and end years.
-   */
-  async getEmployeeWork(empid: string, start: number, end: number): Promise<Work[]> {
-    const work: Work[] = [];
-    if (collections.work) {
-      const empID = new ObjectId(empid);
-      const workQuery = { 
-        employeeID: empID,
-        year: { $gte: start, $lte: end }
-      };
-      const workCursor = collections.work.find<IWorkRecord>(workQuery);
-      const workResult = await workCursor.toArray();
-      try {
-        workResult.forEach(wr => {
-          const wRecord = new WorkRecord(wr);
-          wRecord.work.forEach(wk => {
-            work.push(new Work(wk));
+  async setEmployees(team: Team, siteid: string): Promise<void> {
+    team.sites.forEach(site => {
+      if (site.id.toLowerCase() === siteid.toLowerCase()) {
+        if (site.employees) {
+          site.employees.forEach(emp => {
+            this.employees.push(new Employee(emp));
           });
-        });
-      } catch (error) {
-        throw error;
+          this.employees.sort((a,b) => a.compareTo(b));
+        }
       }
-      work.sort((a,b) => a.compareTo(b));
-    }
-    return work;
+    });
   }
 
   /**
@@ -158,88 +115,71 @@ export class ModTimeReport extends Report {
    * @param teamid The string value for the team identifier
    * @param companyid The string value for the team's company identifier.
    */
-  async getModPeriods(teamid?: string, companyid?: string): Promise<void> {
-    if (teamid && companyid) {
-      // start by getting team to allow for the pulling of the mod periods
-      let team: Team = new Team();
-      if (collections.teams) {
-        const teamQuery = { _id: new ObjectId(teamid) };
-        const iTeam = await collections.teams.findOne<ITeam>(teamQuery);
-        if (iTeam) {
-          team = new Team(iTeam);
-        } else {
-          throw new Error('Team not available');
-        }
-      } else {
-        throw new Error('No team collection');
-      }
-      // determine start and end dates for the total mod periods, if not avaiable throw
-      // an error
-      this.minDate = new Date(Date.UTC(this.currentAsOf.getFullYear(), 
-        this.currentAsOf.getMonth(), this.currentAsOf.getDate()));
-      this.maxDate = new Date(Date.UTC(this.currentAsOf.getFullYear(), 
-        this.currentAsOf.getMonth(), this.currentAsOf.getDate()));
-      let found = false;
-      team.companies.forEach(co => {
-        if (co.id.toLowerCase() === companyid.toLowerCase()) {
-          co.modperiods.forEach(mp => {
-            if (!found && mp.start.getTime() <= this.minDate.getTime() 
-              && mp.end.getTime() >= this.maxDate.getTime()) {
-              this.minDate = new Date(mp.start);
-              this.maxDate = new Date(mp.end);
-              found = true;
-            }
-          });
-        }
-      });
-
-      if (!found) {
-        throw new Error('No mod time period for company');
-      }
-
-      // create mod periods (months) based on min and max dates for fridays until
-      // maxdate. 
-      let start = new Date(this.minDate);
-      // reset start until it is on a friday by adding one day at a time
-      while (start.getDay() !== 5) {
-        start = new Date(start.getTime() + (24 * 3600000));
-      }
-
-      // now create the mod periods list by adding a monthly mod period each time the 
-      // date changes from the current month
-      let period: ModMonth = new ModMonth({month: new Date(0), weeks: []});
-      while (start.getTime() < this.maxDate.getTime()) {
-        if (period.month.getTime() === 0 || period.month.getMonth() !== start.getMonth()) {
-          if (period.month.getTime() !== 0) {
-            this.periods.push(new ModMonth(period));
+  async setModPeriods(team: Team, companyid: string): Promise<void> {
+    this.periods = [];
+    // determine start and end dates for the total mod periods, if not avaiable throw
+    // an error
+    this.minDate = new Date(Date.UTC(this.currentAsOf.getFullYear(), 
+      this.currentAsOf.getMonth(), this.currentAsOf.getDate()));
+    this.maxDate = new Date(Date.UTC(this.currentAsOf.getFullYear(), 
+      this.currentAsOf.getMonth(), this.currentAsOf.getDate()));
+    let found = false;
+    team.companies.forEach(co => {
+      if (co.id.toLowerCase() === companyid.toLowerCase()) {
+        co.modperiods.forEach(mp => {
+          if (!found && mp.start.getTime() <= this.minDate.getTime() 
+            && mp.end.getTime() >= this.maxDate.getTime()) {
+            this.minDate = new Date(mp.start);
+            this.maxDate = new Date(mp.end);
+            found = true;
           }
-          period = new ModMonth({
-            month: new Date(Date.UTC(start.getFullYear(), start.getMonth(), 1)),
-            weeks: []
-          });
-        }
-        // the weekly period is a Saturday, so set the begin date, then subtract a day
-        // until it's Saturday
-        let begin = new Date(start);
-        while (begin.getDay() !== 6) {
-          begin = new Date(begin.getTime() - (24 * 3600000));
-        }
-
-        // add the weekly period to the current month
-        period.weeks.push(new ModWeek({
-          start: begin,
-          end: start
-        }));
-        // add 7 days to get next possible weekly period
-        start = new Date(start.getTime() + (7 * 24 * 3600000));
+        });
       }
-      // if the monthly period isn't empty, add it to the periods list
-      if (period.month.getTime() > 0 && period.weeks.length > 0) {
-        this.periods.push(new ModMonth(period));
+    });
+
+    if (!found) {
+      throw new Error('No mod time period for company');
+    }
+
+    // create mod periods (months) based on min and max dates for fridays until
+    // maxdate. 
+    let start = new Date(this.minDate);
+    // reset start until it is on a friday by adding one day at a time
+    while (start.getDay() !== 5) {
+      start = new Date(start.getTime() + (24 * 3600000));
+    }
+
+    // now create the mod periods list by adding a monthly mod period each time the 
+    // date changes from the current month
+    let period: ModMonth = new ModMonth({month: new Date(0), weeks: []});
+    while (start.getTime() < this.maxDate.getTime()) {
+      if (period.month.getTime() === 0 || period.month.getMonth() !== start.getMonth()) {
+        if (period.month.getTime() !== 0) {
+          this.periods.push(new ModMonth(period));
+        }
+        period = new ModMonth({
+          month: new Date(Date.UTC(start.getFullYear(), start.getMonth(), 1)),
+          weeks: []
+        });
+      }
+      // the weekly period is a Saturday, so set the begin date, then subtract a day
+      // until it's Saturday
+      let begin = new Date(start);
+      while (begin.getDay() !== 6) {
+        begin = new Date(begin.getTime() - (24 * 3600000));
       }
 
-    } else {
-      throw new Error('Periods required data not provided');
+      // add the weekly period to the current month
+      period.weeks.push(new ModWeek({
+        start: begin,
+        end: start
+      }));
+      // add 7 days to get next possible weekly period
+      start = new Date(start.getTime() + (7 * 24 * 3600000));
+    }
+    // if the monthly period isn't empty, add it to the periods list
+    if (period.month.getTime() > 0 && period.weeks.length > 0) {
+      this.periods.push(new ModMonth(period));
     }
   }
 
