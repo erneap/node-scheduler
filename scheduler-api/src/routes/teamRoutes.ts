@@ -3,7 +3,7 @@ import { auth } from '../middleware/authorization.middleware';
 import { ObjectId } from "mongodb";
 import { Contact, ITeam, NewTeam, Specialty, Team, UpdateTeam } 
   from "scheduler-models/scheduler/teams";
-import { BuildInitial, collections, postLogEntry } from "scheduler-services";
+import { BuildInitial, collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -19,33 +19,17 @@ export default router;
 router.get('/team/:team', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
-    const userid = (req as any).user;
-    if (collections.teams) {
-      if (teamid && teamid !== '') {
-        let found = false;
-        if (userid && userid !== '') {
-          const build = new BuildInitial(userid);
-          const initial = await build.build();
-          if (initial.team && initial.team.id && initial.team.id === teamid) {
-            found = true;
-            res.status(200).json(initial.team);
-          }
-        }
-        if (!found) {
-          const query = { _id: new ObjectId(teamid) };
-          const iTeam = await collections.teams.findOne<ITeam>(query);
-          if (iTeam) {
-            const team = new Team(iTeam);
-            res.status(200).json(team);
-          } else {
-            throw new Error('Team not found');
-          }
-        }
+    if (teamid !== '') {
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        res.status(200).json(team);
       } else {
-        throw new Error('Team id not provided.')
+        throw new Error('Team not found');
       }
     } else {
-      throw new Error('No team collection provided')
+      throw new Error('Team id not provided.')
     }
   } catch (err) {
     const error = err as Error;
@@ -67,30 +51,25 @@ router.get('/team/:team', auth, async(req: Request, res: Response) => {
 router.post('/team', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewTeam;
-    if (collections.teams) {
-      if (data.name !== '') {
-        const teamCursor = await collections.teams.find<ITeam>({});
-        const teams = await teamCursor.toArray();
-        let found = false;
-        teams.forEach(tm => {
-          if (tm.name.toLowerCase() === data.name.toLowerCase()) {
-            found = true;
-          }
-        });
-        if (!found) {
-          const team = new Team();
-          team.name = data.name;
-          const result = await collections.teams.insertOne(team);
-          team.id = result.insertedId.toString();
-          res.status(200).json(team);
-        } else {
-          throw new Error('New Team Name already in use.')
+    const teamService = new TeamService();
+    const teams = await teamService.getAllTeams();
+    if (data.name !== '') {
+      let found = false;
+      teams.forEach(tm => {
+        if (tm.name.toLowerCase() === data.name.toLowerCase()) {
+          found = true;
         }
+      });
+      if (!found) {
+        const team = new Team();
+        team.name = data.name;
+        const result = await teamService.insertTeam(team);
+        res.status(200).json(result);
       } else {
-        throw new Error('Empty team name')
+        throw new Error('New Team Name already in use.')
       }
     } else {
-      throw new Error('No team collection provided')
+      throw new Error('Empty team name')
     }
   } catch (err) {
     const error = err as Error;
@@ -113,189 +92,185 @@ router.post('/team', auth, async(req: Request, res: Response) => {
 router.put('/team', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateTeam;
-    if (collections.teams) {
-      if (data.team !== '') {
-        const query = { _id: new ObjectId(data.team)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          let bfound = false;
-          let ifound = -1;
-          let max = -1;
-          let sort = -1;
-          switch (data.field.toLowerCase()) {
-            case "name":
-              team.name = data.value;
-              break;
-            case "addspecialty":
-              // first check to ensure the new specialty isn't already in the list
-              bfound = false;
-              max = -1;
-              sort = -1;
-              team.specialties.forEach(spc => {
-                if (spc.name.toLowerCase() === data.value.toLowerCase()) {
-                  bfound = true;
-                } else { 
-                  if (max < spc.id) {
-                    max = spc.id;
-                  }
-                  if (sort < spc.sort) {
-                    sort = spc.sort;
-                  }
+    const teamService = new TeamService();
+    if (data.team !== '') {
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        let bfound = false;
+        let ifound = -1;
+        let max = -1;
+        let sort = -1;
+        switch (data.field.toLowerCase()) {
+          case "name":
+            team.name = data.value;
+            break;
+          case "addspecialty":
+            // first check to ensure the new specialty isn't already in the list
+            bfound = false;
+            max = -1;
+            sort = -1;
+            team.specialties.forEach(spc => {
+              if (spc.name.toLowerCase() === data.value.toLowerCase()) {
+                bfound = true;
+              } else { 
+                if (max < spc.id) {
+                  max = spc.id;
                 }
-              });
-              // if not found, add it.
-              if (!bfound) {
-                team.specialties.push(new Specialty({
-                  id: max+1,
-                  name: data.value,
-                  sort: sort+1
-                }));
+                if (sort < spc.sort) {
+                  sort = spc.sort;
+                }
               }
-              break;
-            case "changespecialty":
-              if (data.optid) {
-                team.specialties.forEach((spc, s) => {
-                  if (spc.id === Number(data.optid)) {
-                    team.specialties[s].name = data.value;
-                  }
-                });
-              }
-              break;
-            case "movespecialty":
-              let spcID = -1;
-              if (data.optid) {
-                spcID = Number(data.optid);
-              }
-              team.specialties.sort((a,b) => a.compareTo(b));
-              // find the specialty to move, then swap sort numbers with either the one
-              // before (up) or after (down)
+            });
+            // if not found, add it.
+            if (!bfound) {
+              team.specialties.push(new Specialty({
+                id: max+1,
+                name: data.value,
+                sort: sort+1
+              }));
+            }
+            break;
+          case "changespecialty":
+            if (data.optid) {
               team.specialties.forEach((spc, s) => {
-                if (spc.id === spcID) {
-                  if (data.value.toLowerCase() === 'up' && s > 0) {
-                    const tsort = team.specialties[s-1].sort;
-                    team.specialties[s-1].sort = spc.sort;
-                    team.specialties[s].sort = tsort;
-                  } else if (data.value.toLowerCase() !== 'up' 
-                    && s < team.specialties.length - 1) {
-                    const tsort = team.specialties[s+1].sort;
-                    team.specialties[s+1].sort = spc.sort;
-                    team.specialties[s].sort = tsort;
-                  }
+                if (spc.id === Number(data.optid)) {
+                  team.specialties[s].name = data.value;
                 }
               });
-              break;
-            case "removespecialty":
-              // find the identifier for the specialty in the specialty list, then
-              // delete it.
-              ifound = -1;
-              let sID = -1;
-              if (data.optid) {
-                sID = Number(data.optid);
+            }
+            break;
+          case "movespecialty":
+            let spcID = -1;
+            if (data.optid) {
+              spcID = Number(data.optid);
+            }
+            team.specialties.sort((a,b) => a.compareTo(b));
+            // find the specialty to move, then swap sort numbers with either the one
+            // before (up) or after (down)
+            team.specialties.forEach((spc, s) => {
+              if (spc.id === spcID) {
+                if (data.value.toLowerCase() === 'up' && s > 0) {
+                  const tsort = team.specialties[s-1].sort;
+                  team.specialties[s-1].sort = spc.sort;
+                  team.specialties[s].sort = tsort;
+                } else if (data.value.toLowerCase() !== 'up' 
+                  && s < team.specialties.length - 1) {
+                  const tsort = team.specialties[s+1].sort;
+                  team.specialties[s+1].sort = spc.sort;
+                  team.specialties[s].sort = tsort;
+                }
+              }
+            });
+            break;
+          case "removespecialty":
+            // find the identifier for the specialty in the specialty list, then
+            // delete it.
+            ifound = -1;
+            let sID = -1;
+            if (data.optid) {
+              sID = Number(data.optid);
+            } else {
+              sID = Number(data.value);
+            }
+            team.specialties.forEach((spc, s) => {
+              if (spc.id === sID) {
+                ifound = s;
+              }
+            });
+            if (ifound >= 0) {
+              team.specialties.splice(ifound, 1);
+            }
+            break;
+          case "addcontact":
+          case "addcontacttype":
+            bfound = false;
+            max = -1;
+            sort = -1;
+            // search to see if the contact type is already in the list by name
+            team.contacttypes.forEach(ct => {
+              if (ct.name.toLowerCase() === data.value.toLowerCase()) {
+                bfound = true;
               } else {
-                sID = Number(data.value);
-              }
-              team.specialties.forEach((spc, s) => {
-                if (spc.id === sID) {
-                  ifound = s;
+                if (max < ct.id) {
+                  max = ct.id;
                 }
-              });
-              if (ifound >= 0) {
-                team.specialties.splice(ifound, 1);
-              }
-              break;
-            case "addcontact":
-            case "addcontacttype":
-              bfound = false;
-              max = -1;
-              sort = -1;
-              // search to see if the contact type is already in the list by name
-              team.contacttypes.forEach(ct => {
-                if (ct.name.toLowerCase() === data.value.toLowerCase()) {
-                  bfound = true;
-                } else {
-                  if (max < ct.id) {
-                    max = ct.id;
-                  }
-                  if (sort < ct.sort) {
-                    sort = ct.sort;
-                  }
+                if (sort < ct.sort) {
+                  sort = ct.sort;
                 }
-              });
-              // if not found, add it to the list at the end.
-              if (!bfound) {
-                team.contacttypes.push(new Contact({
-                  id: max+1,
-                  name: data.value,
-                  sort: sort+1
-                }));
               }
-              break;
-            case "changecontact":
-            case "changecontacttype":
-              if (data.optid) {
-                team.contacttypes.forEach((spc, s) => {
-                  if (spc.id === Number(data.optid)) {
-                    team.contacttypes[s].name = data.value;
-                  }
-                });
-              }
-              break;
-            case "movecontact":
-            case "movecontacttype":
-              let ctID = -1;
-              if (data.optid) {
-                ctID = Number(data.optid);
-              }
-              team.contacttypes.sort((a,b) => a.compareTo(b));
-              // find the specialty to move, then swap sort numbers with either the one
-              // before (up) or after (down)
+            });
+            // if not found, add it to the list at the end.
+            if (!bfound) {
+              team.contacttypes.push(new Contact({
+                id: max+1,
+                name: data.value,
+                sort: sort+1
+              }));
+            }
+            break;
+          case "changecontact":
+          case "changecontacttype":
+            if (data.optid) {
               team.contacttypes.forEach((spc, s) => {
-                if (spc.id === ctID) {
-                  if (data.value.toLowerCase() === 'up' && s > 0) {
-                    const tsort = team.contacttypes[s-1].sort;
-                    team.contacttypes[s-1].sort = spc.sort;
-                    team.contacttypes[s].sort = tsort;
-                  } else if (data.value.toLowerCase() !== 'up' 
-                    && s < team.contacttypes.length - 1) {
-                    const tsort = team.contacttypes[s+1].sort;
-                    team.contacttypes[s+1].sort = spc.sort;
-                    team.contacttypes[s].sort = tsort;
-                  }
+                if (spc.id === Number(data.optid)) {
+                  team.contacttypes[s].name = data.value;
                 }
               });
-              break;
-            case "removecontact":
-            case "removecontacttype":
-              // find the identifier for the specialty in the specialty list, then
-              // delete it.
-              ifound = -1;
-              let cID = -1;
-              if (data.optid) {
-                cID = Number(data.optid);
-              } else {
-                cID = Number(data.value);
-              }
-              team.contacttypes.forEach((spc, s) => {
-                if (spc.id === cID) {
-                  ifound = s;
+            }
+            break;
+          case "movecontact":
+          case "movecontacttype":
+            let ctID = -1;
+            if (data.optid) {
+              ctID = Number(data.optid);
+            }
+            team.contacttypes.sort((a,b) => a.compareTo(b));
+            // find the specialty to move, then swap sort numbers with either the one
+            // before (up) or after (down)
+            team.contacttypes.forEach((spc, s) => {
+              if (spc.id === ctID) {
+                if (data.value.toLowerCase() === 'up' && s > 0) {
+                  const tsort = team.contacttypes[s-1].sort;
+                  team.contacttypes[s-1].sort = spc.sort;
+                  team.contacttypes[s].sort = tsort;
+                } else if (data.value.toLowerCase() !== 'up' 
+                  && s < team.contacttypes.length - 1) {
+                  const tsort = team.contacttypes[s+1].sort;
+                  team.contacttypes[s+1].sort = spc.sort;
+                  team.contacttypes[s].sort = tsort;
                 }
-              });
-              if (ifound >= 0) {
-                team.contacttypes.splice(ifound, 1);
               }
-              break;
-          }
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found for identifier');
+            });
+            break;
+          case "removecontact":
+          case "removecontacttype":
+            // find the identifier for the specialty in the specialty list, then
+            // delete it.
+            ifound = -1;
+            let cID = -1;
+            if (data.optid) {
+              cID = Number(data.optid);
+            } else {
+              cID = Number(data.value);
+            }
+            team.contacttypes.forEach((spc, s) => {
+              if (spc.id === cID) {
+                ifound = s;
+              }
+            });
+            if (ifound >= 0) {
+              team.contacttypes.splice(ifound, 1);
+            }
+            break;
         }
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team identifier provided')
+        throw new Error('Team not found');
       }
     } else {
-      throw new Error('No team collection provided')
+      throw new Error('No team identifier provided')
     }
   } catch (err) {
     const error = err as Error;
@@ -315,21 +290,17 @@ router.put('/team', auth, async(req: Request, res: Response) => {
 router.delete('/team/:team', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
-    if (collections.teams) {
-      if (teamid !== '') {
-        const query = { _id: new ObjectId(teamid) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          await collections.teams.deleteOne(query);
-          res.status(200).json(new Team());
-        } else {
-          throw new Error('Team not found');
-        }
+    const teamService = new TeamService();
+    if (teamid !== '') {
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        await teamService.deleteTeam(teamid);
+        res.status(200).json(new Team());
       } else {
-        throw new Error('No team identifier given');
+        throw new Error('Team not found');
       }
     } else {
-      throw new Error('No team collection provided');
+      throw new Error('No team identifier given');
     }
   } catch (err) {
     const error = err as Error;

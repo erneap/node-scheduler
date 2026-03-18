@@ -21,7 +21,7 @@
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
     "rxjs": "~7.8.0",
-    "scheduler-node-models": "^1.2.144",
+    "scheduler-models": "^1.3.8",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

@@ -5,8 +5,7 @@ import {  ChangeAssignment, Employee, IEmployee, NewEmployeeAssignment }
 import { ObjectId } from "mongodb";
 import { IUser, User } from "scheduler-models/users";
 import { getDateFromString } from "./employeeAssignmentRoutes";
-import { getEmployee, updateEmployee } from "./initialRoutes";
-import { postLogEntry } from "scheduler-services";
+import { EmployeeService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 
@@ -25,9 +24,10 @@ router.post('/employee/variation', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewEmployeeAssignment;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.addVariation(data.site, data.start);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Data not provided')
@@ -56,9 +56,10 @@ router.put('/employee/variation', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as ChangeAssignment;
     if (data) {
-      const employee = await getEmployee(data.employee);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.employee);
       employee.updateVariation(data.asgmt, data.field, data.value, data.workday);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Data not provided.')
@@ -85,10 +86,11 @@ router.delete('/employee/variation/:id/:vari', auth, async(req: Request, res: Re
     const empID = req.params.id as string;
     const sVarID = req.params.vari as string;
     if (empID !== '' && sVarID !== '') {
-      const employee = await getEmployee(empID);
+      const empService = new EmployeeService();
+      const employee = await empService.get(empID);
       const variID = Number(sVarID);
       employee.removeVariation(variID);
-      await updateEmployee(employee);
+      await empService.replace(employee);
       res.status(200).json(employee);
     } else {
       throw new Error('Employee or Variation ID missing');

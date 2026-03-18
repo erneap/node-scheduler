@@ -5,13 +5,12 @@ import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
 import multer from 'multer';
 import { Site } from "scheduler-models/scheduler/sites";
-import { getAllDatabaseInfo } from "./initialRoutes";
 import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } 
   from 'scheduler-models/scheduler/ingest'
 import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } 
   from "scheduler-models/scheduler/employees";
 import { PoolConnection } from "mariadb/*";
-import { collections, postLogEntry } from "scheduler-services";
+import { BuildInitial, collections, EmployeeService, mdbConnection, postLogEntry, TeamService, UserService } from "scheduler-services";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -41,17 +40,14 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
         year: 'numeric'
       });
       // all excel report need the requesting user to be identified, if possible
+      const userService = new UserService();
       let user = new User();
       let id = ''
       if ((req as any).user) {
         id = (req as any).user as string
       } 
       if (collections.users && id !== '') {
-        const userQuery = { _id: new ObjectId(id)};
-        const iUser = await collections.users.findOne<IUser>(userQuery);
-        if (iUser) {
-          user = new User(iUser);
-        }
+        user = await userService.get(id);
       }
       var report = new ManualExcelReport();
       let rptname = `${companyid.toUpperCase()}-${formatter.format(date)}.xlsx`;
@@ -79,6 +75,10 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
   try {
     // ensure the upload file is present
     const files = req.files as Express.Multer.File[];
+    if (mdbConnection.pool) {
+      conn = await mdbConnection.pool.getConnection();
+    }
+    const empService = new EmployeeService();
 
     if (!files) {
       throw new Error('No files uploaded')
@@ -108,18 +108,28 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear() - 1, 0, 1));
     const end = new Date(Date.UTC(now.getUTCFullYear(), 11, 31));
-    const initial = await getAllDatabaseInfo(teamid, siteid, start, end);
-    if (initial.team && initial.team.companies) {
-      initial.team.companies.forEach(co => {
-        if (co.id.toLowerCase() === companyid.toLowerCase()) {
-          ingestMethod = co.ingest;
-        }
-      });
+    const teamService = new TeamService();
+    const team = await teamService.getTeam(teamid);
+    if (team) {
+      if (team.companies) {
+        team.companies.forEach(co => {
+          if (co.id.toLowerCase() === companyid.toLowerCase()) {
+            ingestMethod = co.ingest;
+          }
+        });
+      }
+      if (team.sites) {
+        team.sites.forEach(iSite => {
+          if (iSite.id.toLowerCase() === siteid.toLowerCase()) {
+            site = new Site(iSite);
+          }
+        })
+      }
     }
     const results: ExcelRowPeriod[] = [];
     switch (ingestMethod.toLowerCase().trim()) {
       case "sap":
-        const sapIngest = new SAPIngest(files, initial.team);
+        const sapIngest = new SAPIngest(files, team);
         const periods = await sapIngest.Process();
         periods.forEach(period => {
           results.push(new ExcelRowPeriod(period));
@@ -127,7 +137,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         break;
       case "mexcel":
         const excelIngest = new ExcelRowIngest(new Date(sDate), files, 
-          initial.team, initial.site, companyid);
+          team, site, companyid);
         const prds = await excelIngest.Process();
         prds.forEach(period => {
           results.push(new ExcelRowPeriod(period));
@@ -135,27 +145,12 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         break;
     }
     if (results.length > 0) {
-      const employees: Employee[] = [];
-      const employeelist: ObjectId[] = []
-      const employeeWork: WorkRecord[] = [];
-      if (collections.employees) {
-        const empQuery = { team: new ObjectId(teamid), site: site };
-        const empCursor = await collections.employees.find<IEmployee>(empQuery);
-        const result = await empCursor.toArray();
-        result.forEach(iEmp => {
-          employees.push(new Employee(iEmp));
-          employeelist.push(new ObjectId(iEmp._id));
-        });
-        employees.sort((a,b) => a.compareTo(b));
-      }
-      if (collections.work) {
-        const workQuery = { year: now.getUTCFullYear(), employeeID: { $in: employeelist }};
-        const workCursor = await collections.work.find<IWorkRecord>(workQuery);
-        const result = await workCursor.toArray();
-        result.forEach(iWR => {
-          employeeWork.push(new WorkRecord(iWR));
-        });
-      }
+      const employees: Employee[] = (site.employees) ? site.employees : [];
+      const employeelist: ObjectId[] = [];
+      employees.forEach(emp => {
+        employeelist.push(new ObjectId(emp.id));
+      });
+      employees.sort((a,b) => a.compareTo(b));
       const updatePromises = results.map(async(period) => {
         const employeePromises = period.employees.map(async(eEmp) => {
           const ePromises = employees.map(async(emp, e) => {
@@ -198,10 +193,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
       // after going through all the results, write each employee and employee work record
       // to the database.
       const employeeWritePromises = employees.map( async(emp) => {
-        const query = {_id: new ObjectId(emp.id)};
-        if (collections.employees) {
-          await collections.employees.replaceOne(query, emp);
-        }
+        await empService.replace(emp);
       });
       await Promise.allSettled(employeeWritePromises);
     }
@@ -209,6 +201,8 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     const error = err as Error;
     await postLogEntry('site', `ingest: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
+  } finally {
+    if (conn) conn.release();
   }
 });
 

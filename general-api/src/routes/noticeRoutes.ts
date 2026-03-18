@@ -2,34 +2,18 @@ import { Request, Response, Router } from "express";
 import { DeleteNotices, Logger, NewNotice, Notice } from "scheduler-models/general";
 import { auth } from '../middleware/authorization.middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { mdbConnection, postLogEntry } from "scheduler-services";
+import { mdbConnection, NoticeService, postLogEntry } from "scheduler-services";
 const router = Router();
 const logger = new Logger(
   `${process.env.LOG_DIR}/general/process_${(new Date().toDateString())}.log`);
 
 router.get('/notices/:userid', auth, async(req: Request, res: Response) => {
   const notices: Notice[] = [];
-  let conn;
   try {
     const userid = req.params.userid as string;
-    if (userid && mdbConnection.pool) {
-      // get a connection from the db.pool
-      conn = await mdbConnection.pool.getConnection();
-
-      // execute a query for notices for the user
-      const query = `SELECT * FROM notices WHERE receiver='${userid}' ORDER BY createdon;`;
-      const rows = await conn.query<any[]>(query);
-
-      // compile the notice rows into the list of notices
-      rows.forEach(row => {
-        notices.push(new Notice({
-          id: row.id,
-          date: new Date(row.createdon),
-          to: row.receiver,
-          from: row.sender,
-          message: row.message
-        }));
-      });
+    if (userid && userid !== '') {
+      const noticeService = new NoticeService();
+      const entries = await noticeService.get(userid);
       notices.sort((a,b) => a.compareTo(b));
     } else {
       throw new Error('No userid provided');
@@ -41,26 +25,15 @@ router.get('/notices/:userid', auth, async(req: Request, res: Response) => {
     const error = err as Error;
     await postLogEntry('general', `notices: get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
-  } finally {
-    if (conn) conn.release();
   }
 });
 
 router.post('/notice', auth, async(req: Request, res: Response) => {
-  let conn;
   try {
     const iNote = req.body as NewNotice;
-    if (iNote && iNote.message !== '' && mdbConnection.pool) {
-      conn = await mdbConnection.pool.getConnection();
-
-      const noteid = (uuidv4()).toString();
-      const now = new Date();
-
-      const sql = "INSERT INTO notices (id, createdon, receiver, sender, message) "
-        + "VALUES (?, ?, ?, ?, ?)";
-      const values = [ noteid, now, iNote.receiver, iNote.sender, iNote.message ];
-
-      const result = await conn.query(sql, values);
+    const noticeService = new NoticeService();
+    if (iNote && iNote.message !== '') {
+      await noticeService.insert(iNote.sender, iNote.receiver, iNote.message);
 
       res.status(201).json({"message": 'Note created'});
     } else {
@@ -70,8 +43,6 @@ router.post('/notice', auth, async(req: Request, res: Response) => {
     const error = err as Error;
     await postLogEntry('general', `notice: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
-  } finally {
-    if (conn) conn.release();
   }
 });
 
@@ -80,16 +51,12 @@ router.post('/notice', auth, async(req: Request, res: Response) => {
  * from the database.
  */
 router.delete('/notice/:id', auth, async(req: Request, res: Response) => {
-  let conn;
   try {
     const noteid = req.params.id as string;
-    if (noteid && mdbConnection.pool) {
-      conn = await mdbConnection.pool.getConnection();
-
-      const sql = "DELETE FROM notices WHERE id=? ";
-      const values = [ noteid ];
-
-      const results = await conn.query(sql, values);
+    const noticeService = new NoticeService();
+    if (noteid) {
+      const note = Number(noteid);
+      await noticeService.remove(note);
       res.status(200).json({'message':'Note deleted'});
     } else {
       throw new Error('Missing Data or connection pool');
@@ -98,32 +65,18 @@ router.delete('/notice/:id', auth, async(req: Request, res: Response) => {
     const error = err as Error;
     await postLogEntry('general', `notice: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
-  } finally {
-    if (conn) conn.release();
-  }
+  } 
 });
 
 router.delete('/notices', auth, async(req: Request, res: Response) => {
-  let conn;
   try {
     const notelist = req.body as DeleteNotices;
-    if (notelist &&  mdbConnection.pool) {
-      conn = await mdbConnection.pool.getConnection();
-
-      let sql = "DELETE FROM notices WHERE id IN (";
-      if (notelist.notes.length > 0) {
-        notelist.notes.forEach((id, i) => {
-          if (i > 0) {
-            sql += ',';
-          }
-          sql += `'${id}'`;
-        })
-        sql += ')';
-        const results = await conn.query(sql);
-        res.status(200).json({'message':'Notes deleted'});
-      } else {
-        res.status(200).json({'message': "Nothing to delete"});
-      }
+    if (notelist) {
+      const noticeService = new NoticeService();
+      notelist.notes.forEach(async (sNoteId) => {
+        const id = Number(sNoteId);
+        await noticeService.remove(id);
+      })
     } else {
       throw new Error('Missing Data or connection pool');
     }
@@ -131,8 +84,6 @@ router.delete('/notices', auth, async(req: Request, res: Response) => {
     const error = err as Error;
     await postLogEntry('general', `notices: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
-  } finally {
-    if (conn) conn.release();
   }
 });
 

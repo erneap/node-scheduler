@@ -2,12 +2,11 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
-import { getAllDatabaseInfo } from "./initialRoutes";
 import { LaborCode } from "scheduler-models/scheduler/labor";
 import { getDateFromString } from "./employeeAssignmentRoutes";
 import { Site } from "scheduler-models/scheduler/sites";
 import { CofSReport, NewSiteCofSReport, NewSiteCofSReportSection, Section, UpdateSiteCofSReport } from "scheduler-models/scheduler/sites/reports";
-import { collections, logConnection, postLogEntry } from "scheduler-services";
+import { BuildInitial, collections, logConnection, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -27,47 +26,43 @@ export default router;
 router.post('/site/cofs', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSiteCofSReport;
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team)};
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            let found = false;
-            let max = -1;
-            site.cofs.forEach(cofs => {
-              if (cofs.name.toLowerCase() === data.name.toLowerCase()
-                && cofs.startdate.getTime() === data.start.getTime()
-                && cofs.enddate.getTime() === data.end.getTime()) {
-                found = true;
-              } else if (max < cofs.id) {
-                max = cofs.id;
-              }
-            });
-            if (!found) {
-              site.cofs.push(new CofSReport({
-                id: max+1,
-                name: data.name,
-                shortname: data.shortname,
-                unit: data.unit,
-                startdate: new Date(data.start),
-                enddate: new Date(data.end)
-              }));
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    if (iTeam) {
+      const team = new Team(iTeam);
+      let answer = new Site();
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          let found = false;
+          let max = -1;
+          site.cofs.forEach(cofs => {
+            if (cofs.name.toLowerCase() === data.name.toLowerCase()
+              && cofs.startdate.getTime() === data.start.getTime()
+              && cofs.enddate.getTime() === data.end.getTime()) {
+              found = true;
+            } else if (max < cofs.id) {
+              max = cofs.id;
             }
-            team.sites[s] = site;
+          });
+          if (!found) {
+            site.cofs.push(new CofSReport({
+              id: max+1,
+              name: data.name,
+              shortname: data.shortname,
+              unit: data.unit,
+              startdate: new Date(data.start),
+              enddate: new Date(data.end)
+            }));
           }
-        });
-        await collections.teams.replaceOne(query, team);
-        const now = new Date();
-        const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-        const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-        res.status(200).json(initial.site);
-      } else {
-        throw new Error('Team not found');
-      }
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
+    
+      res.status(200).json(answer);
     } else {
-      throw new Error('Teams collection not found')
+      throw new Error('Team not found');
     }
   } catch (err) {
     const error = err as Error;
@@ -95,52 +90,46 @@ router.post('/site/cofs', auth, async(req: Request, res: Response) => {
 router.post('/site/cofs/section', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSiteCofSReportSection;
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team)};
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            site.cofs.forEach((cofs, c) => {
-              if (cofs.id === data.reportid) {
-                let found = false;
-                let max = -1;
-                cofs.sections.forEach(section => {
-                  if (section.label.toLowerCase() === data.label.toLowerCase()
-                    && section.company.toLowerCase() === data.company.toLowerCase()) {
-                    found = true;
-                  } else if (max < section.id) {
-                    max = section.id;
-                  }
-                });
-                if (!found) {
-                  cofs.sections.push(new Section({
-                    id: max+1,
-                    label: data.label,
-                    company: data.company,
-                    signature: data.signature,
-                    showunit: data.showunit
-                  }));
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    let answer = new Site();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          site.cofs.forEach((cofs, c) => {
+            if (cofs.id === data.reportid) {
+              let found = false;
+              let max = -1;
+              cofs.sections.forEach(section => {
+                if (section.label.toLowerCase() === data.label.toLowerCase()
+                  && section.company.toLowerCase() === data.company.toLowerCase()) {
+                  found = true;
+                } else if (max < section.id) {
+                  max = section.id;
                 }
-                cofs.sections.sort((a,b) => a.compareTo(b));
-                site.cofs[c] = cofs;
+              });
+              if (!found) {
+                cofs.sections.push(new Section({
+                  id: max+1,
+                  label: data.label,
+                  company: data.company,
+                  signature: data.signature,
+                  showunit: data.showunit
+                }));
               }
-            })
-            
-            team.sites[s] = site;
-          }
-        });
-        await collections.teams.replaceOne(query, team);
-        const now = new Date();
-        const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-        const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-        res.status(200).json(initial.site);
-      } else {
-        throw new Error('Team not found');
-      }
+              cofs.sections.sort((a,b) => a.compareTo(b));
+              site.cofs[c] = cofs;
+            }
+          })
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
+      res.status(200).json(answer);
     } else {
-      throw new Error('Teams collection not found')
+      throw new Error('Team not found');
     }
   } catch (err) {
     const error = err as Error;
@@ -165,141 +154,135 @@ router.post('/site/cofs/section', auth, async(req: Request, res: Response) => {
 router.put('/site/cofs', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateSiteCofSReport;
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team)};
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            site.cofs.forEach((cofs, c) => {
-              if (cofs.id === data.reportid) {
-                if (data.sectionid) {
-                  // this section allows for the updating of a CofS Section data
-                  cofs.sections.forEach((section, n) => {
-                    if (section.id === data.sectionid) {
-                      switch (data.field.toLowerCase()) {
-                        case "label":
-                          section.label = data.value;
-                          break;
-                        case "company":
-                          section.company = data.value;
-                          break;
-                        case "signature":
-                          section.signature = data.value;
-                          break;
-                        case "showunit":
-                          section.showunit = (data.value.toLowerCase() === 'true');
-                          break;
-                        case "addlaborcode":
-                        case "addlabor":
-                        case "add":
-                          const aparts = data.value.split('|');
-                          let found = false;
-                          section.laborcodes.forEach(lc => {
-                            if (aparts[0].toLowerCase() === lc.chargeNumber.toLowerCase()
-                              && aparts[1].toLowerCase() === lc.extension.toLowerCase()) {
-                              found = true;
-                            }
-                          });
-                          if (!found) {
-                            section.laborcodes.push(new LaborCode({
-                              chargeNumber: aparts[0],
-                              extension: aparts[1]
-                            }));
-                            section.laborcodes.sort((a,b) => a.compareTo(b));
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    let answer = new Site();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          site.cofs.forEach((cofs, c) => {
+            if (cofs.id === data.reportid) {
+              if (data.sectionid) {
+                // this section allows for the updating of a CofS Section data
+                cofs.sections.forEach((section, n) => {
+                  if (section.id === data.sectionid) {
+                    switch (data.field.toLowerCase()) {
+                      case "label":
+                        section.label = data.value;
+                        break;
+                      case "company":
+                        section.company = data.value;
+                        break;
+                      case "signature":
+                        section.signature = data.value;
+                        break;
+                      case "showunit":
+                        section.showunit = (data.value.toLowerCase() === 'true');
+                        break;
+                      case "addlaborcode":
+                      case "addlabor":
+                      case "add":
+                        const aparts = data.value.split('|');
+                        let found = false;
+                        section.laborcodes.forEach(lc => {
+                          if (aparts[0].toLowerCase() === lc.chargeNumber.toLowerCase()
+                            && aparts[1].toLowerCase() === lc.extension.toLowerCase()) {
+                            found = true;
                           }
-                          break;
-                        case "removelaborcode":
-                        case "removelabor":
-                        case "remove":
-                          const rparts = data.value.split('|');
-                          let pos = -1;
-                          section.laborcodes.forEach((lc, l) => {
-                            if (rparts[0].toLowerCase() === lc.chargeNumber.toLowerCase()
-                              && rparts[1].toLowerCase() === lc.extension.toLowerCase()) {
-                              pos = l;
-                            }
-                          });
-                          if (pos >= 0) {
-                            section.laborcodes.splice(pos, 1);
-                          }
-                          break;
-                        case "move":
-                          if (data.value.toLowerCase() === 'up') {
-                            if (n > 0) {
-                              const tsort = cofs.sections[n-1].id;
-                              cofs.sections[n-1].id = section.id;
-                              section.id = tsort;
-                            }
-                          } else {
-                            if (n < cofs.sections.length - 1) {
-                              const tsort = cofs.sections[n+1].id;
-                              cofs.sections[n+1].id = section.id;
-                              section.id = tsort;
-                            }
-                          }
-                          break;
-                      }
-                      cofs.sections[n] = section;
-                    }
-                  });
-                } else {
-                  // this section allows for the updating of the CofS Main data
-                  switch(data.field.toLowerCase()) {
-                    case "name":
-                      cofs.name = data.value;
-                      break;
-                    case "short":
-                    case "shortname":
-                      cofs.shortname = data.value;
-                      break;
-                    case "unit":
-                      cofs.unit = data.value;
-                      break;
-                    case "start":
-                    case "startdate":
-                      const sdate = getDateFromString(data.value);
-                      cofs.startdate = new Date(sdate);
-                      break;
-                    case "end":
-                    case "enddate":
-                      const edate = getDateFromString(data.value);
-                      cofs.enddate = new Date(edate);
-                      break;
-                    case "remove":
-                    case "removesection":
-                      const sid = Number(data.value);
-                      let found = -1;
-                      cofs.sections.forEach((section, n) => {
-                        if (section.id === sid) {
-                          found = n;
+                        });
+                        if (!found) {
+                          section.laborcodes.push(new LaborCode({
+                            chargeNumber: aparts[0],
+                            extension: aparts[1]
+                          }));
+                          section.laborcodes.sort((a,b) => a.compareTo(b));
                         }
-                      });
-                      if (found >= 0) {
-                        cofs.sections.splice(found,1);
-                      }
-                      break;
+                        break;
+                      case "removelaborcode":
+                      case "removelabor":
+                      case "remove":
+                        const rparts = data.value.split('|');
+                        let pos = -1;
+                        section.laborcodes.forEach((lc, l) => {
+                          if (rparts[0].toLowerCase() === lc.chargeNumber.toLowerCase()
+                            && rparts[1].toLowerCase() === lc.extension.toLowerCase()) {
+                            pos = l;
+                          }
+                        });
+                        if (pos >= 0) {
+                          section.laborcodes.splice(pos, 1);
+                        }
+                        break;
+                      case "move":
+                        if (data.value.toLowerCase() === 'up') {
+                          if (n > 0) {
+                            const tsort = cofs.sections[n-1].id;
+                            cofs.sections[n-1].id = section.id;
+                            section.id = tsort;
+                          }
+                        } else {
+                          if (n < cofs.sections.length - 1) {
+                            const tsort = cofs.sections[n+1].id;
+                            cofs.sections[n+1].id = section.id;
+                            section.id = tsort;
+                          }
+                        }
+                        break;
+                    }
+                    cofs.sections[n] = section;
                   }
+                });
+              } else {
+                // this section allows for the updating of the CofS Main data
+                switch(data.field.toLowerCase()) {
+                  case "name":
+                    cofs.name = data.value;
+                    break;
+                  case "short":
+                  case "shortname":
+                    cofs.shortname = data.value;
+                    break;
+                  case "unit":
+                    cofs.unit = data.value;
+                    break;
+                  case "start":
+                  case "startdate":
+                    const sdate = getDateFromString(data.value);
+                    cofs.startdate = new Date(sdate);
+                    break;
+                  case "end":
+                  case "enddate":
+                    const edate = getDateFromString(data.value);
+                    cofs.enddate = new Date(edate);
+                    break;
+                  case "remove":
+                  case "removesection":
+                    const sid = Number(data.value);
+                    let found = -1;
+                    cofs.sections.forEach((section, n) => {
+                      if (section.id === sid) {
+                        found = n;
+                      }
+                    });
+                    if (found >= 0) {
+                      cofs.sections.splice(found,1);
+                    }
+                    break;
                 }
-                cofs.sections.sort((a,b) => a.compareTo(b));
-                site.cofs[c] = cofs;
               }
-            })
-            
-            team.sites[s] = site;
-          }
-        });
-        await collections.teams.replaceOne(query, team);
-        const now = new Date();
-        const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-        const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-        res.status(200).json(initial.site);
-      } else {
-        throw new Error('Team not found');
-      }
+              cofs.sections.sort((a,b) => a.compareTo(b));
+              site.cofs[c] = cofs;
+            }
+          })
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
+      res.status(200).json(answer);
     } else {
-      throw new Error('Teams collection not found')
+      throw new Error('Team not found');
     }
   } catch (err) {
     const error = err as Error;
@@ -324,38 +307,33 @@ router.delete('/site/cofs/:team/:site/:id', auth, async(req: Request, res: Respo
     const teamid = req.params.team as string;
     const siteid = req.params.site as string;
     const srptId = req.params.id as string;
+    const teamService = new TeamService();
     if (teamid !== '' && siteid !== '' && srptId !== '') {
       const rptID = Number(srptId);
-      
-      const now = new Date();
-      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-      const initial = await getAllDatabaseInfo(teamid, siteid, begin, now);
-      const site = new Site(initial.site);
-      let found = -1;
-      site.cofs.forEach((cofs, f) => {
-        if (cofs.id === rptID) {
-          found = f;
-        }
-      });
-      if (found >= 0) {
-        site.cofs.splice(found, 1);
-      }
-      found = -1;
-      if (initial.team) {
-        initial.team.sites.forEach((tsite, s) => {
-          if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
-            found = s;
+      const iTeam = await teamService.getTeam(teamid);
+      let answer = new Site();
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.sites.forEach((site, s) => {
+          if (site.id.toLowerCase() === siteid.toLowerCase()) {
+            let found = -1;
+            site.cofs.forEach((cofs, f) => {
+              if (cofs.id === rptID) {
+                found = f;
+              }
+            })
+            if (found >= 0) {
+              site.cofs.splice(found, 1);
+            }
+            answer = new Site(site);
+            team.sites[s] = site;
           }
         });
-        if (found >= 0) {
-          initial.team.sites[found] = site;
-          const query = { _id: new ObjectId(initial.team.id)};
-          if (collections.teams) {
-            await collections.teams.replaceOne(query, initial.team);
-          }
-        }
+        await teamService.replaceTeam(team);
+        res.status(200).json(answer);
+      } else {
+        throw new Error('Team No found')
       }
-      res.status(200).json(site);
     } else {
       throw new Error('Missing Information: Team, site and/or CofS report id');
     }

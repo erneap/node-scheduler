@@ -3,7 +3,7 @@ import { auth } from '../middleware/authorization.middleware';
 import { ObjectId } from "mongodb";
 import { ITeam, NewCompany, Team, UpdateTeam } from "scheduler-models/scheduler/teams";
 import { Company } from "scheduler-models/scheduler/teams/company";
-import { collections, postLogEntry } from "scheduler-services";
+import { collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -23,35 +23,33 @@ router.post('/team/company', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewCompany;
     if (data.team !== '' && data.id !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          let found = false;
-          team.companies.forEach(co => {
-            if (co.id.toLowerCase() === data.id.toLowerCase() 
-              || co.name.toLowerCase() === data.name.toLowerCase()) {
-              found = true;
-            }
-          });
-          if (!found) {
-            team.companies.push(new Company({
-              id: data.id,
-              name: data.name,
-              ingest: data.ingest,
-              ingestPeriod: data.ingestPeriod,
-              startDay: data.startDay,
-              ingestPwd: data.ingestPwd
-            }));
-          } else {
-            throw new Error('Company already present')
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        let found = false;
+        team.companies.forEach(co => {
+          if (co.id.toLowerCase() === data.id.toLowerCase() 
+            || co.name.toLowerCase() === data.name.toLowerCase()) {
+            found = true;
           }
+        });
+        if (!found) {
+          team.companies.push(new Company({
+            id: data.id,
+            name: data.name,
+            ingest: data.ingest,
+            ingestPeriod: data.ingestPeriod,
+            startDay: data.startDay,
+            ingestPwd: data.ingestPwd
+          }));
         } else {
-          throw new Error('Team not found');
+          throw new Error('Company already present')
         }
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No teams collections provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required data not present')
@@ -78,44 +76,40 @@ router.put('/team/company', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateTeam;
     if (data.team !== '' && data.companyid && data.companyid !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
-              switch (data.field.toLowerCase()) {
-                case "name":
-                  co.name = data.value;
-                  break;
-                case "ingest":
-                  co.ingest = data.value;
-                  break;
-                case "period":
-                case "ingestperiod":
-                  co.ingestPeriod = Number(data.value);
-                  break;
-                case "start":
-                case "startday":
-                  co.startDay = Number(data.value);
-                  break;
-                case "pwd":
-                case "password":
-                case "ingestpwd":
-                  co.ingestPwd = data.value;
-                  break;
-              }
-              team.companies[c] = co;
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
+            switch (data.field.toLowerCase()) {
+              case "name":
+                co.name = data.value;
+                break;
+              case "ingest":
+                co.ingest = data.value;
+                break;
+              case "period":
+              case "ingestperiod":
+                co.ingestPeriod = Number(data.value);
+                break;
+              case "start":
+              case "startday":
+                co.startDay = Number(data.value);
+                break;
+              case "pwd":
+              case "password":
+              case "ingestpwd":
+                co.ingestPwd = data.value;
+                break;
             }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
-        }
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No teams collection provided')
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Either team and/or company identifier not present in request');
@@ -143,27 +137,23 @@ router.delete('/team/company/:team/:company', auth, async(req: Request, res: Res
     const teamid = req.params.team as string;
     const companyid = req.params.company as string;
     if (teamid !== '' && companyid !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(teamid) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          let found = -1;
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === companyid.toLowerCase()) {
-              found = c;
-            }
-          });
-          if (found >= 0) {
-            team.companies.splice(found, 1);
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        let found = -1;
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === companyid.toLowerCase()) {
+            found = c;
           }
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
+        });
+        if (found >= 0) {
+          team.companies.splice(found, 1);
         }
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team collections provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Missing either team or company identifier');

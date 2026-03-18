@@ -1,12 +1,11 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { getAllDatabaseInfo, getEmployee } from "./initialRoutes";
 import { SiteUpdate, NewSite } from 'scheduler-models/scheduler/sites/web';
 import { Site } from "scheduler-models/scheduler/sites";
 import { ObjectId } from "mongodb";
 import { Employee } from "scheduler-models/scheduler/employees";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
-import { BuildInitial, collections, postLogEntry } from "scheduler-services";
+import { BuildInitial, collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -44,36 +43,33 @@ router.get('/site/:id', auth, async(req: Request, res: Response) => {
 router.post('/site', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSite;
+    const teamService = new TeamService();
     if (data.teamid && data.id) {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.teamid)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          // check for site with the new site identifier, if present throw error
-          team.sites.forEach(s => {
-            if (s.id.toLowerCase() === data.id.toLowerCase()) {
-              throw new Error("Can't create new site with this identifier.")
-            }
-          });
+      const iTeam = await teamService.getTeam(data.teamid);
+      let answer = new Site();
+      if (iTeam) {
+        const team = new Team(iTeam);
+        // check for site with the new site identifier, if present throw error
+        team.sites.forEach(s => {
+          if (s.id.toLowerCase() === data.id.toLowerCase()) {
+            throw new Error("Duplicate: Can't create new site with this identifier.")
+          }
+        });
 
-          // not present, so add to team, update the team in the database and return 
-          // new site to the requestor
-          const nSite = new Site({
-            id: data.id,
-            name: data.name,
-            utcOffset: data.utcoffset,
-            showMids: data.showMids
-          });
-          team.sites.push(nSite);
-          team.sites.sort((a,b) => a.compareTo(b));
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(nSite);
-        } else {
-          throw new Error('No team for given identifier.');
-        }
+        // not present, so add to team, update the team in the database and return 
+        // new site to the requestor
+        answer = new Site({
+          id: data.id,
+          name: data.name,
+          utcOffset: data.utcoffset,
+          showMids: data.showMids
+        });
+        team.sites.push(answer);
+        team.sites.sort((a,b) => a.compareTo(b));
+        await teamService.replaceTeam(team);
+        res.status(200).json(answer);
       } else {
-        throw new Error('No team collection provided.');
+        throw new Error('Team not found');
       }
     }
   } catch (err) {
@@ -90,60 +86,40 @@ router.post('/site', auth, async(req: Request, res: Response) => {
 router.put('/site', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as SiteUpdate;
+    const teamService = new TeamService();
     if (data && data.team && data.site) {
-      // Get the site and team information
-      const now = new Date();
-      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-      const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-
+      const iTeam = await teamService.getTeam(data.team);
+      let answer = new Site();
       // update the basic site fields
-      if (initial.site) {
-        const site = new Site(initial.site);
-        switch (data.field.toLowerCase()) {
-          case "id":
-            site.id = data.value.toLowerCase();
-            break;
-          case "name":
-            site.name = data.value;
-            break;
-          case "utc":
-          case "utcoffset":
-          case "offset":
-            site.utcOffset = Number(data.value);
-            break;
-          case 'showmids':
-          case "mids":
-            site.showMids = (data.value.toLowerCase() === 'true');
-            break;
-        }
-
-        // update the team, then update the team in the database
-        if (initial.team && initial.team.sites) {
-          initial.team.sites.forEach((s, pos) => {
-            if (initial.team && initial.site && s.id === initial.site.id) {
-              initial.team.sites[pos] = site;
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.sites.forEach((site, s) => {
+          if (site.id.toLowerCase() === data.site.toLowerCase()) {
+            switch (data.field.toLowerCase()) {
+              case "id":
+                site.id = data.value.toLowerCase();
+                break;
+              case "name":
+                site.name = data.value;
+                break;
+              case "utc":
+              case "utcoffset":
+              case "offset":
+                site.utcOffset = Number(data.value);
+                break;
+              case 'showmids':
+              case "mids":
+                site.showMids = (data.value.toLowerCase() === 'true');
+                break;
             }
-          });
-        }
-        if (collections.teams && initial.team) {
-          const teamQuery = { _id: new ObjectId(initial.team.id)};
-          const result = await collections.teams.replaceOne(teamQuery, initial.team);
-          if (result.matchedCount <= 0) {
-            throw new Error('Team not updated');
+            answer = new Site(site);
+            team.sites[s] = site;
           }
-          site.employees = [];
-          if (initial.site.employees && site.employees) {
-            initial.site.employees.forEach(emp => {
-              if (site.employees) {
-                site.employees.push(new Employee(emp));
-              }
-            });
-            site.employees.sort((a,b) => a.compareTo(b));
-          }
-          res.status(200).json(site);
-        } else {
-          throw new Error('Team Collection not found');
-        }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(answer);
+      } else {
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Update data not provided')
@@ -171,29 +147,28 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
     const siteid = req.params.site as string;
-    if (teamid && siteid) {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(teamid)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          // get the site to delete based on the id.
-          let sitepos = -1;
-          team.sites.forEach((site, s) => {
-            if (site.id.toLowerCase() === siteid.toLowerCase()) {
-              sitepos = s;
-            }
-          });
-          if (sitepos >= 0) {
-            team.sites.splice(sitepos, 1);
+    if (teamid !== '' && siteid !== '') {
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        // get the site to delete based on the id.
+        let sitepos = -1;
+        team.sites.forEach((site, s) => {
+          if (site.id.toLowerCase() === siteid.toLowerCase()) {
+            sitepos = s;
           }
-
-          // update the database with the team
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(new Site());
-        } else {
-          throw new Error('No Team to update for identifier')
+        });
+        if (sitepos >= 0) {
+          await postLogEntry('site', `site: Delete: Site Deleted: ${siteid}`)
+          team.sites.splice(sitepos, 1);
         }
+
+        // update the database with the team
+        await teamService.replaceTeam(team);
+        res.status(200).json({ message: 'site deleted'});
+      } else {
+        throw new Error('Team not found')
       }
     } else {
       if (!teamid) {

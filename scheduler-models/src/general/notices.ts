@@ -3,7 +3,7 @@
  * database and user interfaces.
  */
 export interface INotice {
-  id?: string;
+  id?: number;
   date?: Date;
   to: string;
   from: string;
@@ -15,14 +15,14 @@ export interface INotice {
  * messages.
  */
 export class Notice implements INotice {
-  public id: string;
+  public id: number;
   public date: Date;
   public to: string;
   public from: string;
   public message: string;
 
   constructor(note?: INotice) {
-    this.id = (note && note.id) ? note.id : '';
+    this.id = (note && note.id) ? note.id : 0;
     this.date = (note && note.date) ? new Date(note.date) : new Date();
     this.to = (note) ? note.to : '';
     this.from = (note) ? note.from : '';

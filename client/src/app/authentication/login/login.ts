@@ -8,14 +8,14 @@ import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } 
 import { AuthService } from '../../services/auth-service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { IUser, SecurityQuestion, User } from 'scheduler-node-models/users';
+import { IUser, SecurityQuestion, User } from 'scheduler-models/users';
 import { EmployeeService } from '../../services/employee-service';
 import { SiteService } from '../../services/site-service';
 import { TeamService } from '../../services/team-service';
-import { InitialResponse } from 'scheduler-node-models/scheduler/web';
-import { Employee } from 'scheduler-node-models/scheduler/employees';
-import { Site } from 'scheduler-node-models/scheduler/sites';
-import { Team } from 'scheduler-node-models/scheduler/teams';
+import { InitialResponse } from 'scheduler-models/scheduler/web';
+import { Employee } from 'scheduler-models/scheduler/employees';
+import { Site } from 'scheduler-models/scheduler/sites';
+import { Team } from 'scheduler-models/scheduler/teams';
 
 @Component({
   selector: 'app-login',
@@ -84,6 +84,7 @@ export class Login {
 
   authorized() {
     const user = this.authService.getUser();
+    //this.noticeService.startNotices();
     this.employeeService.getInitial(user.id).subscribe({
       next: (res) => {
         const initial = (res.body as InitialResponse);
@@ -112,7 +113,11 @@ export class Login {
             this.authService.isAuthenticated.set(false);
             this.router.navigate(['/mustchange']);
           } else {
-            
+            if (false) {
+
+            } else {
+              this.router.navigate(['/employee/schedule']);
+            }
           }
         } else {
           this.authService.statusMessage.set('No initial data provided');

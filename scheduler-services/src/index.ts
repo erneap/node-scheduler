@@ -6,3 +6,5 @@ export * from './sqldb';
 export * from './userService';
 export * from './employeeService';
 export * from './teamService';
+export * from './noticeService';
+export * from './logService';

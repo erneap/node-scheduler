@@ -249,4 +249,28 @@ export class TeamService {
       if (conn) conn.release;
     }
   }
+
+  /**
+   * This method will provide a complete list of teams in the database.
+   * @returns An array of all team objects in the database.
+   */
+  async getAllTeams(): Promise<Team[]> {
+    const answer: Team[] = [];
+    try {
+      if (collections.teams) {
+        const teamCursor = collections.teams.find<ITeam>({});
+        const teamArray = await teamCursor.toArray();
+        teamArray.forEach(tm => {
+          answer.push(new Team(tm));
+        });
+        answer.sort((a,b) => (a.name < b.name) ? -1 : 1);
+        return answer;
+      } else {
+        throw new Error('No team collection provided');
+      }
+    } catch (err) {
+      throw err;
+    }
+    return answer;
+  }
 }

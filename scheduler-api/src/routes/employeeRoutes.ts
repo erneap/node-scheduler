@@ -1,13 +1,12 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { getEmployee, getUser, updateEmployee, updateUser } from "./initialRoutes";
 import { Employee, IEmployee } from "scheduler-models/scheduler/employees";
 import { IUser, User } from "scheduler-models/users";
 import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-models/general";
 import { SecurityQuestion } from "scheduler-models/users/question";
 import { genSaltSync, hashSync } from "bcrypt-ts";
-import { BuildInitial, collections, logConnection, postLogEntry } from "scheduler-services";
+import { BuildInitial, collections, EmployeeService, logConnection, postLogEntry, UserService } from "scheduler-services";
 
 const router = Router();
 
@@ -54,60 +53,21 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as IEmployee;
     if (data) {
-      const colUsers = collections.users;
-      const colEmp = collections.employees;
-      if (colUsers && colEmp) {
-        const userQuery = { 'emailAddress': data.email };
-        const iuser = await colUsers.findOne<IUser>(userQuery);
-        let user: User = new User();
-        if (!iuser || iuser === null) {
-          const newUser = new User();
-          newUser.firstName = data.name.firstname;
-          if (data.name.middlename) {
-            newUser.middleName = data.name.middlename;
-          }
-          newUser.lastName = data.name.lastname;
-          newUser.workgroups.push('scheduler-employee');
-          
-          const salt = genSaltSync(12)
-          const hash = hashSync((data.user && data.user.password) 
-            ? data.user.password : '', salt);
-          newUser.password = hash;
-          newUser.passwordExpires = new Date();
-          newUser.badAttempts = 0;
+      const empService = new EmployeeService();
+      const employee = await empService.insert(data);
+      const user = new User(employee.user);
+      user.workgroups.push('scheduler-employee');
+  
+      const salt = genSaltSync(12)
+      const hash = hashSync((data.user && data.user.password) 
+        ? data.user.password : '', salt);
+      user.password = hash;
+      user.passwordExpires = new Date();
+      user.badAttempts = 0;
 
-          const result = await colUsers.insertOne(newUser);
-          newUser.id = result.insertedId.toString();
-          user = new User(newUser);
-        } else {
-          user = new User(iuser);
-        }
-        if (user.id !== '') {
-          const empQuery = { _id: new ObjectId(user.id)};
-          const iEmp = await colEmp.findOne<IEmployee>(empQuery);
-          let employee: IEmployee = new Employee();
-          if (!iEmp) {
-            employee._id = new ObjectId(user.id);
-            employee.id = user.id;
-            employee.team = data.team;
-            employee.site = data.site;
-            employee.name.firstname = data.name.firstname;
-            employee.name.middlename = data.name.middlename;
-            employee.name.lastname = data.name.lastname;
-            employee.name.suffix = data.name.suffix;
-            await colEmp.insertOne(employee);
-          } else {
-            if (iEmp !== null) {
-              employee = iEmp;
-            }
-          }
-          const oEmp = new Employee(employee);
-          oEmp.user = new User(user);
-          res.status(201).json(oEmp);
-        }
-      } else {
-        throw new Error('No User or Employee Collection access');
-      }
+      const userService = new UserService();
+      userService.replace(user);
+      res.status(200).json(employee);
     } else {
       throw new Error(`No employee identifier`);
     }
@@ -127,8 +87,6 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateRequest
     if (data) {
-      let employee: IEmployee | undefined = undefined;
-      let user: IUser | undefined = undefined;
       switch (data.field.toLowerCase()) {
         case "first":
         case "firstname":
@@ -173,7 +131,8 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
           break;
       }
       // pull the employee from the database 
-      employee = await getEmployee(data.id);
+      const empService = new EmployeeService();
+      const employee = await empService.get(data.id);
       // return the employee object to the client.
       res.status(200).json(employee);
     } else {
@@ -198,7 +157,8 @@ router.put('/employee', auth, async(req: Request, res: Response) => {
  */
 async function modifyUser(id: string, field: string, value: string, 
   opt?: string): Promise<void> {
-  const user = await getUser(id);
+  const userService = new UserService();
+  const user = await userService.get(id);
   switch (field.toLowerCase()) {
     case "first":
     case "firstname":
@@ -282,7 +242,7 @@ async function modifyUser(id: string, field: string, value: string,
       }
       break;
   }
-  await updateUser(user);
+  await userService.replace(user);
 }
 
 /**
@@ -295,7 +255,8 @@ async function modifyUser(id: string, field: string, value: string,
  */
 async function modifyEmployee(id: string, field: string, value: string): 
   Promise<void> {
-  const employee = await getEmployee(id);
+  const empService = new EmployeeService();
+  const employee = await empService.get(id);
   // update the employee by the field given.
   switch (field.toLowerCase()) {
     case "first":
@@ -339,7 +300,7 @@ async function modifyEmployee(id: string, field: string, value: string):
       employee.companyinfo.division = value;
       break;
   }
-  await updateEmployee(employee);
+  await empService.replace(employee);
 }
 
 /**
@@ -358,30 +319,21 @@ async function modifyEmployee(id: string, field: string, value: string):
  */
 router.delete('/employee/:id/:by', auth, async(req: Request, res: Response) => {
   try {
+    const empService = new EmployeeService();
+    const userService = new UserService();
     const empID = req.params.id as string;
     const byID = req.params.by as string;
     let byName = '';
     let name = '';
     if (byID) {
-      const byUser = await getUser(byID);
+      const byUser = await userService.get(byID);
       byName = byUser.getFirstLast();
     }
     if (empID) {
-      const employee = await getEmployee(empID);
+      const employee = await empService.get(empID);
       name = employee.name.getFirstLast();
-      const query = { _id: new ObjectId(empID)};
-      if (collections.employees) {
-        let result = await collections.employees.deleteOne(query);
-        if (result.deletedCount > 0) {
-          await postLogEntry('employee', `Employee Deleted: ${name}, by: ${byName}`);
-        }
-      }
-      if (collections.users) { 
-        let result = await collections.users.deleteOne(query);
-        if (result.deletedCount > 0 && logConnection.employeeLog) {
-          logConnection.employeeLog.log(`User Deleted: ${name}, by: ${byName}`);
-        }
-      }
+      await empService.remove(empID);
+      await postLogEntry('employee', `Employee Deleted: ${name}, by: ${byName}`);
     }
     res.status(200).json({'message': 'employee deleted'});
   } catch (err) {

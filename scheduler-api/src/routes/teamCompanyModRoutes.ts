@@ -3,7 +3,7 @@ import { auth } from '../middleware/authorization.middleware';
 import { ObjectId } from "mongodb";
 import { ITeam, NewModPeriod, Team, UpdateTeam } from "scheduler-models/scheduler/teams";
 import { getDateFromString } from "./employeeAssignmentRoutes";
-import { collections, postLogEntry } from "scheduler-services";
+import { collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -24,24 +24,20 @@ router.post('/team/company/mod', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewModPeriod;
     if (data.team !== '' && data.companyid !== '' && data.year > 0) {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === data.companyid.toLowerCase()) {
-              co.addModPeriod(data.year, data.start, data.end);
-              team.companies[c] = co;
-            }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
-        }
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === data.companyid.toLowerCase()) {
+            co.addModPeriod(data.year, data.start, data.end);
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team collection is provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required data not present in request')
@@ -69,25 +65,21 @@ router.put('/team/company/mod', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateTeam;
     if (data.team !== '' && data.companyid && data.companyid !== '' && data.optid !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
-              const year = Number(data.optid);
-              co.updateModPeriod(year, data.field, getDateFromString(data.value))
-              team.companies[c] = co;
-            }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
-        }
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
+            const year = Number(data.optid);
+            co.updateModPeriod(year, data.field, getDateFromString(data.value))
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team collection is provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required data not present in request')
@@ -118,25 +110,21 @@ router.delete('/team/company/mod/:team/:company/:year', auth,
     const companyid = req.params.company as string;
     const sYear = req.params.year as string;
     if (teamid !== '' && companyid !== '' && sYear !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(teamid)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === companyid.toLowerCase()) {
-              const year = Number(sYear);
-              co.deleteModPeriod(year);
-              team.companies[c] = co;
-            }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
-        }
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === companyid.toLowerCase()) {
+            const year = Number(sYear);
+            co.deleteModPeriod(year);
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team collection is provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required data not present in request')

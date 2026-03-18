@@ -7,7 +7,6 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger-output.json';
 import { connectToDB, createPool } from 'scheduler-services';
 
-
 dotenv.config();
 connectToDB();
 createPool();

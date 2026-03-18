@@ -3,7 +3,7 @@ import { auth } from '../middleware/authorization.middleware';
 import { ObjectId } from "mongodb";
 import { ITeam, NewCompanyHoliday, Team, UpdateTeam } from "scheduler-models/scheduler/teams";
 import { HolidayType } from "scheduler-models/scheduler/teams/company";
-import { collections, postLogEntry } from "scheduler-services";
+import { collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -25,32 +25,28 @@ router.post('/team/company/holiday', auth, async(req: Request, res: Response) =>
   try {
     const data = req.body as NewCompanyHoliday;
     if (data.team !== '' && data.company !== '' && data.name !== '') {
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team) };
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === data.company.toLowerCase()) {
-              let found = false;
-              co.holidays.forEach(hol => {
-                if (hol.name.toLowerCase() === data.name.toLowerCase()) {
-                  found = true;
-                }
-              });
-              if (!found) {
-                co.addHoliday(data.holidayType, data.name);
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === data.company.toLowerCase()) {
+            let found = false;
+            co.holidays.forEach(hol => {
+              if (hol.name.toLowerCase() === data.name.toLowerCase()) {
+                found = true;
               }
-              team.companies[c] = co;
+            });
+            if (!found) {
+              co.addHoliday(data.holidayType, data.name);
             }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');
-        }
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No teams collections provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required data not present');
@@ -79,27 +75,23 @@ router.put('/team/company/holiday', auth, async(req: Request, res: Response) => 
     const data = req.body as UpdateTeam;
     if (data.team !== '' && data.companyid && data.companyid !== '' 
       && data.optid && data.optid !== '') {
+      const teamService = new TeamService();
       const holType: HolidayType = (data.optid.substring(0,1).toLowerCase() === 'h') 
         ? HolidayType.holiday : HolidayType.floating;
       const sortid = Number(data.optid.substring(1));
-      if (collections.teams) {
-        const query = { _id: new ObjectId(data.team)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
-              co.updateHoliday(holType, sortid, data.field, data.value);
-              team.companies[c] = co;
-            }
-          });
-          await collections.teams.replaceOne(query, team);
-          res.status(200).json(team);
-        } else {
-          throw new Error('Team not found');  
-        }
+      const iTeam = await teamService.getTeam(data.team);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === data.companyid?.toLowerCase()) {
+            co.updateHoliday(holType, sortid, data.field, data.value);
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('Teams collection not provided')
+        throw new Error('Team not found');  
       }
     } else {
       throw new Error('Required data not present');
@@ -129,27 +121,24 @@ router.delete('/team/company/holiday/:team/:company/:holid', auth,
     const teamid = req.params.team as string;
     const companyid = req.params.company as string;
     const holid = req.params.holid as string;
+    const teamService = new TeamService();
     if (teamid !== '' && companyid !== '' && holid !== '') {
       const holType = (holid.substring(0,1).toLowerCase() === 'h') ? HolidayType.holiday
         : HolidayType.floating;
       const sortID = Number(holid.substring(1));
-      if (collections.teams) {
-        const query = { _id: new ObjectId(teamid)};
-        const iTeam = await collections.teams.findOne<ITeam>(query);
-        if (iTeam) {
-          const team = new Team(iTeam);
-          team.companies.forEach((co, c) => {
-            if (co.id.toLowerCase() === companyid.toLowerCase()) {
-              co.deleteHoliday(holType, sortID);
-              team.companies[c] = co;
-            }
-          });
-          await collections.teams.replaceOne(query, team);
-        } else {
-          throw new Error('Team not found');
-        }
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        team.companies.forEach((co, c) => {
+          if (co.id.toLowerCase() === companyid.toLowerCase()) {
+            co.deleteHoliday(holType, sortID);
+            team.companies[c] = co;
+          }
+        });
+        await teamService.replaceTeam(team);
+        res.status(200).json(team);
       } else {
-        throw new Error('No team collection provided');
+        throw new Error('Team not found');
       }
     } else {
       throw new Error('Required information not present in request')

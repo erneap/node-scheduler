@@ -3,10 +3,9 @@ import { auth } from '../middleware/authorization.middleware';
 import { Forecast, NewSiteForecast, NewSiteForecastChargeNumber, UpdateSiteForecastChargeNumber } from 'scheduler-models/scheduler/sites/reports';
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
-import { getAllDatabaseInfo } from "./initialRoutes";
 import { LaborCode } from "scheduler-models/scheduler/labor";
 import { Site } from "scheduler-models/scheduler/sites";
-import { collections, postLogEntry } from "scheduler-services";
+import { collections, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;
@@ -25,56 +24,50 @@ export default router;
 router.post('/site/forecast', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSiteForecast;
-
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team) };
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            // check for report in list
-            let found = false;
-            let max = -1;
-            site.forecasts.forEach(fcst => {
-              if (fcst.name.toLowerCase() === data.name.toLowerCase()
-                && fcst.companyid.toLowerCase() === data.company.toLowerCase()
-                && fcst.startDate.getTime() === data.start.getTime()
-                && fcst.endDate.getTime() === data.end.getTime()) {
-                found = true;
-              } else if (fcst.id > max) {
-                max = fcst.id;
-              }
-            });
-            if (!found) {
-              const fsct = new Forecast({
-                id: max + 1,
-                name: data.name,
-                startDate: new Date(data.start),
-                endDate: new Date(data.end),
-                companyid: data.company,
-                sortfirst: data.sortFirst
-              });
-              fsct.changePeriodsStart(data.period);
-              site.forecasts.push(fsct);
-              site.forecasts.sort((a,b) => a.compareTo(b));
-            } else {
-              throw new Error('Team site forecast found');
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    let answer = new Site();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          // check for report in list
+          let found = false;
+          let max = -1;
+          site.forecasts.forEach(fcst => {
+            if (fcst.name.toLowerCase() === data.name.toLowerCase()
+              && fcst.companyid.toLowerCase() === data.company.toLowerCase()
+              && fcst.startDate.getTime() === data.start.getTime()
+              && fcst.endDate.getTime() === data.end.getTime()) {
+              found = true;
+            } else if (fcst.id > max) {
+              max = fcst.id;
             }
-            team.sites[s] = site;
+          });
+          if (!found) {
+            const fsct = new Forecast({
+              id: max + 1,
+              name: data.name,
+              startDate: new Date(data.start),
+              endDate: new Date(data.end),
+              companyid: data.company,
+              sortfirst: data.sortFirst
+            });
+            fsct.changePeriodsStart(data.period);
+            site.forecasts.push(fsct);
+            site.forecasts.sort((a,b) => a.compareTo(b));
+          } else {
+            throw new Error('Team site forecast found');
           }
-        });
-        await collections.teams.replaceOne(query, team);
-      } else {
-        throw new Error('Team not found');
-      }
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
     } else {
-      throw new Error('No Teams Collection');
+      throw new Error('Team not found');
     }
-    const now = new Date();
-    const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-    const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-    res.status(200).json(initial.site);
+    res.status(200).json(answer);
   } catch (err) {
     const error = err as Error;
     await postLogEntry('site', `siteForecast: Post: Error: ${error.message}`);
@@ -97,61 +90,55 @@ router.post('/site/forecast', auth, async(req: Request, res: Response) => {
 router.post('/site/forecast/labor', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSiteForecastChargeNumber;
-
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team) };
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            site.forecasts.forEach((fcst, f) => {
-              if (fcst.id === data.forecast) {
-                let found = false;
-                let max = -1;
-                fcst.laborCodes.forEach(lc => {
-                  if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
-                    && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
-                    found = true;
-                  } else if (max < lc.sort) {
-                    max = lc.sort;
-                  }
-                });
-                if (!found) {
-                  fcst.laborCodes.push(new LaborCode({
-                    chargeNumber: data.chargeNumber,
-                    extension: data.extension,
-                    clin: data.clin,
-                    slin: data.slin,
-                    location: data.location,
-                    wbs: data.wbs,
-                    minimumEmployees: data.minimum,
-                    notAssignedName: data.vacantName,
-                    hoursPerEmployee: data.hoursPerEmployee,
-                    exercise: data.exercise,
-                    startDate: data.start,
-                    endDate: data.end,
-                    sort: max + 1
-                  }));
-                  fcst.laborCodes.sort((a,b) => a.compareTo(b));
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    let answer = new Site();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          site.forecasts.forEach((fcst, f) => {
+            if (fcst.id === data.forecast) {
+              let found = false;
+              let max = -1;
+              fcst.laborCodes.forEach(lc => {
+                if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
+                  && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
+                  found = true;
+                } else if (max < lc.sort) {
+                  max = lc.sort;
                 }
-                site.forecasts[f] = fcst;
+              });
+              if (!found) {
+                fcst.laborCodes.push(new LaborCode({
+                  chargeNumber: data.chargeNumber,
+                  extension: data.extension,
+                  clin: data.clin,
+                  slin: data.slin,
+                  location: data.location,
+                  wbs: data.wbs,
+                  minimumEmployees: data.minimum,
+                  notAssignedName: data.vacantName,
+                  hoursPerEmployee: data.hoursPerEmployee,
+                  exercise: data.exercise,
+                  startDate: data.start,
+                  endDate: data.end,
+                  sort: max + 1
+                }));
+                fcst.laborCodes.sort((a,b) => a.compareTo(b));
               }
-            })
-            team.sites[s] = site;
-          }
-        });
-        await collections.teams.replaceOne(query, team);
-      } else {
-        throw new Error('Team not found');
-      }
+              site.forecasts[f] = fcst;
+            }
+          });
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
     } else {
-      throw new Error('Teams collection not found')
+      throw new Error('Team not found');
     }
-    const now = new Date();
-    const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-    const initial = await getAllDatabaseInfo(data.team, data.site, begin, now);
-    res.status(200).json(initial.site);
+    res.status(200).json(answer);
   } catch (err) {
     const error = err as Error;
     await postLogEntry('site', `siteForecast: Labor: Post: Error: ${error.message}`);
@@ -170,148 +157,147 @@ router.post('/site/forecast/labor', auth, async(req: Request, res: Response) => 
 router.put('/site/forecast', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as UpdateSiteForecastChargeNumber
-    if (collections.teams) {
-      const query = { _id: new ObjectId(data.team) };
-      const iTeam = await collections.teams.findOne<ITeam>(query);
-      if (iTeam) {
-        const team = new Team(iTeam);
-        team.sites.forEach((site, s) => {
-          if (site.id.toLowerCase() === data.site.toLowerCase()) {
-            site.forecasts.forEach((fcst, f) => {
-              if (fcst.id === data.forecast) {
-                // if the data provided includes a charge number and extension then the
-                // update is for a labor code, else its for the forecast itself.
-                if (data.chargeNumber !== '' && data.extension !== '') {
-                  if (data.field.toLowerCase() !== 'remove') {
-                    fcst.laborCodes.sort((a,b) => a.compareTo(b));
-                    fcst.laborCodes.forEach((lc, l) => {
-                      if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
-                        && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
-                        switch (data.field.toLowerCase()) {
-                          case "chargenumber":
-                          case "cn":
-                            lc.chargeNumber = data.value;
-                            break;
-                          case "extension":
-                          case "ext":
-                            lc.extension = data.value;
-                            break;
-                          case "clin":
-                            lc.clin = data.value;
-                            break;
-                          case "slin":
-                            lc.slin = data.value;
-                            break;
-                          case "location":
-                            lc.location = data.value;
-                            break;
-                          case "wbs":
-                            lc.wbs = data.value;
-                            break;
-                          case "minimums":
-                          case "minimumemployees":
-                            lc.minimumEmployees = Number(data.value);
-                            break;
-                          case "vacantname":
-                          case "notassigned":
-                          case "notassignedname":
-                            lc.notAssignedName = data.value;
-                            break;
-                          case "hours":
-                          case "hoursperemployee":
-                            lc.hoursPerEmployee = Number(data.value);
-                            break;
-                          case "exercise":
-                            lc.exercise = (data.value.toLowerCase() === 'true');
-                            break;
-                          case "start":
-                          case "startdate":
-                            lc.startDate = getDateFromString(data.value);
-                            break;
-                          case "end":
-                          case "enddate":
-                            lc.endDate = getDateFromString(data.value);
-                            break;
-                          case "move":
-                            if (data.value.toLowerCase() === 'up') {
-                              if (l > 0) {
-                                const tSort = fcst.laborCodes[l-1].sort;
-                                fcst.laborCodes[l-1].sort = lc.sort;
-                                lc.sort = tSort;
-                              }
-                            } else {
-                              if (l < fcst.laborCodes.length - 1) {
-                                const tSort = fcst.laborCodes[l+1].sort;
-                                fcst.laborCodes[l+1].sort = lc.sort;
-                                lc.sort = tSort;
-                              }
+    const teamService = new TeamService();
+    const iTeam = await teamService.getTeam(data.team);
+    let answer = new Site();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach((site, s) => {
+        if (site.id.toLowerCase() === data.site.toLowerCase()) {
+          site.forecasts.forEach((fcst, f) => {
+            if (fcst.id === data.forecast) {
+              // if the data provided includes a charge number and extension then the
+              // update is for a labor code, else its for the forecast itself.
+              if (data.chargeNumber !== '' && data.extension !== '') {
+                if (data.field.toLowerCase() !== 'remove') {
+                  fcst.laborCodes.sort((a,b) => a.compareTo(b));
+                  fcst.laborCodes.forEach((lc, l) => {
+                    if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
+                      && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
+                      switch (data.field.toLowerCase()) {
+                        case "chargenumber":
+                        case "cn":
+                          lc.chargeNumber = data.value;
+                          break;
+                        case "extension":
+                        case "ext":
+                          lc.extension = data.value;
+                          break;
+                        case "clin":
+                          lc.clin = data.value;
+                          break;
+                        case "slin":
+                          lc.slin = data.value;
+                          break;
+                        case "location":
+                          lc.location = data.value;
+                          break;
+                        case "wbs":
+                          lc.wbs = data.value;
+                          break;
+                        case "minimums":
+                        case "minimumemployees":
+                          lc.minimumEmployees = Number(data.value);
+                          break;
+                        case "vacantname":
+                        case "notassigned":
+                        case "notassignedname":
+                          lc.notAssignedName = data.value;
+                          break;
+                        case "hours":
+                        case "hoursperemployee":
+                          lc.hoursPerEmployee = Number(data.value);
+                          break;
+                        case "exercise":
+                          lc.exercise = (data.value.toLowerCase() === 'true');
+                          break;
+                        case "start":
+                        case "startdate":
+                          lc.startDate = getDateFromString(data.value);
+                          break;
+                        case "end":
+                        case "enddate":
+                          lc.endDate = getDateFromString(data.value);
+                          break;
+                        case "move":
+                          if (data.value.toLowerCase() === 'up') {
+                            if (l > 0) {
+                              const tSort = fcst.laborCodes[l-1].sort;
+                              fcst.laborCodes[l-1].sort = lc.sort;
+                              lc.sort = tSort;
                             }
-                            break;
-                        }
-                        fcst.laborCodes[l] = lc;
-                        fcst.laborCodes.sort((a,b) => a.compareTo(b));
+                          } else {
+                            if (l < fcst.laborCodes.length - 1) {
+                              const tSort = fcst.laborCodes[l+1].sort;
+                              fcst.laborCodes[l+1].sort = lc.sort;
+                              lc.sort = tSort;
+                            }
+                          }
+                          break;
                       }
-                    });
-                  } else {
-                    let found = -1;
-                    fcst.laborCodes.forEach((lc, l) => {
-                      if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
-                        && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
-                        found = l;
-                      }
-                    });
-                    if (found >= 0) {
-                      fcst.laborCodes.splice(found, 1);
+                      fcst.laborCodes[l] = lc;
+                      fcst.laborCodes.sort((a,b) => a.compareTo(b));
                     }
-                  }
+                  });
                 } else {
-                  switch (data.field.toLowerCase()) {
-                    case "name":
-                      fcst.name = data.value;
-                      break;
-                    case "company":
-                    case "companyid":
-                      fcst.companyid = data.value;
-                      break;
-                    case "sortfirst":
-                      fcst.sortfirst = (data.value.toLowerCase() === 'true');
-                      break;
-                    case "start":
-                    case "startdate":
-                      fcst.startDate = getDateFromString(data.value);
-                      break;
-                    case "end":
-                    case "enddate":
-                      fcst.endDate = getDateFromString(data.value);
-                      break;
-                    case "period":
-                      fcst.changePeriodsStart(Number(data.value));
-                      break;
-                    case "move":
-                    case "moveperiod":
-                      const parts = data.value.split('|');
-                      const fromDate = getDateFromString(parts[0]);
-                      const toDate = getDateFromString(parts[1]);
-                      fcst.movePeriodBetweenMonths(fromDate, toDate);
-                      break;
-                    case "addperiod":
-                      const newPrd = getDateFromString(data.value);
-                      fcst.addOutofCycleSubPeriod(newPrd);
-                      break;
+                  let found = -1;
+                  fcst.laborCodes.forEach((lc, l) => {
+                    if (lc.chargeNumber.toLowerCase() === data.chargeNumber.toLowerCase()
+                      && lc.extension.toLowerCase() === data.extension.toLowerCase()) {
+                      found = l;
+                    }
+                  });
+                  if (found >= 0) {
+                    fcst.laborCodes.splice(found, 1);
                   }
                 }
-                site.forecasts[f] = fcst;
+              } else {
+                switch (data.field.toLowerCase()) {
+                  case "name":
+                    fcst.name = data.value;
+                    break;
+                  case "company":
+                  case "companyid":
+                    fcst.companyid = data.value;
+                    break;
+                  case "sortfirst":
+                    fcst.sortfirst = (data.value.toLowerCase() === 'true');
+                    break;
+                  case "start":
+                  case "startdate":
+                    fcst.startDate = getDateFromString(data.value);
+                    break;
+                  case "end":
+                  case "enddate":
+                    fcst.endDate = getDateFromString(data.value);
+                    break;
+                  case "period":
+                    fcst.changePeriodsStart(Number(data.value));
+                    break;
+                  case "move":
+                  case "moveperiod":
+                    const parts = data.value.split('|');
+                    const fromDate = getDateFromString(parts[0]);
+                    const toDate = getDateFromString(parts[1]);
+                    fcst.movePeriodBetweenMonths(fromDate, toDate);
+                    break;
+                  case "addperiod":
+                    const newPrd = getDateFromString(data.value);
+                    fcst.addOutofCycleSubPeriod(newPrd);
+                    break;
+                }
               }
-            });
-            team.sites[s] = site;
-          }
-        });
-        await collections.teams.replaceOne(query, team);
-      } else {
-        throw new Error('Team not found');
-      }
+              site.forecasts[f] = fcst;
+            }
+          });
+          answer = new Site(site);
+          team.sites[s] = site;
+        }
+      });
+      await teamService.replaceTeam(team);
+      res.status(200).json(answer);
     } else {
-      throw new Error('Teams Collection not found');
+      throw new Error('Team not found');
     }
   } catch (err) {
     const error = err as Error;
@@ -359,36 +345,31 @@ router.delete('/site/forecast/:team/:site/:id', auth, async(req: Request, res: R
     const srptId = req.params.id as string;
     if (teamid !== '' && siteid !== '' && srptId !== '') {
       const rptID = Number(srptId);
-      
-      const now = new Date();
-      const begin = new Date(Date.UTC(now.getFullYear() - 1, 1, 1));
-      const initial = await getAllDatabaseInfo(teamid, siteid, begin, now);
-      const site = new Site(initial.site);
-      let found = -1;
-      site.forecasts.forEach((fcst, f) => {
-        if (fcst.id === rptID) {
-          found = f;
-        }
-      });
-      if (found >= 0) {
-        site.forecasts.splice(found, 1);
-      }
-      found = -1;
-      if (initial.team) {
-        initial.team.sites.forEach((tsite, s) => {
-          if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
-            found = s;
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        let answer = new Site();
+        team.sites.forEach((site, s) => {
+          if (site.id.toLowerCase() === siteid.toLowerCase()) {
+            let found = -1;
+            site.forecasts.forEach((fcst, f) => {
+              if (fcst.id === rptID) {
+                found = f;
+              }
+            });
+            if (found >= 0) {
+              site.forecasts.splice(found, 1);
+            }
+            answer = new Site(site);
+            team.sites[s] = site;
           }
         });
-        if (found >= 0) {
-          initial.team.sites[found] = site;
-          const query = { _id: new ObjectId(initial.team.id)};
-          if (collections.teams) {
-            await collections.teams.replaceOne(query, initial.team);
-          }
-        }
+        await teamService.replaceTeam(team);
+        res.status(200).json(answer);
+      } else {
+        throw new Error('Team not found');
       }
-      res.status(200).json(site);
     } else {
       throw new Error('Missing Information: Team, site and/or forecast report id');
     }
@@ -417,12 +398,25 @@ router.get('/site/forecast/labor/:team/:site/:start/:end', auth,
     const sStart = req.params.start as string;
     const sEnd = req.params.end as string;
     if (teamid !== '' && siteid !== '' && sStart !== '' && sEnd !== '') {
-      const start = getDateFromString(sStart);
-      const end = getDateFromString(sEnd);
-      const initial = await getAllDatabaseInfo(teamid, siteid, start, end);
-      const site = new Site(initial.site);
-      const answer = site.getCurrentLaborCodes(start, end);
-      res.status(200).json(answer);
+      const teamService = new TeamService();
+      const iTeam = await teamService.getTeam(teamid);
+      if (iTeam) {
+        const team = new Team(iTeam);
+        let answer: LaborCode[] = [];
+        const start = getDateFromString(sStart);
+        const end = getDateFromString(sEnd);
+        team.sites.forEach(site => {
+          if (site.id.toLowerCase() === siteid.toLowerCase()) {
+            const codes = site.getCurrentLaborCodes(start, end);
+            codes.forEach(lc => {
+              answer.push(new LaborCode(lc));
+            });
+          }
+        });
+        res.status(200).json(answer);
+      } else {
+        throw new Error('Team not found');
+      }
     } else {
       throw new Error('Missing Information: Team, site and/or periods.')
     }
@@ -431,4 +425,4 @@ router.get('/site/forecast/labor/:team/:site/:start/:end', auth,
     await postLogEntry('site', `siteForecast: Labor: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
-})
+});
