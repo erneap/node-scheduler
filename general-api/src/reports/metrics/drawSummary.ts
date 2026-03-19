@@ -2,11 +2,10 @@ import { Alignment, Borders, Fill, Font, Workbook } from "exceljs";
 import { IMission, IOutage, Mission, Outage } from "scheduler-models/metrics";
 import { GeneralTypes, ISystemInfo, SystemInfo } from "scheduler-models/metrics/systemdata";
 import { User } from "scheduler-models/users";
-import { Report, ReportRequest } from 'scheduler-models/general';
 import { MissionDay } from "./missionDay";
 import { OutageDay } from "./outageDay";
 import fs from 'fs';
-import { collections } from "scheduler-services";
+import { collections, Report, ReportRequest } from "scheduler-services";
 
 export class DrawSummary extends Report {
   private reportType: GeneralTypes;

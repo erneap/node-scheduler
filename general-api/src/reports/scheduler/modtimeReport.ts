@@ -1,10 +1,9 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook } from "exceljs";
-import { Formula, Report, ReportRequest } from "scheduler-models/general";
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
+import { Employee } from "scheduler-models/scheduler/employees";
 import { User } from "scheduler-models/users";
 import { ModMonth, ModWeek } from "./modPeriods";
 import { Team } from "scheduler-models/scheduler/teams";
-import { TeamService } from "scheduler-services";
+import { Formula, Report, ReportRequest, TeamService } from "scheduler-services";
 
 export class ModTimeReport extends Report {
   private currentAsOf: Date;

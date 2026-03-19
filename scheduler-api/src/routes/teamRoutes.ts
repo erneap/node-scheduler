@@ -1,9 +1,8 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { ObjectId } from "mongodb";
-import { Contact, ITeam, NewTeam, Specialty, Team, UpdateTeam } 
+import { Contact, NewTeam, Specialty, Team, UpdateTeam } 
   from "scheduler-models/scheduler/teams";
-import { BuildInitial, collections, postLogEntry, TeamService } from "scheduler-services";
+import { postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;

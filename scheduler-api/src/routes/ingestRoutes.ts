@@ -5,12 +5,12 @@ import { auth } from '../middleware/authorization.middleware';
 import { ManualExcelReport } from "../reports/mexcel";
 import multer from 'multer';
 import { Site } from "scheduler-models/scheduler/sites";
-import { ExcelRow, SAPIngest, ExcelRowIngest, ExcelRowPeriod } 
+import { ExcelRowPeriod } 
   from 'scheduler-models/scheduler/ingest'
 import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } 
   from "scheduler-models/scheduler/employees";
 import { PoolConnection } from "mariadb/*";
-import { BuildInitial, collections, EmployeeService, mdbConnection, postLogEntry, TeamService, UserService } from "scheduler-services";
+import { BuildInitial, collections, EmployeeService, ExcelRowIngest, mdbConnection, postLogEntry, SAPIngest, TeamService, UserService } from "scheduler-services";
 
 const router = Router();
 const storage = multer.memoryStorage();

@@ -1,5 +1,6 @@
-import { LogEntry, Logger } from 'scheduler-models/general';
+import { LogEntry } from 'scheduler-models/general';
 import { mdbConnection } from './sqldb';
+import { Logger } from './logger';
 
 export const logConnection: {
   log?: Logger,

@@ -1,5 +1,4 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { Formula, Report, ReportRequest } from "scheduler-models/general";
 import { ISite, Site } from "scheduler-models/scheduler/sites";
 import { CompareWorkCode, IWorkcode, LaborCode, Workcode } 
   from "scheduler-models/scheduler/labor";
@@ -9,7 +8,7 @@ import { Forecast, Period } from "scheduler-models/scheduler/sites/reports";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
-import { BuildInitial, TeamService } from 'scheduler-services'
+import { BuildInitial, Formula, Report, ReportRequest, TeamService } from 'scheduler-services'
 
 export class ChargeStatusReport extends Report {
   private site: Site;

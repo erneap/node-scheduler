@@ -1,10 +1,8 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook } from "exceljs";
-import { ObjectId } from "mongodb";
-import { Report, ReportRequest } from "scheduler-models/general";
 import { Employee, IEmployee } from "scheduler-models/scheduler/employees";
 import { User } from "scheduler-models/users";
 import { MidShift } from "./midshift";
-import { BuildInitial } from "scheduler-services";
+import { BuildInitial, Report, ReportRequest } from "scheduler-services";
 
 export class MidShiftReport extends Report {
   private currentAsOf: Date;

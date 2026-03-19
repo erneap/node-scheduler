@@ -1,5 +1,5 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { Formula, Report } from "scheduler-models/general";
+import { Formula, Report } from "scheduler-services";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { User } from "scheduler-models/users";
 import { ObjectId } from "mongodb";

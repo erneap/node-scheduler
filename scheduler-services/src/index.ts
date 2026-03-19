@@ -12,3 +12,4 @@ export * from './noticeService';
 export * from './logService';
 export * from './report';
 export * from './sapIngest';
+export * from './excelRowIngest';

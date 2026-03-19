@@ -1,9 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import morgan from 'morgan';
-import helmet from 'helmet';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import { notFound, errorHandler } from "./middleware/index.middleware";
 import { connectToDB, createPool } from 'scheduler-services';
 import indexRoutes from './routes/index.routes';

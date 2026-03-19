@@ -1,12 +1,12 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { ObjectId } from "mongodb";
-import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { Team } from "scheduler-models/scheduler/teams";
 import { LaborCode } from "scheduler-models/scheduler/labor";
 import { getDateFromString } from "./employeeAssignmentRoutes";
 import { Site } from "scheduler-models/scheduler/sites";
-import { CofSReport, NewSiteCofSReport, NewSiteCofSReportSection, Section, UpdateSiteCofSReport } from "scheduler-models/scheduler/sites/reports";
-import { BuildInitial, collections, logConnection, postLogEntry, TeamService } from "scheduler-services";
+import { CofSReport, NewSiteCofSReport, NewSiteCofSReportSection, Section, 
+  UpdateSiteCofSReport } from "scheduler-models/scheduler/sites/reports";
+import { logConnection, postLogEntry, TeamService } from "scheduler-services";
 
 const router = Router();
 export default router;

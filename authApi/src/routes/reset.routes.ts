@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { compareSync, genSaltSync, hashSync } from 'bcrypt-ts';
-import { ForgotPasswordRequest, ISecurityQuestion, IUser, PasswordResetRequest, SecurityQuestion, SecurityQuestionResponse, User } from 'scheduler-models/users';
-import { sendMail } from 'scheduler-models/general';
-import { collections, mdbConnection, postLogEntry, UserService } from 'scheduler-services';
+import { ForgotPasswordRequest, ISecurityQuestion, PasswordResetRequest, 
+  SecurityQuestion, SecurityQuestionResponse, User } from 'scheduler-models/users';
+import { collections, mdbConnection, postLogEntry, sendMail, UserService } from 'scheduler-services';
 
 const router = express.Router();
 

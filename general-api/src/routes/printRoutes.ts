@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
 import { IUser, User } from 'scheduler-models/users';
-import { Logger, ReportRequest } from "scheduler-models/general";
+import { Logger, ReportRequest } from "scheduler-services";
 import { ChargeStatusReport, CofSReports, EnterpriseSchedule, LeaveReport, ScheduleReport } 
   from "../reports/scheduler";
 import { DrawSummary, MissionSummary } from "../reports/metrics";

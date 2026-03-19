@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { Logger } from 'scheduler-models/general';
+import { Logger } from 'scheduler-services';
 
 export function notFound(req: Request, res: Response, next: NextFunction) {
   res.status(404);

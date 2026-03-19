@@ -2,8 +2,8 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ILogEntry, Log, LogEntry, Logger, LogList } from "scheduler-models/general";
-import { LogService, mdbConnection, postLogEntry } from "scheduler-services";
+import { ILogEntry, Log, LogEntry, LogList } from "scheduler-models/general";
+import { Logger, LogService, postLogEntry } from "scheduler-services";
 
 const router = Router();
 const logger = new Logger(

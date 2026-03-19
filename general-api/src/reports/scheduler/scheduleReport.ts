@@ -1,4 +1,4 @@
-import { Report, ReportRequest } from "scheduler-models/general";
+import { Report, ReportRequest } from "scheduler-services";
 import { Workcode } from "scheduler-models/scheduler/labor";
 import { Site } from "scheduler-models/scheduler/sites";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";

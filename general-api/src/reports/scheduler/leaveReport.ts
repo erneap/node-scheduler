@@ -4,11 +4,10 @@ import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } from "sched
 import { Holiday, IHoliday } from "scheduler-models/scheduler/teams/company";
 import { IWorkcode, Workcode } from "scheduler-models/scheduler/labor";
 import { User } from "scheduler-models/users";
-import { Formula, Report, ReportRequest } from "scheduler-models/general";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { Site } from "scheduler-models/scheduler/sites";
-import { BuildInitial } from "scheduler-services";
+import { BuildInitial, Formula, Report, ReportRequest } from "scheduler-services";
 
 export class LeaveReport extends Report {
   private site: Site;

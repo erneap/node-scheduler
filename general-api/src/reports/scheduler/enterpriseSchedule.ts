@@ -1,14 +1,11 @@
 import { Alignment, Borders, Fill, Font, Style, Workbook, Worksheet } from "exceljs";
-import { Report, ReportRequest } from "scheduler-models/general";
 import { User } from "scheduler-models/users";
 import { Workcode } from "scheduler-models/scheduler/labor";
-import { ISite, Site } from "scheduler-models/scheduler/sites";
-import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
+import { Site } from "scheduler-models/scheduler/sites";
+import { Employee } from "scheduler-models/scheduler/employees";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
 
-import { BuildInitial, collections } from "scheduler-services";
-import { ObjectId } from "mongodb";
-import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { BuildInitial, collections, Report, ReportRequest } from "scheduler-services";
 
 export class EnterpriseSchedule extends Report {
   private fonts: Map<string, Partial<Font>>;
