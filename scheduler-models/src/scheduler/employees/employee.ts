@@ -14,7 +14,6 @@ import { AnnualLeave, IAnnualLeave } from "./balance";
 import { CompareWorkCode, Workcode } from '../labor/workcode';
 import { ChangeLeaveRequestResponse } from "./web"
 import { LaborCode } from "../labor/laborcode";
-import { v4 as uuidv4} from 'uuid';
 
 /**
  * The employee is recorded by 
@@ -1451,7 +1450,7 @@ export class Employee implements IEmployee {
 
     // if not found, create a new leave request
     if (!answer) {
-      const id = uuidv4().toString();
+      const id = (new Date()).getTime().toString();
       answer = new LeaveRequest({
         id: id,
         employeeid: this.id,

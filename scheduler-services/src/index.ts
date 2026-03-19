@@ -1,4 +1,6 @@
 export * from './buildInitial';
+export * from './emailer';
+export * from './logger';
 export * from './logging';
 export * from './logPosting';
 export * from './mongoconnect';
@@ -8,3 +10,5 @@ export * from './employeeService';
 export * from './teamService';
 export * from './noticeService';
 export * from './logService';
+export * from './report';
+export * from './sapIngest';

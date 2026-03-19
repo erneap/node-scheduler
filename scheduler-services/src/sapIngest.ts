@@ -1,5 +1,5 @@
-import { ITeam, Team } from "../teams";
-import { ExcelRow, ExcelRowPeriod } from "./excelRow";
+import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { ExcelRow, ExcelRowPeriod } from "scheduler-models/scheduler/ingest/excelRow";
 import { Workbook } from "exceljs";
 import { Readable } from "stream";
 

@@ -1,9 +1,9 @@
 import { Row, Workbook } from "exceljs";
-import { ISite, Site } from "../sites";
-import { ITeam, Team } from "../teams";
-import { ExcelRow, ExcelRowPeriod } from "./excelRow";
-import { LaborCode } from "../labor";
-import { Employee } from "../employees";
+import { ISite, Site } from "scheduler-models/scheduler/sites";
+import { ITeam, Team } from "scheduler-models/scheduler/teams";
+import { ExcelRow, ExcelRowPeriod } from "scheduler-models/scheduler/ingest/excelRow";
+import { LaborCode } from "scheduler-models/scheduler/labor";
+import { Employee } from "scheduler-models/scheduler/employees";
 import {Readable } from 'stream';
 
 export class ExcelRowIngest {
