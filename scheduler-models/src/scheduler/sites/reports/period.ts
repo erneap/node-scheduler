@@ -14,7 +14,7 @@ export class Period implements IPeriod {
       per.periods.forEach(p => {
         this.periods.push(new Date(p));
       });
-      per.periods.sort((a,b) => (a.getTime() < b.getTime()) ? -1 : 1);
+      this.periods.sort((a,b) => (a.getTime() < b.getTime()) ? -1 : 1);
     }
   }
 

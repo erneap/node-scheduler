@@ -23,6 +23,7 @@ export class NoticeService extends CacheService {
   }
 
   startNotices() {
+    this.getNotices();
     const minutes = 1;
     if (this.interval && this.interval !== null) {
       clearInterval(this.interval)
@@ -40,7 +41,7 @@ export class NoticeService extends CacheService {
     }
   }
 
-  getNotices(): Observable<HttpResponse<INotice[]>> {
+  getNotices() {
     const iUser = this.getItem<IUser>('user');
     let userid = '';
     if (iUser) {
@@ -48,8 +49,8 @@ export class NoticeService extends CacheService {
       userid = user.id;
     }
     const url = `${this.generalApi}/notices/${userid}`;
-    return this.http.get<INotice[]>(url, {observe: 'response'}).pipe(
-      map(res => {
+    this.http.get<INotice[]>(url, {observe: 'response'}).subscribe({
+      next: (res) => {
         const iNotes = (res.body as INotice[]);
         const notices: Notice[] = [];
         iNotes.forEach(note => {
@@ -58,8 +59,10 @@ export class NoticeService extends CacheService {
         this.showAlerts.set(this.notices().length > 0);
         notices.sort((a,b) => a.compareTo(b));
         this.notices.set(notices)
-        return res;
-      })
-    );
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
   }
 }

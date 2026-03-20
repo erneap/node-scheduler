@@ -1,3 +1,5 @@
+import { ILeave, Leave } from "../../employees";
+
 export enum HolidayType {
   holiday = 'H',
   floating = 'F'
@@ -13,6 +15,7 @@ export interface IHoliday {
   name: string;
   sort: number;
   actualdates?: Date[];
+  leaves?: ILeave[];
 }
 
 /**
@@ -24,6 +27,7 @@ export class Holiday implements IHoliday {
   public name: string;
   public sort: number;
   public actualdates: Date[];
+  public leaves?: Leave[];
 
   constructor(hol?: IHoliday) {
     this.id = (hol) ? hol.id : HolidayType.holiday;
@@ -35,6 +39,15 @@ export class Holiday implements IHoliday {
         this.actualdates.push(new Date(dt));
       });
       this.actualdates.sort((a,b) => (a.getTime() < b.getTime()) ? -1 : 1);
+    }
+    if (hol && hol.leaves) {
+      this.leaves = [];
+      hol.leaves.forEach(lv => {
+        if (this.leaves) {
+          this.leaves.push(new Leave(lv));
+        }
+      });
+      this.leaves.sort((a,b) => a.compareTo(b));
     }
   }
 
@@ -127,5 +140,20 @@ export class Holiday implements IHoliday {
         this.actualdates.splice(i, 1);
       }
     }
+  }
+
+  /**
+   * This method will give a total number of hours of leaves assigned against this
+   * holiday.
+   * @returns A numeric value for the total number of hours assigned as leave.
+   */
+  getLeaveTotals(): number {
+    let total = 0;
+    if (this.leaves) {
+      this.leaves.forEach(lv => {
+        total += lv.hours;
+      });
+    }
+    return total;
   }
 }

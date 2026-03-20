@@ -1,0 +1,12 @@
+<div class="flexlayout row center" [style]="getCellStyle()">
+  <div class="id">{{getHolidayID()}}</div>
+  <div class="reference">{{getReferenceDate()}}</div>
+  <div class="dates">
+    @for (day of holiday().leaves; track day.leavedate; let idx = $index) {
+      <app-employee-leaves-chart-holidays-holiday-display
+        [holiday]="day" [comma]="(idx < holiday().leaves!.length - 1)">
+      </app-employee-leaves-chart-holidays-holiday-display>
+    }
+  </div>
+  <div class="hours">{{getTotalActual()}}</div>
+</div>

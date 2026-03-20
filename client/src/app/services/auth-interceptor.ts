@@ -5,8 +5,8 @@ import { tap } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const accessToken = authService.accessToken();
-  const refreshToken = authService.refreshToken();
+  const accessToken = authService.getAccessToken();
+  const refreshToken = authService.getRefreshToken();
   const authReq = req.clone({
     setHeaders: { authorization: accessToken, refreshToken: refreshToken }
   });
@@ -16,10 +16,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         const accessToken = event.headers.get('authorization');
         const refreshToken = event.headers.get('refreshToken');
         if (accessToken && accessToken !== null) {
-          authService.accessToken.set(accessToken);
+          authService.setAccessToken(accessToken);
         }
         if (refreshToken && refreshToken !== null) {
-          authService.refreshToken.set(refreshToken);
+          authService.setRefreshToken(refreshToken);
         }
       }
     })

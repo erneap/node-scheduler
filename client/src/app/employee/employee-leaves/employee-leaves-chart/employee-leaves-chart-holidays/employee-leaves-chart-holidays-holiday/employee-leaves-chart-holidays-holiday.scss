@@ -1,0 +1,56 @@
+.id {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 2px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  font-weight: bold;
+  color: white;
+  background-color: darkred;
+  width: 41px;
+  height: 20px;
+  font-size: 1rem;
+}
+
+.reference {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  font-weight: bold;
+  color: black;
+  width: 100px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.dates {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  color: black;
+  width: 249px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.hours {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  border-right: solid 2px black;
+  font-weight: bold;
+  color: black;
+  width: 65px;
+  height: 30px;
+  font-size: 1rem;
+}

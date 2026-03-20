@@ -13,8 +13,10 @@ createPool();
 
 const app = express();
 
+const origins = (process.env.CORS_ORIGIN as string).split(', ');
+
 app.use(cors({ 
-  origin: process.env.CORS_ORIGIN, 
+  origin: origins, 
   credentials: true,
   exposedHeaders: ['Content-Type', 'Authorization', 'refreshToken', 'X-Custom-Header']
 }));

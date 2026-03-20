@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
 import { environment } from '../../environments/environment';
-import { Team } from 'scheduler-models/scheduler/teams';
+import { ITeam, Team } from 'scheduler-models/scheduler/teams';
 import { HttpClient } from '@angular/common/http';
 import { SecurityQuestion } from 'scheduler-models/users';
 
@@ -10,12 +10,27 @@ import { SecurityQuestion } from 'scheduler-models/users';
 })
 export class TeamService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
-  team = signal(new Team());
   questions: SecurityQuestion[] = [];
 
   constructor(
     private http: HttpClient
   ) {
     super();
+  }
+
+  setTeam(iTeam: ITeam) {
+    this.setItem('team', iTeam);
+  }
+
+  getTeam(): Team | undefined {
+    const iTeam = this.getItem<ITeam>('team');
+    if (iTeam) {
+      return new Team(iTeam);
+    }
+    return undefined;
+  }
+
+  removeTeam() {
+    this.removeItem('team');
   }
 }

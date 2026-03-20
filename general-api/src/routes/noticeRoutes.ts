@@ -14,6 +14,9 @@ router.get('/notices/:userid', auth, async(req: Request, res: Response) => {
     if (userid && userid !== '') {
       const noticeService = new NoticeService();
       const entries = await noticeService.get(userid);
+      entries.forEach(note => {
+        notices.push(new Notice(note));
+      })
       notices.sort((a,b) => a.compareTo(b));
     } else {
       throw new Error('No userid provided');

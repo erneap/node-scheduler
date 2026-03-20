@@ -50,15 +50,9 @@ export class MustChange {
     });
     // check to ensure that a user is available in storage, if not, go to login
     // if present, check for must change, if not, go to first page.
-    if (this.authService.getUser().id === '') {
+    const user = this.authService.getUser();
+    if (!user || user.id === '') {
       this.router.navigate(['/login']);
-    } else {
-      const now = new Date();
-      const days = (now.getTime() - this.authService.getUser().passwordExpires.getTime()) 
-        / (24 * 3600000);
-      if (this.authService.getUser().badAttempts >= 0 && days <= 180) {
-        this.authService.isAuthenticated.set(true);
-      }
     }
   }
 
@@ -98,7 +92,7 @@ export class MustChange {
       if (oldpwd.toLowerCase() === passwd.toLowerCase()) {
         this._snackbar.open("Previous and New Passwords can't match!", 'Close');
       } else {
-        this.authService.mustChange(user.id, oldpwd, passwd).subscribe({
+        this.authService.completeMustChange(user.id, oldpwd, passwd).subscribe({
           next: (res) => {
             this.authService.statusMessage.set('Password changed');
             const user = new User(res.body as IUser);

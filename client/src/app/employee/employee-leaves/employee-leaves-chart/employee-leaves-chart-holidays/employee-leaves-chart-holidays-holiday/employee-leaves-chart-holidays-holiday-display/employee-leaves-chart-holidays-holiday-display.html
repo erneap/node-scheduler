@@ -1,0 +1,13 @@
+@if (showHours()) {
+  <span [style]="getSpanStyle()">
+    {{getDateDisplay()}}<sup>({{getHours()}})</sup>
+  </span>
+}
+@if (!showHours()) {
+  <span [style]="getSpanStyle()">
+    {{getDateDisplay()}}
+  </span>
+}
+@if (comma()) {
+  <span>,</span>
+}

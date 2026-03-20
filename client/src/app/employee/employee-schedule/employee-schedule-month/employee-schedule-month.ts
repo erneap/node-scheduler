@@ -32,6 +32,7 @@ export class EmployeeScheduleMonth {
   ) {
     const now = new Date();
     this.month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    this.setMonth();
   }
 
   setMonth() {
@@ -52,7 +53,7 @@ export class EmployeeScheduleMonth {
       this.endDate = new Date(this.endDate.getTime() + (24 * 3600000));
     }
 
-    const emp = this.empService.employee();
+    const emp = this.empService.getEmployee();
     this.workweeks = [];
     if (emp) {
       let count = -1;
@@ -73,7 +74,6 @@ export class EmployeeScheduleMonth {
         } else if (wd.id > 6) {
           wd.id = wd.id % 7;
         }
-        wd.date = new Date(start);
         if (wd.code.toLowerCase() === 'v') {
           emp.leaves.forEach(lv => {
             if (start.getUTCFullYear() === lv.leavedate.getUTCFullYear()

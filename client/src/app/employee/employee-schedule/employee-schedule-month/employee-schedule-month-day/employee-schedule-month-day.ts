@@ -1,4 +1,4 @@
-import { Component, input, OnInit, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { Workday } from 'scheduler-models/scheduler/employees';
 import { SiteService } from '../../../../services/site-service';
 import { TeamService } from '../../../../services/team-service';
@@ -9,25 +9,24 @@ import { TeamService } from '../../../../services/team-service';
   templateUrl: './employee-schedule-month-day.html',
   styleUrl: './employee-schedule-month-day.scss',
 })
-export class EmployeeScheduleMonthDay implements OnInit {
+export class EmployeeScheduleMonthDay {
   workday = input.required<Workday>();
   month = input.required<Date>();
-  dateClass = signal('');
-  cellStyle = signal('');
 
   constructor(
     private siteService: SiteService,
     private teamService: TeamService
   ) { }
 
-  ngOnInit(): void {
+  cellStyle(): string {
     let bkColor = 'ffffff';
     let txColor = '000000';
     if (this.workday()) {
       if (this.workday().code !== '' && this.workday().hours > 0) {
-        if (this.teamService.team()) {
+        const team = this.teamService.getTeam();
+        if (team) {
           let found = false;
-          this.teamService.team().workcodes.forEach(wc => {
+          team.workcodes.forEach(wc => {
             if (!found && wc.id.toLowerCase() === this.workday().code.toLowerCase()) {
               found = true;
               bkColor = wc.backcolor;
@@ -47,6 +46,12 @@ export class EmployeeScheduleMonthDay implements OnInit {
           txColor = '000000';
         }
       }
+    }
+    return `background-color: #${bkColor};color: #${txColor};`;
+  }
+
+  dateClass(): string {
+    if (this.workday()) {
       const today = new Date();
       let classes = 'dayOfMonth ';
       if (this.workday().date) {
@@ -61,8 +66,8 @@ export class EmployeeScheduleMonthDay implements OnInit {
           classes += 'weekday';
         }
       }
-      this.dateClass.set(classes);
+      return classes;
     }
-    this.cellStyle.set(`background-color: #${bkColor};color: #${txColor};`);
+    return 'dayOfMonth';
   }
 }

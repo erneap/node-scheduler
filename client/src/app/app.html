@@ -1,6 +1,6 @@
 <div>
   <mat-toolbar>
-    @if (authService.isAuthenticated()) {
+    @if (authService.isAuthenticated) {
       <button matIconButton (click)="sidenav.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
@@ -8,23 +8,23 @@
     <mat-icon svgIcon="calendar"></mat-icon>
     <a mat-button routerLink="home"><h1>{{title()}}</h1></a>
     <span class="flex-spacer"></span>
-    @if (this.authService.isAuthenticated() && this.authService.getUser()) {
+    @if (this.authService.isAuthenticated && this.authService.getUser()) {
       <span class="user">
-      {{this.authService.getUser().firstName}}</span>
+      {{this.authService.getUser()?.firstName}}</span>
     }
-    @if (!this.authService.isAuthenticated()) {
+    @if (!this.authService.isAuthenticated) {
       <button mat-icon-button
         matTooltip="Show Login Form" routerLink="home">
         <mat-icon>lock_open</mat-icon>
       </button>
     }
-    @if (this.authService.isAuthenticated()) {
-      <button mat-icon-button
+    @if (this.authService.isAuthenticated) {
+      <button mat-icon-button (click)="logout()"
         matTooltip="Log out the current user">
         <mat-icon>lock</mat-icon>
       </button>
     }
-    @if (this.authService.isAuthenticated()) {
+    @if (this.authService.isAuthenticated) {
       <button mat-icon-button
         matTooltip="Get Assistance">
         <mat-icon>help</mat-icon>
@@ -33,7 +33,7 @@
   </mat-toolbar>
   <mat-sidenav-container class="app-sidenav-container">
     <mat-sidenav #sidenav mode="side"
-      [opened]="authService.isAuthenticated()">
+      [opened]="authService.isAuthenticated">
       Menu
     </mat-sidenav>
     <mat-sidenav-content>
@@ -47,13 +47,13 @@
     </div>
     <div class="flex-spacer"></div>
     <div class="notices">
-      <!--@if (this.msgService.showAlerts) {-->
+      @if (this.msgService.showAlerts()) {
         <button mat-icon-button
           matTooltip="Notifications Available"
           routerLink="/notifications">
           <mat-icon class="warning-icon">notification_important</mat-icon>
         </button>
-      <!--}-->
+      }
     </div>
     <div class="version">
       v{{appVersion()}}

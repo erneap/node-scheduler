@@ -16,6 +16,7 @@ import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { Employee } from 'scheduler-models/scheduler/employees';
 import { Site } from 'scheduler-models/scheduler/sites';
 import { Team } from 'scheduler-models/scheduler/teams';
+import { NoticeService } from '../../services/notice-service';
 
 @Component({
   selector: 'app-login',
@@ -38,6 +39,7 @@ export class Login {
     public employeeService: EmployeeService,
     public siteService: SiteService,
     public teamService: TeamService,
+    private noticeService: NoticeService,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -66,8 +68,10 @@ export class Login {
             }
           });
           if (permission) {
+            this.authorized();
           } else {
             this.authService.statusMessage.set('No Permission for Application');
+            this.router.navigate(['unauthorized']);
           }
         },
         error: (err) => {
@@ -84,53 +88,50 @@ export class Login {
 
   authorized() {
     const user = this.authService.getUser();
-    //this.noticeService.startNotices();
-    this.employeeService.getInitial(user.id).subscribe({
-      next: (res) => {
-        const initial = (res.body as InitialResponse);
-        if (initial) {
-          if (initial.employee) {
-            this.employeeService.employee.set(new Employee(initial.employee));
-          }
-          if (initial.site) {
-            this.siteService.site.set(new Site(initial.site));
-          }
-          if (initial.team) {
-            this.teamService.team.set(new Team(initial.team));
-          }
-          if (initial.questions) {
-            this.teamService.questions = [];
-            initial.questions.forEach(quest => {
-              this.teamService.questions.push(new SecurityQuestion(quest));
-            });
-            this.teamService.questions.sort((a,b) => a.compareTo(b));
-          }
-          const now = new Date();
-          const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);
-          if (user.badAttempts < 0 || pwdAge > 180) {
-            // must change actions page
-            this.authService.statusMessage.set('User must change password');
-            this.authService.isAuthenticated.set(false);
-            this.router.navigate(['/mustchange']);
-          } else {
-            if (false) {
-
+    this.noticeService.startNotices();
+    if (user) {
+      this.employeeService.getInitial(user.id).subscribe({
+        next: (res) => {
+          const initial = (res.body as InitialResponse);
+          if (initial) {
+            if (initial.employee) {
+              this.employeeService.setEmployee(initial.employee);
+            }
+            if (initial.site) {
+              this.siteService.setSite(initial.site);
+            }
+            if (initial.team) {
+              this.teamService.setTeam(initial.team);
+            }
+            if (initial.questions) {
+              this.teamService.questions = [];
+              initial.questions.forEach(quest => {
+                this.teamService.questions.push(new SecurityQuestion(quest));
+              });
+              this.teamService.questions.sort((a,b) => a.compareTo(b));
+            }
+            const now = new Date();
+            const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);
+            if (user.badAttempts < 0 || pwdAge > 180) {
+              // must change actions page
+              this.authService.statusMessage.set('User must change password');
+              this.router.navigate(['/mustchange']);
             } else {
               this.router.navigate(['/employee/schedule']);
             }
+          } else {
+            this.authService.statusMessage.set('No initial data provided');
           }
-        } else {
-          this.authService.statusMessage.set('No initial data provided');
-        }
-      },
-      error: (err) => {
-        console.log(err);
-        if (err instanceof HttpErrorResponse) {
-          if (err.status >= 400 && err.status < 500) {
-            this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+        },
+        error: (err) => {
+          console.log(err);
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
           }
         }
-      }
-    })
+      });
+    }
   }
 }

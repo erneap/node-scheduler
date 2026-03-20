@@ -19,9 +19,9 @@
     <div class="daycell weekday">FRI</div>
     <div class="daycell weekend" >SAT</div>
   </div>
-  @for (week of workweeks; track week) {
+  @for (week of workweeks; track week.id) {
     <div class="flexlayout row center">
-      @for (day of week.getWorkdays(); track day) {
+      @for (day of week.getWorkdays(); track day.date) {
         <app-employee-schedule-month-day
           [workday]="day" [month]="month" ></app-employee-schedule-month-day>
       }
