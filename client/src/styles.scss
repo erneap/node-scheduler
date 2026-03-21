@@ -55,7 +55,17 @@ body {
   @include mat.card-overrides((
     elevated-container-color: darkmagenta,
     elevated-container-elevation: magenta,
-  ))
+  ));
+  @include mat.expansion-overrides((
+    container-background-color: darkmagenta,
+    container-text-color: white,
+    header-text-color: white,
+  ));
+  @include mat.list-overrides((
+    list-item-focus-label-text-color: yellow,
+    list-item-hover-label-text-color: pink,
+    list-item-label-text-color: white,
+  ));
 }
 
 /* You can add global styles to this file, and also import other style files */

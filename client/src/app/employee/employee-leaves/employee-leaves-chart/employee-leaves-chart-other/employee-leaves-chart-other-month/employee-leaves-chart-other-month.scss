@@ -1,0 +1,72 @@
+.month {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-weight: bold;
+  color: white;
+  background-color: darkred;
+  width: 65px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.dates {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  color: black;
+  background-color: white;
+  width: 260px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.actual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  border-right: solid 2px black;
+  font-weight: bold;
+  color: black;
+  background-color: white;
+  width: 65px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.requested {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: solid 1px black;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  border-right: solid 2px black;
+  font-weight: bold;
+  color: #339933;
+  background-color: white;
+  width: 65px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+sup {
+  font-size: .6rem;
+}
+
+.disabled {
+  background-color: #808080;
+}
+
+.active {
+  background-color: white;
+}

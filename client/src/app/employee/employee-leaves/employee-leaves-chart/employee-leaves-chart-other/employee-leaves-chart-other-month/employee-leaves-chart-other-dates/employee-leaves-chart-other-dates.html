@@ -1,0 +1,10 @@
+@if (leaves.length > 1) {
+  <span [style]="getStyle()" [matTooltip]="tooltip">
+    {{leaves[0].leavedate.getUTCDate()}}-{{leaves[leaves.length - 1].leavedate.getUTCDate()}}
+  </span>
+}
+@if (leaves.length === 1) {
+  <span [style]="getStyle()" [matTooltip]="tooltip">
+    {{leaves[0].leavedate.getUTCDate()}}@if (showHours()) {<sup>({{getHours()}})</sup>}
+</span>
+}

@@ -5,51 +5,56 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 524px;
-  height: 25px;
-  border-left: solid 2px black;
-  border-top: solid 2px black;
-  border-bottom: solid 1px black;
-  border-right: solid 2px black;
-  font-size: 14pt;
+  width: 458px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  border-right: solid 1px white;
+  font-size: 1.2rem;
   font-weight: bold;
+  color: white;
 }
 
 .code {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 35px;
-  height: 35px;
-  border-left: solid 2px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  font-size: 12pt;
+  width: 41px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-size: 1.2rem;
   font-weight: bold;
+  color: white;
 }
 
 .referenceDate {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 125px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  font-size: 12pt;
+  width: 100px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-size: 1.2rem;
   font-weight: bold;
+  color: white;
 }
 
 .dates {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 296px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
+  width: 249px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-size: 1.2rem;
+  color: white;
 }
 
 .actual {
@@ -57,63 +62,68 @@
   justify-content: center;
   align-items: center;
   width: 65px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  border-right: solid 2px black;
-  font-size: 12pt;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  border-right: solid 1px white;
+  font-size: 1.2rem;
   font-weight: bold;
+  color: white;
 }
 
 .daysleft {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 125px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  font-size: 12pt;
+  width: 138px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-size: 1rem;
   font-weight: bold;
+  color: white;
 }
 
 .hoursleft {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 180px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
+  width: 138px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  font-size: 1rem;
+  color: white;
 }
 
 .hourstaken {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 181px;
-  height: 35px;
-  border-left: solid 1px black;
-  border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  border-right: solid 2px black;
-  font-size: 12pt;
+  width: 138px;
+  height: 30px;
+  border-left: solid 1px white;
+  border-top: solid 1px white;
+  border-bottom: solid 1px white;
+  border-right: solid 1px white;
+  font-size: 1rem;
   font-weight: bold;
+  color: white;
 }
 
 .daysleftData {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 125px;
-  height: 35px;
+  width: 138px;
+  height: 30px;
   border-left: solid 1px black;
   border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  font-size: 12pt;
+  border-bottom: solid 1px black;
+  font-size: 1rem;
   font-weight: bold;
   background-color: white;
   color: black;
@@ -123,12 +133,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 180px;
-  height: 35px;
+  width: 138px;
+  height: 30px;
   border-left: solid 1px black;
   border-top: solid 1px black;
-  border-bottom: solid 2px black;
+  border-bottom: solid 1px black;
   background-color: white;
+  font-size: 1rem;
   color: black;
 }
 
@@ -136,18 +147,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 181px;
-  height: 35px;
+  width: 138px;
+  height: 30px;
   border-left: solid 1px black;
   border-top: solid 1px black;
-  border-bottom: solid 2px black;
-  border-right: solid 2px black;
-  font-size: 12pt;
+  border-bottom: solid 1px black;
+  border-right: solid 1px black;
+  font-size: 1rem;
   font-weight: bold;
   background-color: white;
   color: black;
-}
-
-.bottomlabel {
-  background-color: #673ab7;
 }

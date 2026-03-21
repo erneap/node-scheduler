@@ -1,1 +1,17 @@
-<p>employee-leaves-chart-other-month works!</p>
+<div class="flexlayout row center">
+  <div class="month">
+  {{months[leaveMonth.month.getUTCMonth()]}}</div>
+  <div [class]="getStyle('dates')">
+    @for (lvs of leaveMonth.leaveGroups; track lvs; let i = $index) {
+      <app-employee-leaves-chart-other-dates [leaves]="lvs.leaves" [employee]="employee">
+      </app-employee-leaves-chart-other-dates>
+      @if (i < (leaveMonth.leaveGroups.length - 1)) {
+        ,
+      }
+    }
+  </div>
+  <div [class]="getStyle('actual')">
+  {{getActualHours()}}</div>
+  <div [class]="getStyle('requested')">
+  {{getProjectedHours()}}</div>
+</div>

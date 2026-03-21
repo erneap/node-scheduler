@@ -1,0 +1,96 @@
+<mat-accordion multi displayMode="flat">
+  <mat-expansion-panel expanded="true" class="remove-mat-expansion-panel-padding">
+    <mat-expansion-panel-header [collapsedHeight]="'25px'"
+      [expandedHeight]="'25px'">
+      <mat-panel-title>Employee</mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-nav-list>
+      <a mat-list-item (click)="goToLink('/employee/schedule')"
+      style="height: 20px;">Schedule</a>
+      <a mat-list-item (click)="goToLink('/employee/leaveschart')"
+      style="height: 20px;">PTO/Holiday Listing</a>
+      <a mat-list-item (click)="goToLink('/employee/profile')"
+      style="height: 20px;">Profile</a>
+      <a mat-list-item (click)="goToLink('/employee/security')"
+      style="height: 20px;">Password/Security</a>
+      <a mat-list-item (click)="goToLink('/employee/leaverequest')"
+      style="height: 20px;">Leave Requests</a>
+      <a mat-list-item (click)="goToLink('/employee/contacts')"
+      style="height: 20px;">Contact Info</a>
+      <a mat-list-item (click)="goToLink('/employee/specialties')"
+      style="height: 20px;">Specialties</a>
+    </mat-nav-list>
+  </mat-expansion-panel>
+  <mat-expansion-panel expanded="true" class="remove-mat-expansion-panel-padding">
+    <mat-expansion-panel-header [collapsedHeight]="'25px'"
+      [expandedHeight]="'25px'">
+      <mat-panel-title>Schedules</mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-nav-list>
+      <a mat-list-item (click)="goToLink('/site/schedule/schedule')"
+      style="height: 20px;">Site Schedule</a>
+      @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+        <a mat-list-item
+          (click)="goToLink('/site/schedule/coverage')"
+        style="height: 20px;">Site Coverage</a>
+      }
+      <a mat-list-item (click)="goToLink('/site/schedule/mids')"
+      style="height: 20px;">Site Mids Listing</a>
+      <a mat-list-item (click)="goToLink('/query')"
+      style="height: 20px;">Who's Working (Query)</a>
+    </mat-nav-list>
+  </mat-expansion-panel>
+  @if (this.isInGroup('scheduler') || this.isInGroup('siteleader') || this.isInGroup('companylead')) {
+    <mat-expansion-panel expanded="true" class="remove-mat-expansion-panel-padding"
+      >
+      <mat-expansion-panel-header [collapsedHeight]="'25px'"
+        [expandedHeight]="'25px'">
+        <mat-panel-title>Admin</mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-nav-list>
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+          <a mat-list-item (click)="goToLink('/site/employees')"
+          style="height: 20px;">Employee Editor</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+          <a mat-list-item (click)="goToLink('/site/employees/leaveapprover')"
+          style="height: 20px;">Leave Approval</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+          <a mat-list-item (click)="goToLink('/site/modview')"
+          style="height: 20px;">Site Mod Time Review</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+          <a mat-list-item (click)="goToLink('/site/editor')"
+          style="height: 20px;">Site Editor</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader') || this.isInGroup('companylead')) {
+          <a mat-list-item (click)="goToLink('site/ingest')"
+          style="height: 20px;">Timecard Ingest/Entry</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
+          <a mat-list-item (click)="goToLink('/team/editor')"
+          style="height: 20px;">Team Editor</a>
+        }
+        @if (this.isInGroup('admin')) {
+          <a mat-list-item (click)="goToLink('admin')"
+          style="height: 20px;">Admin</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader') || this.isInGroup('companylead')) {
+          <a mat-list-item (click)="goToLink('/admin/reports')"
+          style="height: 20px;">Report Creator</a>
+        }
+        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader') || this.isInGroup('companylead')) {
+          <a mat-list-item (click)="goToLink('/admin/logs')"
+          style="height: 20px;">Log Viewer</a>
+        }
+      </mat-nav-list>
+    </mat-expansion-panel>
+  }
+</mat-accordion>
+<mat-nav-list class="bottom">
+  @if (this.isInGroup('admin')) {
+    <a mat-list-item routerLinkActive="active-link"
+    (click)="goToLink('/archive')">Report Archive</a>
+  }
+</mat-nav-list>

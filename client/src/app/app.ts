@@ -12,6 +12,7 @@ import { EmployeeService } from './services/employee-service';
 import { SiteService } from './services/site-service';
 import { TeamService } from './services/team-service';
 import { NoticeService } from './services/notice-service';
+import { NavigationMenu } from './authentication/navigation-menu/navigation-menu';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,8 @@ import { NoticeService } from './services/notice-service';
     MatToolbarModule,
     MatButtonModule,
     MatIcon,
-    MatSidenavModule
+    MatSidenavModule,
+    NavigationMenu
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'

@@ -36,6 +36,12 @@ export class AuthService extends CacheService {
     this.isAuthenticated = (iUser !== undefined);
   }
 
+  setUser(iUser: IUser | undefined) {
+    if (iUser) {
+      this.setItem('user', new User(iUser));
+    }
+  }
+
   getUser(): User | undefined {
     const iUser = this.getItem<IUser>('user');
     if (iUser) {

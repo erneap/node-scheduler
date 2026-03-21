@@ -16,6 +16,7 @@ export interface IHoliday {
   sort: number;
   actualdates?: Date[];
   leaves?: ILeave[];
+  active?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export class Holiday implements IHoliday {
   public sort: number;
   public actualdates: Date[];
   public leaves?: Leave[];
+  public active: boolean;
 
   constructor(hol?: IHoliday) {
     this.id = (hol) ? hol.id : HolidayType.holiday;
@@ -49,6 +51,7 @@ export class Holiday implements IHoliday {
       });
       this.leaves.sort((a,b) => a.compareTo(b));
     }
+    this.active = (hol && hol.active) ? hol.active : true;
   }
 
   /**

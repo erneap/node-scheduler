@@ -14,12 +14,11 @@ import { EmployeeLeavesChartHolidaysHolidayDisplay } from './employee-leaves-cha
 export class EmployeeLeavesChartHolidaysHoliday {
   holiday = input.required<IHoliday>();
   year = input.required<number>();
-  active = input.required<boolean>();
 
   constructor() {}
 
   getCellStyle(): string {
-    if (this.active()) {
+    if (this.holiday().active) {
       return 'background-color: white;';
     } else {
       return 'background-color: darkgray;';

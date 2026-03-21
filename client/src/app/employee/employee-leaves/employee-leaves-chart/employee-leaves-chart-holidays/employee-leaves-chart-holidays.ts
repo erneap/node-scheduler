@@ -3,21 +3,32 @@ import { Employee, IEmployee, Leave } from 'scheduler-models/scheduler/employees
 import { Holiday } from 'scheduler-models/scheduler/teams/company';
 import { TeamService } from '../../../../services/team-service';
 import { EmployeeService } from '../../../../services/employee-service';
+import { EmployeeLeavesChartHolidaysHoliday } from './employee-leaves-chart-holidays-holiday/employee-leaves-chart-holidays-holiday';
 
 @Component({
   selector: 'app-employee-leaves-chart-holidays',
-  imports: [],
+  imports: [
+    EmployeeLeavesChartHolidaysHoliday
+  ],
   templateUrl: './employee-leaves-chart-holidays.html',
   styleUrl: './employee-leaves-chart-holidays.scss',
 })
 export class EmployeeLeavesChartHolidays {
-  year = input<number>();
+  private iYear = 0;
   private employeeID = '';
   @Input()
-  get employeeid(): string {
+  get year(): number {
+    return this.iYear;
+  }
+  set year(y: number) {
+    this.iYear = y;
+    this.setEmployee();
+  }
+  @Input()
+  get employee(): string {
     return this.employeeID;
   }
-  set employeeid(value: string) {
+  set employee(value: string) {
     this.employeeID = value;
     this.setEmployee();
   }
@@ -28,14 +39,19 @@ export class EmployeeLeavesChartHolidays {
     private teamService: TeamService
   ) {
     this.holidays = [];
+    if (this.year === 0) {
+      const now = new Date();
+      this.year = now.getFullYear();
+    }
     const emp = this.empService.getEmployee();
     if (emp) {
       this.employeeID = emp.id;
+      this.setEmployee();
     }
   }
 
   setEmployee() {
-    if (this.employeeID !== '') {
+    if (this.employeeID !== '' && this.year !== 0) {
       let employee: Employee | undefined;
       let company: string = '';
       const team = this.teamService.getTeam();
@@ -63,10 +79,16 @@ export class EmployeeLeavesChartHolidays {
         this.holidays.sort((a,b) => a.compareTo(b));
       }
       if (employee && this.holidays.length > 0) {
+        this.holidays.forEach((hol, h) => {
+          if (employee) {
+            hol.active = this.isActive(hol, employee);
+          }
+          this.holidays[h] = hol;
+        })
         const leaves: Leave[] = [];
         employee.leaves.forEach(lv => {
           if (lv.code.toLowerCase() === 'h'
-            && lv.leavedate.getFullYear() === this.year()) {
+            && lv.leavedate.getFullYear() === this.year) {
             leaves.push(new Leave(lv));
           }
         });
@@ -88,7 +110,8 @@ export class EmployeeLeavesChartHolidays {
         leaves.forEach((lv, l) => {
           if (!lv.used) {
             this.holidays.forEach((hol, h) => {
-              if (!lv.used && hol.leaves && hol.getLeaveTotals() + lv.hours <= 8.0) {
+              if (!lv.used && hol.active && hol.leaves 
+                && hol.getLeaveTotals() + lv.hours <= 8.0) {
                 hol.leaves.push(new Leave(lv));
                 lv.used = true;
                 leaves[l] = lv;
@@ -98,14 +121,97 @@ export class EmployeeLeavesChartHolidays {
             });
           }
         });
-        const holiday = this.holidays[this.holidays.length - 1];
+        let holCount = this.holidays.length - 1;
+        let holiday: Holiday | undefined = this.holidays[holCount];
+        while (holiday && !holiday.active && holCount >= 0) {
+          holCount--;
+          if (holCount >= 0) {
+            holiday = this.holidays[holCount];
+          } else {
+            holiday = undefined
+          }
+        }
         leaves.forEach(lv => {
-          if (!lv.used && holiday.leaves) {
+          if (!lv.used && holiday && holiday.leaves) {
             holiday.leaves.push(new Leave(lv));
           }
         });
-        this.holidays[this.holidays.length - 1] = holiday;
+        if (holiday) {
+          this.holidays[holCount] = holiday;
+        }
       }
     }
+  }
+
+  isActive(holiday: Holiday, employee: Employee): boolean {
+    employee.assignments.sort((a,b) => a.compareTo(b));
+    const now = new Date();
+    let year = this.year;
+    if (!year) {
+      year = now.getFullYear();
+    }
+    const actual = holiday.getActual(year)
+    const startasgmt = employee.assignments[0];
+    const endasgmt = employee.assignments[
+      employee.assignments.length - 1];
+    if (actual) {
+      return (actual.getTime() >= startasgmt.startDate.getTime() &&
+        actual.getTime() <= endasgmt.endDate.getTime());
+    }
+    return true;
+  }
+
+  getHolidaysRemaining(): string {
+    let total = 0;
+    let holidays = 0;
+    this.holidays.forEach(hol => {
+      if (hol.active) {
+        holidays++;
+        let holTotal = 0;
+        if (hol.leaves) {
+          hol.leaves.forEach(lv => {
+            if (lv.status.toLowerCase() === 'actual') {
+              holTotal += lv.hours;
+            };
+          })
+        }
+        if (holTotal >= 8) {
+          total++;
+        }
+      }
+    });
+    return (holidays - total).toFixed(0);
+  }
+
+  getHolidayHoursRemaining(): string {
+    let total = 0;
+    let holidays = 0;
+    this.holidays.forEach(hol => {
+      if (hol.active) {
+        holidays++;
+        if (hol.leaves) {
+          hol.leaves.forEach(lv => {
+            if (lv.status.toLowerCase() === 'actual') {
+              total += lv.hours;
+            };
+          })
+        }
+      }
+    });
+    return ((holidays * 8) - total).toFixed(1);
+  }
+
+  getHolidaysHoursTaken(): string {
+    let total = 0;
+    this.holidays.forEach(hol => {
+      if (hol.leaves) {
+        hol.leaves.forEach(lv => {
+          if (lv.status.toLowerCase() === 'actual') {
+            total += lv.hours;
+          };
+        })
+      }
+    });
+    return total.toFixed(1)
   }
 }

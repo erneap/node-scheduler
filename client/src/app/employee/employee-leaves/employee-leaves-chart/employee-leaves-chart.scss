@@ -1,0 +1,40 @@
+.year {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.direction {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  background-color: #e60000;
+  color: white;
+  border: solid 1px white;
+  cursor: pointer;
+  width: 100px;
+  height: 35px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.overall {
+  border-bottom: solid 1px white;
+  border-top: solid 1px white;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.month {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  background-color: transparent;
+  color: white;
+  height: 35px;
+  font-size: 1.8rem;
+  font-weight: bold;
+}

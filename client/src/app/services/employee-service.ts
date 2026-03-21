@@ -3,8 +3,9 @@ import { CacheService } from './cache.service';
 import { Employee, IEmployee } from 'scheduler-models/scheduler/employees';
 import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { UpdateRequest } from 'scheduler-models/general';
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +38,28 @@ export class EmployeeService extends CacheService {
 
   removeEmployee() {
     this.removeItem('employee');
+  }
+
+  updateEmployee(empID: string, field: string, value: string)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee`;
+    const data: UpdateRequest = {
+      id: empID,
+      field: field,
+      value: value
+    };
+    return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res
+      })
+    );
   }
 }

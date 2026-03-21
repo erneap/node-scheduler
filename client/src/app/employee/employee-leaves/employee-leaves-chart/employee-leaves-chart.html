@@ -1,1 +1,21 @@
-<p>employee-leaves-chart works!</p>
+<div class="flexlayout column center">
+  <div class="overall" [style]="getWidthStyle()">
+    <div class="direction" (click)="updateYear('down')">
+      &lt;&lt;
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="month">{{year()}}</div>
+    <div class="flex-spacer"></div>
+    <div class="direction" (click)="updateYear('up')">
+      &gt;&gt;
+    </div>
+  </div>
+  <div class="overall" [style]="getWidthStyle()">
+    @if (showHolidays) {
+      <app-employee-leaves-chart-holidays [employee]="employee" [year]="year()">
+      </app-employee-leaves-chart-holidays>
+    }
+    <app-employee-leaves-chart-other [employee]="employee" [year]="year()">
+    </app-employee-leaves-chart-other>
+  </div>
+</div>

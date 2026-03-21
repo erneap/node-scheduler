@@ -1,1 +1,31 @@
-<p>employee-leaves-chart-other works!</p>
+<div class="flexlayout column center">
+  <div class="label">Leaves</div>
+  <div class="flexlayout row center">
+    <div class="code">Month</div>
+    <div class="dates">
+      Dates Taken <span style="color: #3399ff;">(Projected)</span>
+    </div>
+    <div class="actual">Taken</div>
+    <div class="requested">Project</div>
+  </div>
+  @for (lm of leaveMonths; track lm.month) {
+    <app-employee-leaves-chart-other-month [leaveMonth]="lm" [employee]="employee">
+    </app-employee-leaves-chart-other-month>
+  }
+  @if (annual > 0.0) {
+    <div class="flexlayout row center">
+      <div class="bottomlabel">Annual</div>
+      <div class="bottomlabel">Carryover</div>
+      <div class="bottomlabel">Taken</div>
+      <div class="bottomlabel">Projected</div>
+      <div class="bottomlabel">Balance</div>
+    </div>
+    <div class="flexlayout row centerr">
+      <div class="bottomdata">{{annual.toFixed(1)}}</div>
+      <div class="bottomdata">{{carryover.toFixed(1)}}</div>
+      <div class="bottomdata">{{actual.toFixed(1)}}</div>
+      <div class="bottomdata">{{requested.toFixed(1)}}</div>
+      <div [class]="balanceClass">{{balance.toFixed(1)}}</div>
+    </div>
+  }
+</div>

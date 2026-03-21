@@ -3,6 +3,8 @@ import { Login } from './authentication/login/login';
 import { MustChange } from './authentication/must-change/must-change';
 import { EmployeeSchedule } from './employee/employee-schedule/employee-schedule';
 import { NotAuthorized } from './authentication/not-authorized/not-authorized';
+import { EmployeeLeaves } from './employee/employee-leaves/employee-leaves';
+import { EmployeeProfile } from './employee/employee-profile/employee-profile';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -12,9 +14,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'employee/schedule', pathMatch: 'full'},
       { path: 'schedule', component: EmployeeSchedule},
+      { path: 'leaveschart', component: EmployeeLeaves },
+      { path: 'profile', component: EmployeeProfile },
       { path: '**', component: EmployeeSchedule},
     ]
   },
   { path: '**', redirectTo: '/login' }
-
 ];

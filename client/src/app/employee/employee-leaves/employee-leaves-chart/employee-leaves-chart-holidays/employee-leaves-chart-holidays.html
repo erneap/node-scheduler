@@ -1,1 +1,27 @@
-<p>employee-leaves-chart-holidays works!</p>
+<div class="flexlayout column center">
+  <div class="label">Holidays</div>
+  <div class="flexlayout row center">
+    <div class="code">&nbsp;</div>
+    <div class="referenceDate">Ref Date</div>
+    <div class="dates">
+      Date Taken <span style="color: #85bdf6;">(Projected)</span>
+    </div>
+    <div class="actual">Hours</div>
+  </div>
+  @for (hol of holidays; track hol.name) {
+    <app-employee-leaves-chart-holidays-holiday [holiday]="hol" [year]="year">
+    </app-employee-leaves-chart-holidays-holiday>
+  }
+  <div class="flexlayout row center">
+    <div class="code">&nbsp;</div>
+    <div class="daysleft">Days Left</div>
+    <div class="hoursleft">Hours Left</div>
+    <div class="hourstaken">Hours Taken</div>
+  </div>
+  <div class="flexlayout row center">
+    <div class="code">&nbsp;</div>
+    <div class="daysleftData">{{getHolidaysRemaining()}}</div>
+    <div class="hoursleftData">{{getHolidayHoursRemaining()}}</div>
+    <div class="hourstakenData">{{getHolidaysHoursTaken()}}</div>
+  </div>
+</div>
