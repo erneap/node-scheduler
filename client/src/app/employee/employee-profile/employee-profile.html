@@ -1,30 +1,70 @@
 <div class="page">
   <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: white;">Profile Information</mat-card-title>
+    </mat-card-header>
     <mat-card-content class="flexlayout column center" style="margin: 20px;">
       <form [formGroup]="profileForm" class="flexlayout column center">
         <div class="flexlayout row center flexwrap">
           <mat-form-field>
             <mat-label>Login E-mail Address</mat-label>
             <input matInput formControlName="email"
-              (blur)="updateUserField('email')">
+              (change)="updateUserField('email')">
           </mat-form-field>
         </div>
         <div class="flexlayout row center flexwrap flexgap">
           <mat-form-field>
             <mat-label>First Name</mat-label>
             <input matInput formControlName="first"
-              (blur)="updateUserField('first')">
+              (change)="updateUserField('first')">
           </mat-form-field>
           <mat-form-field>
             <mat-label>Middle Name</mat-label>
             <input matInput formControlName="middle"
-              (blur)="updateUserField('middle')">
+              (change)="updateUserField('middle')">
           </mat-form-field>
           <mat-form-field>
             <mat-label>Last Name</mat-label>
             <input matInput formControlName="last"
-              (blur)="updateUserField('last')">
+              (change)="updateUserField('last')">
           </mat-form-field>
+        </div>
+        <div class="flexlayout row center flexwrap flexgap" 
+          style="color: white;font-size:1.2rem;margin-bottom: 5px;">
+          Notifications Address List
+        </div>
+        <div class="flexlayout row center flexwrap flexgap">
+          <div class="flexlayout column center">
+            @if (selectedEmail() === '') {
+              <div class="editor">Add New Email</div>
+            }
+            @else {
+              <div class="editor">Edit/Delete Email</div>
+            }
+            <div class="flexlayout row center">
+              <input matInput formControlName="editor" class="emailinput">
+              @if (selectedEmail() === '') {
+                <mat-icon class="delete" matTooltip="Add new"
+                  (click)="onAdd()">
+                  add
+                </mat-icon>
+              }
+              @else {
+                <mat-icon class="delete" matTooltip="Update address"
+                  (click)="onUpdate()">
+                  start
+                </mat-icon>
+                <mat-icon class="delete" matTooltip="Delete address"
+                  (click)="onDelete()">
+                  delete
+                </mat-icon>
+              }
+              <mat-icon class="delete" matTooltip="Clear Editor"
+                (click)="onClear()">cancel</mat-icon>
+            </div>
+          </div>
+          <app-list [list]="emailList()" (itemSelected)="selectEmail($event)"
+            [selectedItem]="selectedEmail()"></app-list>
         </div>
       </form>
     </mat-card-content>

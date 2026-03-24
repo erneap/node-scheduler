@@ -5,6 +5,8 @@ import { EmployeeSchedule } from './employee/employee-schedule/employee-schedule
 import { NotAuthorized } from './authentication/not-authorized/not-authorized';
 import { EmployeeLeaves } from './employee/employee-leaves/employee-leaves';
 import { EmployeeProfile } from './employee/employee-profile/employee-profile';
+import { EmployeeCompany } from './employee/employee-company/employee-company';
+import { EmployeeSecurity } from './employee/employee-security/employee-security';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -16,6 +18,8 @@ export const routes: Routes = [
       { path: 'schedule', component: EmployeeSchedule},
       { path: 'leaveschart', component: EmployeeLeaves },
       { path: 'profile', component: EmployeeProfile },
+      { path: 'company', component: EmployeeCompany },
+      { path: 'security', component: EmployeeSecurity },
       { path: '**', component: EmployeeSchedule},
     ]
   },

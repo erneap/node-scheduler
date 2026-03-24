@@ -16,6 +16,7 @@ export interface ITeam {
 }
 
 export class Team implements ITeam {
+  public _id?: any;
   public id: string;
   public name: string;
   public workcodes: Workcode[];
@@ -25,6 +26,7 @@ export class Team implements ITeam {
   public specialties: Specialty[];
 
   constructor(team?: ITeam) {
+    this._id = (team) ? team._id : ''
     this.id = (team && team.id) ? team.id : '';
     if (this.id === '') {
       this.id = (team && team._id) ? team._id.toString() : '';

@@ -1,30 +1,9 @@
-.editor {
-  color: white;
-  font-size: 1.0rem;
-}
-
-.delete {
-  position: relative;
-  color: pink;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-.emailinput {
-  position: relative;
-  width: 150px;
-  background-color: white;
-  color: black;
-}
-
-.emaillist {
+.list {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  width: 200px;
-  height: 100px;
   overflow-y: auto;
   background-color: white;
   color: black;
@@ -39,8 +18,4 @@
 .item {
   font-size: 1rem;
   cursor: pointer;
-}
-
-.error {
-  color: salmon;
 }

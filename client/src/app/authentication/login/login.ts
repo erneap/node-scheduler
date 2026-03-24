@@ -104,11 +104,12 @@ export class Login {
               this.teamService.setTeam(initial.team);
             }
             if (initial.questions) {
-              this.teamService.questions = [];
+              const questions: SecurityQuestion[] = [];
               initial.questions.forEach(quest => {
-                this.teamService.questions.push(new SecurityQuestion(quest));
+                questions.push(new SecurityQuestion(quest));
               });
-              this.teamService.questions.sort((a,b) => a.compareTo(b));
+              questions.sort((a,b) => a.compareTo(b));
+              this.teamService.setQuestions(questions);
             }
             const now = new Date();
             const pwdAge = (now.getTime() - user.passwordExpires.getTime()) / (24 * 3600000);

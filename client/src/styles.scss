@@ -66,6 +66,9 @@ body {
     list-item-hover-label-text-color: pink,
     list-item-label-text-color: white,
   ));
+  @include mat.select-overrides((
+    panel-background-color: darkred,
+  ))
 }
 
 /* You can add global styles to this file, and also import other style files */

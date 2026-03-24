@@ -33,4 +33,23 @@ export class TeamService extends CacheService {
   removeTeam() {
     this.removeItem('team');
   }
+
+  setQuestions(questions: SecurityQuestion[]) {
+    this.setItem('questions', questions);
+  }
+
+  getQuestions(): SecurityQuestion[] {
+    const answer: SecurityQuestion[] = [];
+    const questions = this.getItem<SecurityQuestion[]>('questions');
+    if (questions) {
+      questions.forEach(quest => {
+        answer.push(new SecurityQuestion(quest));
+      });
+    }
+    return answer;
+  }
+
+  removeQuestions() {
+    this.removeItem('questions');
+  }
 }

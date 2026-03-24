@@ -27,8 +27,8 @@
     "mariadb": "^3.4.5",
     "mongodb": "^6.19.0",
     "morgan": "^1.10.1",
-    "scheduler-models": "^1.3.15",
-    "scheduler-services": "^1.3.20",
+    "scheduler-models": "^1.3.16",
+    "scheduler-services": "^1.3.21",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

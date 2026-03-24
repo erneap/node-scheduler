@@ -1,0 +1,8 @@
+<div class="list" [style]="setStyle()">
+    @for (em of list(); track em.id) {
+      <div [class]="setItemStyle(em.id)"
+        (click)="onSelect(em.id)">
+        {{em.value}}
+      </div>
+    }
+  </div>

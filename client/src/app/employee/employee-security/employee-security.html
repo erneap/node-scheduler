@@ -1,0 +1,89 @@
+<div class="page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: white;">Security Information</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="flexlayout row center flexgap" style="margin: 20px;">
+      <form [formGroup]="profileForm" class="flexlayout row topcenter flexgap">
+        <div class="flexlayout column center flexgap">
+          <!-- Password Change Section -->
+          <h3 style="color: white;">Reset Password</h3>
+          <mat-form-field>
+            <mat-label>New Password</mat-label>
+            <input matInput type="password" formControlName="password">
+            @if (this.profileForm.get('password')?.invalid) {
+              <mat-error
+                class="error">
+                {{getPasswordError()}}
+              </mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Verify Password</mat-label>
+            <input matInput type="password" formControlName="password2">
+            @if (this.profileForm.get('password2')?.invalid) {
+              <mat-error
+                class="error">
+                {{getVerifyError()}}
+              </mat-error>
+            }
+          </mat-form-field>
+          <div class="formField" style="vertical-align: top; width: 75px;">
+            <button mat-raised-button color="accent"
+              [disabled]="!profileForm.valid" >Change</button>
+          </div>
+        </div>
+        <div class="flexlayout column center flexgap" 
+          style="border-left: 1px solid white;padding-left: 5px;">
+          <h3 style="color: white;">Security Questions (Required)</h3>
+          <!-- Security Questions Section-->
+          <div class="flexlayout column center flexgap" >
+            <div class="label">Security Question 1:</div>
+            <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
+              <mat-label>Question:</mat-label>
+              <mat-select formControlName="question1">
+                @for (question of questions; track question.id) {
+                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
+              <mat-label>Answer:</mat-label>
+              <input matInput type="password" formControlName="answer1">
+            </mat-form-field>
+          </div>
+          <div class="flexlayout column center flexgap" >
+            <div class="label">Security Question 2:</div>
+            <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
+              <mat-label>Question:</mat-label>
+              <mat-select formControlName="question2">
+                @for (question of questions; track question.id) {
+                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
+              <mat-label>Answer:</mat-label>
+              <input matInput type="password" formControlName="answer2">
+            </mat-form-field>
+          </div>
+          <div class="flexlayout column center flexgap" >
+            <div class="label">Security Question 3:</div>
+            <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
+              <mat-label>Question:</mat-label>
+              <mat-select formControlName="question3">
+                @for (question of questions; track question.id) {
+                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
+              <mat-label>Answer:</mat-label>
+              <input matInput type="password" formControlName="answer3">
+            </mat-form-field>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

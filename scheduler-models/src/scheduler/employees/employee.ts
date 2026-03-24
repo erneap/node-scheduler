@@ -60,6 +60,7 @@ export class Employee implements IEmployee {
   public emails: string[];
 
   constructor(emp?: IEmployee) {
+    this._id = (emp) ? emp._id : '';
     this.id = (emp && emp.id) ? emp.id : '';
     if (this.id === '') {
       this.id = (emp && emp._id) ? emp._id.toString() : '';

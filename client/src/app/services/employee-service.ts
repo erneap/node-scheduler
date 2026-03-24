@@ -40,7 +40,7 @@ export class EmployeeService extends CacheService {
     this.removeItem('employee');
   }
 
-  updateEmployee(empID: string, field: string, value: string)
+  updateEmployee(empID: string, field: string, value: string, optional?: string)
     : Observable<HttpResponse<Employee>> {
     const url = `${this.schedulerUrl}/employee`;
     const data: UpdateRequest = {
@@ -48,6 +48,9 @@ export class EmployeeService extends CacheService {
       field: field,
       value: value
     };
+    if (optional) {
+      data.optional = optional;
+    }
     return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
       map(res => {
         const iEmployee = (res.body as IEmployee );
