@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
-import { connectToDB, createPool } from 'scheduler-node-models/config';
+import { connectToDB, createPool, BuildInitial } from 'scheduler-services';
 import { SqlWork } from './sqlscripts/work';
-import { BuildInitial } from 'scheduler-node-models/services';
 /**
  * This project portion will convert the original data from mongodb to mariadb.
  * 

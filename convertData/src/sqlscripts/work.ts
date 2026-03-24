@@ -1,5 +1,5 @@
-import { collections, mdbConnection } from "scheduler-node-models/config";
-import { IWorkRecord, WorkRecord } from 'scheduler-node-models/scheduler/employees';
+import { collections, mdbConnection } from "scheduler-services";
+import { IWorkRecord, WorkRecord } from 'scheduler-models/scheduler/employees';
 import { PoolConnection } from 'mariadb';
 
 export class SqlWork {

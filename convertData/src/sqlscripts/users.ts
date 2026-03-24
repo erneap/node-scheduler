@@ -1,5 +1,5 @@
-import { collections, mdbConnection } from "scheduler-node-models/config";
-import { IUser, User } from 'scheduler-node-models/users';
+import { collections, mdbConnection } from "scheduler-services";
+import { IUser, User } from 'scheduler-models/users';
 import { PoolConnection } from 'mariadb';
 
 export class SqlUsers {

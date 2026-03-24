@@ -49,28 +49,14 @@ export class BuildInitial {
       if (this.employeeID === '') {
         throw new Error("Employee not assigned");
       }
-      // pull employee's user and employee record from mongodb
-      if (collections.employees) {
-        const query = { _id: new ObjectId(this.employeeID)};
-        const iEmp = await collections.employees.findOne<IEmployee>(query);
-        if (iEmp) {
-          this.initialData.employee = new Employee(iEmp);
-          // after getting the employee, get the corresponding user record
-          if (collections.users) {
-            const iUser = await collections.users.findOne<IUser>(query);
-            if (iUser) {
-              this.initialData.employee.user = new User(iUser);
-            } else {
-              throw new Error('User not found');
-            }
-          } else {
-            throw new Error('User collection unavailable');
-          }
-        } else {
-          throw new Error('Employee not found')
-        }
-      } else {
-        throw new Error('Employee collection unavailable');
+      const userMap = new Map<string, User>();
+      if (collections.users) {
+        const userCursor = collections.users.find<IUser>({});
+        const userArray = await userCursor.toArray();
+        userArray.forEach(iUser => {
+          const user = new User(iUser);
+          userMap.set(user.id, user);
+        });
       }
 
       // determine work period for initial pull (this year and last).
@@ -94,6 +80,9 @@ export class BuildInitial {
               const empPromises = empArray.map(async(iEmp) => {
                 const emp = new Employee(iEmp);
                 if (emp.isActiveBetween(start, end)) {
+                  // get the employee's user object from map
+                  const user = userMap.get(emp.id);
+                  emp.user = new User(user);
                   // find the site the employee is assigned to and add the employee to
                   // that site.
                   this.initialData.team?.sites.forEach((site, s) => {
@@ -189,7 +178,7 @@ export class BuildInitial {
               if (site.employees) {
                 site.employees.forEach(emp => {
                   if (!found && this.initialData.employee 
-                    && emp.id === this.initialData.employee.id) {
+                    && emp.id === this.employeeID) {
                     this.initialData.employee = new Employee(emp);
                     this.initialData.employee.user = tUser;
                     found = true;

@@ -41,45 +41,51 @@
             <div class="label">Security Question 1:</div>
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
-              <mat-select formControlName="question1">
+              <mat-select formControlName="question1" 
+                (valueChange)="updateSecurityQuestion('question', 1)">
                 @for (question of questions; track question.id) {
-                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                  <mat-option>{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
             <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
               <mat-label>Answer:</mat-label>
-              <input matInput type="password" formControlName="answer1">
+              <input matInput type="password" formControlName="answer1" 
+                (change)="updateSecurityQuestion('answer', 1)">
             </mat-form-field>
           </div>
           <div class="flexlayout column center flexgap" >
             <div class="label">Security Question 2:</div>
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
-              <mat-select formControlName="question2">
+              <mat-select formControlName="question2" 
+                (valueChange)="updateSecurityQuestion('question', 2)">
                 @for (question of questions; track question.id) {
-                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                  <mat-option>{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
             <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
               <mat-label>Answer:</mat-label>
-              <input matInput type="password" formControlName="answer2">
+              <input matInput type="password" formControlName="answer2" 
+                (change)="updateSecurityQuestion('answer', 2)">
             </mat-form-field>
           </div>
           <div class="flexlayout column center flexgap" >
             <div class="label">Security Question 3:</div>
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
-              <mat-select formControlName="question3">
+              <mat-select formControlName="question3" 
+                (valueChange)="updateSecurityQuestion('question', 3)">
                 @for (question of questions; track question.id) {
-                  <mat-option [value]="question.question" >{{question.question}}</mat-option>
+                  <mat-option>{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
             <mat-form-field style="width: 400px;margin: 0 3px 3px 3px;">
               <mat-label>Answer:</mat-label>
-              <input matInput type="password" formControlName="answer3">
+              <input matInput type="password" formControlName="answer3" 
+                (change)="updateSecurityQuestion('answer', 3)">
             </mat-form-field>
           </div>
         </div>
