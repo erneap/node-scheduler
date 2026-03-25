@@ -59,6 +59,15 @@ export class BuildInitial {
         });
       }
 
+      // pull the employee for the employee id to get the team information
+      if (collections.employees) {
+        const query = { _id: new ObjectId(this.employeeID)};
+        const iEmp = await collections.employees.findOne<IEmployee>(query);
+        if (iEmp) {
+          this.initialData.employee = new Employee(iEmp);
+        }
+      }
+
       // determine work period for initial pull (this year and last).
       const now = new Date();
       const start = new Date(Date.UTC(now.getFullYear()-1, 0, 1));

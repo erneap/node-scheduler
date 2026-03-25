@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -40,7 +40,14 @@ export class EmployeeSecurity {
     this.setEmployee();
   }
   profileForm: FormGroup;
+  questionForm: FormGroup;
   questions: SecurityQuestion[];
+  minimumLengthStyle = signal<string>('background-color: red;');
+  minimumLowerStyle = signal<string>('background-color: red;');
+  minimumUpperStyle = signal<string>('background-color: red;');
+  minimumNumberStyle = signal<string>('background-color: red;');
+  minimumSpecialStyle = signal<string>('background-color: red;');
+  mustMatchStyle = signal<string>('background-color: red;');
 
   constructor(
     private authService: AuthService,
@@ -50,8 +57,10 @@ export class EmployeeSecurity {
     private builder: FormBuilder
   ) {
     this.profileForm = this.builder.group({
-      password: ['', [new PasswordStrengthValidator()]],
-      password2: ['', [new MustMatchValidator()]],
+      password: ['', [Validators.required, new PasswordStrengthValidator()]],
+      password2: ['', [Validators.required, new MustMatchValidator()]],
+    });
+    this.questionForm = this.builder.group({
       question1: ['', [Validators.required]],
       answer1: '',
       question2: ['', [Validators.required]],
@@ -60,12 +69,10 @@ export class EmployeeSecurity {
       answer3: ''
     });
     this.questions = this.teamService.getQuestions();
-    console.log(this.employee);
     if (this.employee === '') {
       const iEmp = this.empService.getEmployee();
       if (iEmp) {
         const emp = new Employee(iEmp);
-        console.log(emp.id);
         this.employee = emp.id;
       }
     }
@@ -80,22 +87,34 @@ export class EmployeeSecurity {
           if (!found && site.employees) {
             site.employees.forEach(emp => {
               if (!found && emp.id === this.employee) {
-                console.log(emp.user);
                 found = true;
                 if (emp.user && emp.user.questions) {
-                  console.log(emp.user.lastName);
                   emp.user.questions.sort((a,b) => a.compareTo(b));
                   emp.user.questions.forEach(quest => {
-                    console.log(JSON.stringify(quest));
                     switch (quest.id) {
                       case 1:
-                        this.profileForm.get('question1')?.setValue(quest.question);
+                        this.questionForm.get('question1')?.setValue(quest.question);
+                        if (quest.answer !== '') {
+                          this.questionForm.get('answer1')?.setValue('ANSWERED')
+                        } else {
+                          this.questionForm.get('answer1')?.setValue('');
+                        }
                         break;
                       case 2:
-                        this.profileForm.get('question2')?.setValue(quest.question);
+                        this.questionForm.get('question2')?.setValue(quest.question);
+                        if (quest.answer !== '') {
+                          this.questionForm.get('answer2')?.setValue('ANSWERED')
+                        } else {
+                          this.questionForm.get('answer2')?.setValue('');
+                        }
                         break;
                       case 3:
-                        this.profileForm.get('question3')?.setValue(quest.question);
+                        this.questionForm.get('question3')?.setValue(quest.question);
+                        if (quest.answer !== '') {
+                          this.questionForm.get('answer3')?.setValue('ANSWERED')
+                        } else {
+                          this.questionForm.get('answer3')?.setValue('');
+                        }
                         break;
                     }
                   });
@@ -108,38 +127,74 @@ export class EmployeeSecurity {
     }
   }
 
-  getPasswordError(): string {
-    let answer: string = ''
-    if (this.profileForm.get('password')?.hasError('required')) {
-      answer = "Required";
+  checkPasswords() {
+    const passwd1 = this.profileForm.get('password')?.value;
+    const passwd2 = this.profileForm.get('password2')?.value;
+    const hasMinimum = (passwd1.length >= 10);
+    let upper = 0;
+    let lower = 0;
+    let numeric = 0;
+    let special = 0;
+    let upperRE = new RegExp("[A-Z]");
+    let lowerRE = new RegExp("[a-z]");
+    let numericRE = new RegExp("[0-9]");
+    let password = passwd1;
+    for (var i=0; i < password.length; i++) {
+        let ch = password.substring(i, i+1);
+        if (upperRE.test(ch)) {
+            upper++;
+        } else if (lowerRE.test(ch)) {
+            lower++;
+        } else if (numericRE.test(ch)) {
+            numeric++;
+        } else {
+            special++;
+        }
     }
-    if (this.profileForm.get('password')?.hasError('passwordStrength')) {
-      if (answer !== '') {
-        answer += ', ';
-      }
-      answer += "Minimum(s)";
+    if (hasMinimum) {
+      this.minimumLengthStyle.set('background-color: green;');
+    } else {
+      this.minimumLengthStyle.set('background-color: red;');
     }
-    return answer;
+    if (lower > 1) {
+      this.minimumLowerStyle.set('background-color: green;');
+    } else {
+      this.minimumLowerStyle.set('background-color: red;');
+    }
+    if (upper > 1) {
+      this.minimumUpperStyle.set('background-color: green;');
+    } else {
+      this.minimumUpperStyle.set('background-color: red;');
+    }
+    if (numeric > 1) {
+      this.minimumNumberStyle.set('background-color: green;');
+    } else {
+      this.minimumNumberStyle.set('background-color: red;');
+    }
+    if (special > 1) {
+      this.minimumSpecialStyle.set('background-color: green;');
+    } else {
+      this.minimumSpecialStyle.set('background-color: red;');
+    }
+    if (passwd1.length > 0 && passwd1 === passwd2) {
+      this.mustMatchStyle.set('background-color: green;');
+    } else {
+      this.mustMatchStyle.set('background-color: red;');
+    }
   }
 
-  getVerifyError(): string {
-    let answer: string = ''
-    if (this.profileForm.get('password2')?.hasError('required')) {
-      answer = "Required";
+  changePassword() {
+    let value = this.profileForm.get('password')?.value;
+    if (value !== '') {
+      this.updateEmployee('password', value);
     }
-    if (this.profileForm.get('password2')?.hasError('matching')) {
-      if (answer !== '') {
-        answer += ', ';
-      }
-      answer += "Doesn't match";
-    }
-    return answer;
   }
 
   updateSecurityQuestion(field: string, id: number) {
     let value = '';
     if (field.substring(0,1).toLowerCase() === 'q') {
       field = `question${id}`;
+      console.log(JSON.stringify(this.profileForm.get(field)?.value));
       value = this.profileForm.get(field)?.value;
       field = 'securityquestion';
     } else {
@@ -151,6 +206,7 @@ export class EmployeeSecurity {
   }
 
   updateEmployee(field: string, value: string, optional?: string) {
+    console.log(`${field}-${optional}-${value}`);
     this.empService.updateEmployee(this.employee, field, value, optional).subscribe({
       next: res => {
         const iEmp = (res.body as IEmployee);

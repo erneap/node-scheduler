@@ -1,0 +1,80 @@
+<form [formGroup]="requestForm" class="flexlayout column center">
+  <div class="flexlayout row center flexgap">
+    <mat-form-field>
+      <mat-label>Request Start Date</mat-label><input matInput placeholder="Start Date" 
+        formControlName="start"
+        [matDatepicker]="startpicker"
+        (dateChange)="onChange('start')">
+      <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+      <mat-datepicker #startpicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Request End Date</mat-label><input matInput placeholder="End Date" 
+        formControlName="end"
+        [matDatepicker]="endpicker"
+        (dateChange)="onChange('end')">
+      <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>
+      <mat-datepicker #endpicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Primary Leave Code</mat-label>
+      <mat-select formControlName="primarycode"(selectionChange)="onChange('primarycode')">
+        @for (wc of leavecodes; track wc.id) {
+          <mat-option [value]="wc.id">
+            {{wc.title}}
+          </mat-option>
+        }
+        <mat-option value="mod">Mod Time</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  @if (currentRequest().id !== '') {
+    <div class="flexlayout column center" style="width: 95%;">
+      <h4 style="color: white;">Comments For Request</h4>
+      @for (cmt of currentRequest().comments; track cmt.commentdate){
+        <div style="color: white;font-size: .9rem;">
+          <span style="font-weight: bold;">
+            {{cmt.commentdate.toDateString()}}
+          </span>
+          - {{cmt.comment}}
+        </div>
+      }
+      <div class="flexlayout row center" style="width:100%;">
+        <div style="color: shite;font-size:.8rem;font-weight: bold;color: white;">
+          New Comment:</div>
+        <div style="width: 75%;">
+          <input matNativeControl formControlName="comment" style="width:100%;">
+        </div>
+        <div>
+          <button matTooltip="Add comment" (click)="onChange('comment')">Add</button>
+        </div>
+      </div>
+    </div>
+  }
+  @if (currentRequest().id === '') {
+    <div class="flexlayout row center">
+      <button mat-raised-button>Add New</button>
+    </div>
+  }
+  @else {
+    <div class="flexlayout row center flexgap">
+      <button mat-raised-button>Delete</button>
+      <button mat-raised-button>Clear</button>
+    </div>
+  }
+</form>
+@if (currentRequest().id !== '') {
+  <div class="flexlayout column center" style="margin-top: 20px;">
+    <div class="flexlayout row center">
+      <div class="flexlayout row center day">Date</div>
+      <div class="flexlayout row center code">Type</div>
+      <div class="flexlayout row center hours">Hours</div>
+      <div class="flexlayout row center tagday">Holiday?</div>
+    </div>
+    @for (leave of currentRequest().requesteddays; track leave.leavedate) {
+      <app-employee-leave-request-editor-day [employee]="employee" [request]="request"
+        [leave]="leave" (changed)="onDayChange($event)">
+      </app-employee-leave-request-editor-day>
+    }
+  </div>
+}

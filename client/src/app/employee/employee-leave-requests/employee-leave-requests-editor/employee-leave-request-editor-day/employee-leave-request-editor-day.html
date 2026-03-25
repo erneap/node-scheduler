@@ -1,0 +1,30 @@
+<form [formGroup]="dayForm" class="flexlayout row center">
+  <div class="flexlayout column center day">{{getDayDate()}}</div>
+  <div class="flexlayout column center code">
+    <select matNativeControl formControlName="code" class="input"
+      [style]="getDayStyle()" (change)="onChange('code')">
+      <option value=""></option>
+      @for (wc of leavecodes; track wc.id) {
+        <option [value]="wc.id">{{wc.title}}</option>
+      }
+    </select>
+  </div>
+  <div class="flexlayout column center hours">
+    <select matNativeControl formControlName="hours" class="input"
+      [style]="getDayStyle()" (change)="onChange('hours')">
+      <option value="0"></option>
+      @for (hour of hoursList; track hour) {
+        <option [value]="hour">{{hour}}</option>
+      }
+    </select>
+  </div>
+  <div class="flexlayout column center tagday">
+    <select matNativeControl formControlName="tagday" class="input"
+      [style]="getDayStyle()" (change)="onChange('tagday')">
+      <option value=""></option>
+      @for (hol of holidays; track hol.name) {
+        <option [value]="hol.toString()">{{hol.toString()}}</option>
+      }
+    </select>
+  </div>
+</form>

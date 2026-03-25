@@ -117,6 +117,16 @@ export class Login {
               // must change actions page
               this.authService.statusMessage.set('User must change password');
               this.router.navigate(['/mustchange']);
+            } else if (user.questions.length < 3 
+              || user.questions[0].question === ''
+              || user.questions[0].answer === ''
+              || user.questions[1].question === ''
+              || user.questions[1].answer === ''
+              || user.questions[2].question === ''
+              || user.questions[2].answer === ''
+            ) {
+              this.authService.statusMessage.set('Security Questions/Answer must be set');
+              this.router.navigate(['/employee/security']);
             } else {
               this.router.navigate(['/employee/schedule']);
             }

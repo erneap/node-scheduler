@@ -7,6 +7,7 @@ import { EmployeeLeaves } from './employee/employee-leaves/employee-leaves';
 import { EmployeeProfile } from './employee/employee-profile/employee-profile';
 import { EmployeeCompany } from './employee/employee-company/employee-company';
 import { EmployeeSecurity } from './employee/employee-security/employee-security';
+import { EmployeeLeaveRequests } from './employee/employee-leave-requests/employee-leave-requests';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -20,6 +21,7 @@ export const routes: Routes = [
       { path: 'profile', component: EmployeeProfile },
       { path: 'company', component: EmployeeCompany },
       { path: 'security', component: EmployeeSecurity },
+      { path: 'leaverequest', component: EmployeeLeaveRequests },
       { path: '**', component: EmployeeSchedule},
     ]
   },

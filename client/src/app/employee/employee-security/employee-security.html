@@ -3,38 +3,57 @@
     <mat-card-header>
       <mat-card-title style="color: white;">Security Information</mat-card-title>
     </mat-card-header>
-    <mat-card-content class="flexlayout row center flexgap" style="margin: 20px;">
-      <form [formGroup]="profileForm" class="flexlayout row topcenter flexgap">
+    <mat-card-content class="flexlayout row topcenter flexgap" style="margin: 20px;">
+      <div class="flexlayout row topcenter flexgap">
         <div class="flexlayout column center flexgap">
-          <!-- Password Change Section -->
-          <h3 style="color: white;">Reset Password</h3>
-          <mat-form-field>
-            <mat-label>New Password</mat-label>
-            <input matInput type="password" formControlName="password">
-            @if (this.profileForm.get('password')?.invalid) {
-              <mat-error
-                class="error">
-                {{getPasswordError()}}
-              </mat-error>
-            }
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>Verify Password</mat-label>
-            <input matInput type="password" formControlName="password2">
-            @if (this.profileForm.get('password2')?.invalid) {
-              <mat-error
-                class="error">
-                {{getVerifyError()}}
-              </mat-error>
-            }
-          </mat-form-field>
-          <div class="formField" style="vertical-align: top; width: 75px;">
-            <button mat-raised-button color="accent"
-              [disabled]="!profileForm.valid" >Change</button>
+          <form [formGroup]="profileForm" class="flexlayout column topcenter flexgap">
+            <!-- Password Change Section -->
+            <h3 style="color: white;">Reset Password</h3>
+            <mat-form-field style="width: 250px;">
+              <mat-label>New Password</mat-label>
+              <input matInput type="password" formControlName="password"
+                (keyup)="checkPasswords()">
+            </mat-form-field>
+            <mat-form-field style="width: 250px;">
+              <mat-label>Verify Password</mat-label>
+              <input matInput type="password" formControlName="password2"
+                (keyup)="checkPasswords()">
+            </mat-form-field>
+            <div class="formField" style="vertical-align: top; width: 75px;">
+              <button mat-raised-button color="accent"
+                [disabled]="!profileForm.valid" 
+                (click)="changePassword()">Change</button>
+            </div>
+          </form>
+          <div class="flexlayout column topleft" style="margin-top: 10px;">
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="minimumLengthStyle()"></div>
+              <div class="passcheck flexlayout row center">At least 10 characters</div>
+            </div>
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="minimumLowerStyle()"></div>
+              <div class="passcheck flexlayout row center">At least 2 Lower Case</div>
+            </div>
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="minimumUpperStyle()"></div>
+              <div class="passcheck flexlayout row center">At least 2 Upper Case</div>
+            </div>
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="minimumNumberStyle()"></div>
+              <div class="passcheck flexlayout row center">At least 2 Number</div>
+            </div>
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="minimumSpecialStyle()"></div>
+              <div class="passcheck flexlayout row center">At least 2 Special Character</div>
+            </div>
+            <div class="flexlayout row topleft">
+              <div class="indicator" [style]="mustMatchStyle()"></div>
+              <div class="passcheck flexlayout row center">Passwords Match</div>
+            </div>
           </div>
         </div>
-        <div class="flexlayout column center flexgap" 
-          style="border-left: 1px solid white;padding-left: 5px;">
+        <form [formGroup]="questionForm" class="flexlayout column topcenter flexgap"
+          style="border-left: 1px solid white;padding-left: 10px;margin-left:10ox;">
           <h3 style="color: white;">Security Questions (Required)</h3>
           <!-- Security Questions Section-->
           <div class="flexlayout column center flexgap" >
@@ -42,9 +61,9 @@
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
               <mat-select formControlName="question1" 
-                (valueChange)="updateSecurityQuestion('question', 1)">
+                (selectionChange)="updateSecurityQuestion('question', 1)">
                 @for (question of questions; track question.id) {
-                  <mat-option>{{question.question}}</mat-option>
+                  <mat-option [value]="question.question">{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -59,9 +78,9 @@
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
               <mat-select formControlName="question2" 
-                (valueChange)="updateSecurityQuestion('question', 2)">
+                (selectionChange)="updateSecurityQuestion('question', 2)">
                 @for (question of questions; track question.id) {
-                  <mat-option>{{question.question}}</mat-option>
+                  <mat-option [value]="question.question">{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -76,9 +95,9 @@
             <mat-form-field style="width: 400px;margin: 3px 3px 0 3px;">
               <mat-label>Question:</mat-label>
               <mat-select formControlName="question3" 
-                (valueChange)="updateSecurityQuestion('question', 3)">
+                (selectionChange)="updateSecurityQuestion('question', 3)">
                 @for (question of questions; track question.id) {
-                  <mat-option>{{question.question}}</mat-option>
+                  <mat-option [value]="question.question">{{question.question}}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -88,8 +107,8 @@
                 (change)="updateSecurityQuestion('answer', 3)">
             </mat-form-field>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

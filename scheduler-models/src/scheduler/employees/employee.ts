@@ -1455,7 +1455,7 @@ export class Employee implements IEmployee {
       answer = new LeaveRequest({
         id: id,
         employeeid: this.id,
-        requestdate: new Date(),
+        requestDate: new Date(),
         primarycode: code,
         startdate: start,
         enddate: end,

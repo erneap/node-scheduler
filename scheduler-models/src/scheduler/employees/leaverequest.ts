@@ -53,7 +53,7 @@ export class LeaveRequestComment implements ILeaveRequestComment {
 export interface ILeaveRequest {
   id: string;
   employeeid: string;
-  requestdate: Date;
+  requestDate: Date;
   primarycode: string;
   startdate: Date;
   enddate: Date;
@@ -83,7 +83,7 @@ export interface ILeaveRequest {
 export class LeaveRequest implements ILeaveRequest {
   public id: string;
   public employeeid: string;
-  public requestdate: Date;
+  public requestDate: Date;
   public primarycode: string;
   public startdate: Date;
   public enddate: Date;
@@ -96,7 +96,7 @@ export class LeaveRequest implements ILeaveRequest {
   constructor(req?: ILeaveRequest) {
     this.id = (req) ? req.id : '';
     this.employeeid = (req) ? req.employeeid : '';
-    this.requestdate = (req) ? new Date(req.requestdate) : new Date();
+    this.requestDate = (req) ? new Date(req.requestDate) : new Date();
     this.primarycode = (req) ? req.primarycode : 'V';
     this.startdate = (req) ? new Date(req.startdate) : new Date();
     this.enddate = (req) ? new Date(req.enddate) : new Date();
@@ -138,7 +138,7 @@ export class LeaveRequest implements ILeaveRequest {
     if (other) {
       if (this.startdate.getTime() === other.startdate.getTime()) {
         if (this.enddate.getTime() === other.enddate.getTime()) {
-          return (this.requestdate.getTime() < other.requestdate.getTime()) ? -1 : 1;
+          return (this.requestDate.getTime() < other.requestDate.getTime()) ? -1 : 1;
         }
         return (this.enddate.getTime() < other.enddate.getTime()) ? -1 : 1;
       }
