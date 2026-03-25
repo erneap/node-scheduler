@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
-import { Employee, IEmployee } from 'scheduler-models/scheduler/employees';
+import { Employee, IEmployee, NewEmployeeLeaveRequest } from 'scheduler-models/scheduler/employees';
 import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -52,6 +52,31 @@ export class EmployeeService extends CacheService {
       data.optional = optional;
     }
     return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res
+      })
+    );
+  }
+
+  addLeaveRequest(empID: string, start: Date, end: Date, primary: string, 
+    cmt?: string): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/request`;
+    const data: NewEmployeeLeaveRequest = {
+      employee: empID,
+      startdate: start,
+      enddate: end, 
+      code: primary,
+      comment: cmt
+    };
+    return this.http.post<Employee>(url, data, { observe: 'response' }).pipe(
       map(res => {
         const iEmployee = (res.body as IEmployee );
         if (iEmployee) {

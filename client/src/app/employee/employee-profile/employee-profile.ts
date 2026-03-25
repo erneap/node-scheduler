@@ -203,7 +203,6 @@ export class EmployeeProfile {
         }
       },
       error: err => {
-        console.log(err);
         if (err instanceof HttpErrorResponse) {
           if (err.status >= 400 && err.status < 500) {
             this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)

@@ -28,40 +28,41 @@
       </mat-select>
     </mat-form-field>
   </div>
-  @if (currentRequest().id !== '') {
-    <div class="flexlayout column center" style="width: 95%;">
-      <h4 style="color: white;">Comments For Request</h4>
-      @for (cmt of currentRequest().comments; track cmt.commentdate){
-        <div style="color: white;font-size: .9rem;">
-          <span style="font-weight: bold;">
-            {{cmt.commentdate.toDateString()}}
-          </span>
-          - {{cmt.comment}}
-        </div>
-      }
-      <div class="flexlayout row center" style="width:100%;">
-        <div style="color: shite;font-size:.8rem;font-weight: bold;color: white;">
-          New Comment:</div>
-        <div style="width: 75%;">
-          <input matNativeControl formControlName="comment" style="width:100%;">
-        </div>
+  <div class="flexlayout column center" style="width: 95%;">
+    <h4 style="color: white;">Comments For Request</h4>
+    @for (cmt of currentRequest().comments; track cmt.commentdate){
+      <div style="color: white;font-size: .9rem;">
+        <span style="font-weight: bold;">
+          {{cmt.commentdate.toDateString()}}
+        </span>
+        - {{cmt.comment}}
+      </div>
+    }
+    <div class="flexlayout row center" style="width:100%;">
+      <div style="color: shite;font-size:.8rem;font-weight: bold;color: white;">
+        New Comment:</div>
+      <div style="width: 75%;">
+        <input matNativeControl formControlName="comment" style="width:100%;">
+      </div>
+      @if (currentRequest().id !== '') {
         <div>
           <button matTooltip="Add comment" (click)="onChange('comment')">Add</button>
         </div>
-      </div>
+      }
     </div>
-  }
-  @if (currentRequest().id === '') {
-    <div class="flexlayout row center">
-      <button mat-raised-button>Add New</button>
-    </div>
-  }
-  @else {
-    <div class="flexlayout row center flexgap">
-      <button mat-raised-button>Delete</button>
-      <button mat-raised-button>Clear</button>
-    </div>
-  }
+  </div>
+  <div class="flexlayout row center" style="margin-top: 10px;">
+    @if (currentRequest().id === '') {
+      <button matButton="filled" class="add-button"
+        (click)="onAdd()">Add New</button>
+    }
+    @else {
+      <button matButton="filled" class="delete-button"
+        (click)="onDelete()">Delete</button>
+      <button matButton="filled" class="clear-button"
+        (click)="onClear()">Clear</button>
+    }
+  </div>
 </form>
 @if (currentRequest().id !== '') {
   <div class="flexlayout column center" style="margin-top: 20px;">

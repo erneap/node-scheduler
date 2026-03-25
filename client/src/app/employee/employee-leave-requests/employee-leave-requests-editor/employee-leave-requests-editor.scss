@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 .day {
   width: 75px;
   font-size: 1rem;
@@ -32,4 +34,25 @@
   color: white;
   font-weight: bold;
   border: solid 1px white;
+}
+
+.delete-button {
+  @include mat.button-overrides((
+    filled-container-color: red,
+    filled-label-text-color: white,
+  ));
+}
+
+.clear-button {
+  @include mat.button-overrides((
+    filled-container-color: white,
+    filled-label-text-color: darkmagenta,
+  ));
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
 }

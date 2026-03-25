@@ -40,7 +40,7 @@
           }
         </div>
         <app-employee-leave-requests-editor [employee]="employee" 
-          [request]="selectedItem()">
+          [request]="selectedItem()" (changed)="onChanged($event)">
         </app-employee-leave-requests-editor>
       </div>
     </mat-card-content>

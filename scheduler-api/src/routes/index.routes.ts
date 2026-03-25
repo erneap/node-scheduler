@@ -16,6 +16,7 @@ import teamWorkcodeRoutes from './teamWorkcodeRoutes';
 import teamCompanyRoutes from './teamCompanyRoutes';
 import teamCompanyHolidayRoutes from './teamCompanyHolidayRoutes';
 import teamCompanyModRoutes from './teamCompanyModRoutes';
+import employeeLeaveRequestRoutes from './employeeLeaveRequestRoutes';
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.use('', employeeAssignmentRoutes);
 router.use('', employeeVariationRoutes);
 router.use('', employeeBalanceRoutes);
 router.use('', employeeMiscRoutes);
+router.use('', employeeLeaveRequestRoutes);
 router.use('', ingestRoutes);
 router.use('', siteRoutes);
 router.use('', siteForecastRoutes);
