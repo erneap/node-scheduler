@@ -204,12 +204,13 @@ export class LeaveRequest implements ILeaveRequest {
     this.requesteddays = [];
     let count = -1;
     while (start.getTime() <= this.enddate.getTime()) {
+      count++;
       const wd = emp.getWorkday(start);
       let leave: Leave | undefined = undefined;
       if (wd && wd.code !== '') {
         if (this.primarycode.toLowerCase() === 'mod') {
           leave = new Leave({
-            id: count++,
+            id: count,
             leavedate: new Date(start),
             code: wd.code,
             hours: wd.hours,
@@ -223,7 +224,7 @@ export class LeaveRequest implements ILeaveRequest {
             stdHours = 8.0;
           }
           leave = new Leave({
-            id: count++,
+            id: count,
             leavedate: new Date(start),
             code: this.primarycode,
             hours: stdHours,
@@ -234,7 +235,7 @@ export class LeaveRequest implements ILeaveRequest {
         }
       } else {
         leave = new Leave({
-          id: count++,
+          id: count,
           leavedate: new Date(start),
           code: '',
           hours: 0.0,
