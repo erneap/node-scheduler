@@ -144,7 +144,11 @@ export class EmployeeLeaveRequestEditorDay {
   onChange(field: string) {
     let chgString = `${this.employee}|${this.request}|day|`
       + `${this.leave.leavedate.getTime()}|`
-      + `${field}|${this.dayForm.get(field)?.value}`;
+      + `${this.dayForm.get('code')?.value}|`
+      + `${this.dayForm.get('hours')?.value}|`;
+    if (this.dayForm.get('tagday') && this.dayForm.get('tagday')?.value) {
+      chgString += `${this.dayForm.get('tagday')?.value}`;
+    }
     this.changed.emit(chgString);
   }
 }

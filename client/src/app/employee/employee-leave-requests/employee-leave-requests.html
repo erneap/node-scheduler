@@ -37,10 +37,22 @@
                 <div class="flexlayout row center status">{{holidayHours()}}</div>
               </div>
             </div>
+            <div class="flexlayout row center">
+              @if (showSubmit()) {
+                <button matButton="filled" class="clear-button"
+                (click)="onSubmitForApproval()">
+                  Submit For Approval</button>
+              }
+              @if (showApproval()) {
+                <button matButton="filled" class="clear-button">
+                  Approve</button>
+              }
+            </div>
           }
         </div>
         <app-employee-leave-requests-editor [employee]="employee" 
-          [request]="selectedItem()" (changed)="onChanged($event)">
+          [request]="selectedItem()" (changed)="onChanged($event)"
+          [refresh]="refreshEditor()">
         </app-employee-leave-requests-editor>
       </div>
     </mat-card-content>

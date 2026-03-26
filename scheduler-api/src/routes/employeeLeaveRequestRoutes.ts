@@ -79,6 +79,7 @@ router.put('/employee/request', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
+    console.log(err);
     await postLogEntry('employee', `employeeLeaveRequest: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }

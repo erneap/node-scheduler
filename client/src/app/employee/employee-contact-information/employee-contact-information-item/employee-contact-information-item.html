@@ -1,0 +1,7 @@
+<div class="flexlayout row center">
+  <div class="flexlayout column center title">{{typeName()}}</div>
+  <form [formGroup]="itemForm" class="flexlayout column center info">
+    <input matNativeControl formControlName="contact"
+      (change)="onChange()">
+  </form>
+</div>

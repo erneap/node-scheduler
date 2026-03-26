@@ -136,6 +136,7 @@ router.put('/employee/contact', auth, async(req: Request, res: Response) => {
     }
   } catch (err) {
     const error = err as Error;
+    console.log(err);
     await postLogEntry('employee', `employeeMisc: Contact: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }

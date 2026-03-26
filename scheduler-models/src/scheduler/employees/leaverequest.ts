@@ -214,6 +214,7 @@ export class LeaveRequest implements ILeaveRequest {
             leavedate: new Date(start),
             code: wd.code,
             hours: wd.hours,
+            tagday: wd.workcenter,
             status: 'REQUESTED',
             requestid: this.id,
             used: false

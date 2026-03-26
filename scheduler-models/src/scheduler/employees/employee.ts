@@ -1475,7 +1475,7 @@ export class Employee implements IEmployee {
           comment: comment
         }));
       }
-      answer.setLeaveDays(this);
+      answer.setLeaveDays(this, true);
       this.requests.push(new LeaveRequest(answer));
     }
 
@@ -1505,14 +1505,14 @@ export class Employee implements IEmployee {
           case "start":
             // parse the value to make a date object, then make sure the date is a UTC
             // value
-            let date = new Date(Date.parse(value))
-            date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            let sdate = new Date(Date.parse(value))
+            sdate = new Date(Date.UTC(sdate.getFullYear(), sdate.getMonth(), sdate.getDate()));
 
             // check to see if the dates are outside the original start and end dates, 
             // which invalidates the leave request and places back in the draft status
             // and removes any current approved leaves to be removed.
-            if (date.getTime() < req.startdate.getTime() 
-              || date.getTime() > req.enddate.getTime()) {
+            if (sdate.getTime() < req.startdate.getTime() 
+              || sdate.getTime() > req.enddate.getTime()) {
               if (req.status.toLowerCase() === 'approved') {
                 // remove the approved leaves from the leaves list.
                 this.leaves.sort((a,b) => a.compareTo(b));
@@ -1549,7 +1549,7 @@ export class Employee implements IEmployee {
                 let startpos = -1;
                 this.leaves.forEach((lv, l) => {
                   if (lv.requestid === id && lv.status.toLowerCase() !== 'actual'
-                    && lv.leavedate.getTime() < date.getTime()) {
+                    && lv.leavedate.getTime() < sdate.getTime()) {
                     if (startpos < 0) {
                       startpos = l;
                       count++;
@@ -1568,11 +1568,11 @@ export class Employee implements IEmployee {
                 + `within the original dates.  Approved Leave days were updated in the database `
                 + 'as approved.';
             }
-            req.startdate = new Date(date);
+            req.startdate = new Date(sdate);
             req.setLeaveDays(this);
             req.comments.push(new LeaveRequestComment({
               commentdate: new Date(),
-              comment: `Start date for request was changed to ${date.toDateString()}`
+              comment: `Start date for request was changed to ${sdate.toDateString()}`
             }));
             req.comments.sort((a,b) => a.compareTo(b));
             break;
@@ -1580,14 +1580,14 @@ export class Employee implements IEmployee {
           case "end":
             // parse the value to make a date object, then make sure the date is a UTC
             // value
-            date = new Date(Date.parse(value))
-            date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            let edate = new Date(Date.parse(value))
+            edate = new Date(Date.UTC(edate.getFullYear(), edate.getMonth(), edate.getDate()));
 
             // check to see if the dates are outside the original start and end dates, 
             // which invalidates the leave request and places back in the draft status
             // and removes any current approved leaves to be removed.
-            if (date.getTime() < req.startdate.getTime() 
-              || date.getTime() > req.enddate.getTime()) {
+            if (edate.getTime() < req.startdate.getTime() 
+              || edate.getTime() > req.enddate.getTime()) {
               if (req.status.toLowerCase() === 'approved') {
                 // remove the approved leaves from the leaves list.
                 this.leaves.sort((a,b) => a.compareTo(b));
@@ -1624,7 +1624,7 @@ export class Employee implements IEmployee {
                 let startpos = -1;
                 this.leaves.forEach((lv, l) => {
                   if (lv.requestid === id && lv.status.toLowerCase() !== 'actual'
-                    && lv.leavedate.getTime() > date.getTime()) {
+                    && lv.leavedate.getTime() > edate.getTime()) {
                     if (startpos < 0) {
                       startpos = l;
                       count++;
@@ -1643,11 +1643,11 @@ export class Employee implements IEmployee {
                   + 'database as approved';
               }
             }
-            req.enddate = new Date(date);
+            req.enddate = new Date(edate);
             req.setLeaveDays(this);
             req.comments.push(new LeaveRequestComment({
               commentdate: new Date(),
-              comment: `End date for request was changed to ${date.toDateString()}`
+              comment: `End date for request was changed to ${edate.toDateString()}`
             }));
             req.comments.sort((a,b) => a.compareTo(b));
             break;
@@ -1800,9 +1800,10 @@ export class Employee implements IEmployee {
             let found = false;
             let max = 0;
             const svalues = value.split('|');
-            let lvDate = new Date(Date.parse(svalues[0]));
+            let lvDate = new Date(Number(svalues[0]));
             let code = svalues[1];
             let hours = Number(svalues[2]);
+            let tagday = svalues[3];
             let status = '';
             let workcenter = '';
             if (svalues.length > 3) {
@@ -1821,6 +1822,7 @@ export class Employee implements IEmployee {
                 } else {
                   lv.hours = hours;
                 }
+                lv.tagday = tagday;
                 req.requesteddays[l] = lv;
               }
               if (max < lv.id) {
@@ -1833,6 +1835,7 @@ export class Employee implements IEmployee {
                 leavedate: new Date(lvDate),
                 code: code,
                 hours: hours,
+                tagday: tagday,
                 status: status,
                 requestid: req.id,
                 used: false
@@ -1860,17 +1863,14 @@ export class Employee implements IEmployee {
                   leavedate: new Date(lvDate),
                   code: code,
                   hours: hours,
+                  tagday: tagday,
                   status: req.status,
                   requestid: req.id,
                   used: false
                 }));
               }
             }
-            req.comments.push(new LeaveRequestComment({
-              commentdate: new Date(),
-              comment: `Requested Days Updated: ${lvDate.toDateString()} to Code: ${code}, `
-                + `hours: ${hours}`
-            }));
+            break;
           case "comment":
           case "addcomment":
             req.comments.push(new LeaveRequestComment({

@@ -68,6 +68,11 @@ body {
   ));
   @include mat.select-overrides((
     panel-background-color: darkred,
+  ));
+  @include mat.dialog-overrides((
+    container-color: darkred,
+    subhead-color: white,
+    supporting-text-color: white,
   ))
 }
 

@@ -1,7 +1,16 @@
+@use '@angular/material' as mat;
+
 div.status {
   font-size: .8rem;
   font-weight: bold;
   color: white;
   width: 90px;
   border: solid 1px white;
+}
+
+.clear-button {
+  @include mat.button-overrides((
+    filled-container-color: white,
+    filled-label-text-color: darkmagenta,
+  ));
 }

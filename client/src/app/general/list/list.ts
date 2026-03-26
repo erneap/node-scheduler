@@ -11,7 +11,8 @@ export class List {
   list = input<item[]>([]);
   height = input<number>(100);
   width = input<number>(200);
-  selectedItem = model<string>('');
+  multiple = input<boolean>(false);
+  selectedItem = model<string[]>([]);
   selected = output<string>({alias: 'itemSelected'});
 
   setStyle(): string {
@@ -20,14 +21,33 @@ export class List {
 
   setItemStyle(item: string): string {
     let answer = 'item';
-    if (this.selectedItem().toLowerCase() === item.toLowerCase()) {
-      answer += ' selected';
-    }
+    this.selectedItem().forEach(i => {
+      if (i.toLowerCase() === item.toLowerCase()) {
+        answer += ' selected';
+      }
+    });
     return answer;
   }
 
   onSelect(item: string) {
-    this.selectedItem.set(item);
-    this.selected.emit(item);
+    if (this.multiple()) {
+      let found = -1;
+      this.selectedItem().forEach((i, pos) => {
+        if (i.toLowerCase() === item.toLowerCase()) {
+          found = pos;
+        }
+      });
+      if (found >= 0) {
+        // remove the item
+        this.selectedItem().splice(found, 1);
+        this.selected.emit('');
+      } else {
+        this.selectedItem().push(item);
+        this.selected.emit(item);
+      }
+    } else {
+      this.selectedItem.set([item]);
+      this.selected.emit(item);
+    }
   }
 }

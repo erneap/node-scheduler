@@ -8,6 +8,7 @@ import { EmployeeProfile } from './employee/employee-profile/employee-profile';
 import { EmployeeCompany } from './employee/employee-company/employee-company';
 import { EmployeeSecurity } from './employee/employee-security/employee-security';
 import { EmployeeLeaveRequests } from './employee/employee-leave-requests/employee-leave-requests';
+import { EmployeeContactInformation } from './employee/employee-contact-information/employee-contact-information';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'company', component: EmployeeCompany },
       { path: 'security', component: EmployeeSecurity },
       { path: 'leaverequest', component: EmployeeLeaveRequests },
+      { path: 'contacts', component: EmployeeContactInformation },
       { path: '**', component: EmployeeSchedule},
     ]
   },

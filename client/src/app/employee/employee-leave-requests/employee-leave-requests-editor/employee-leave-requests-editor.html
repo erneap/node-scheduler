@@ -64,7 +64,7 @@
     }
   </div>
 </form>
-@if (currentRequest().id !== '') {
+@if (currentRequest().id !== '' && currentRequest().primarycode !== 'mod') {
   <div class="flexlayout column center" style="margin-top: 20px;">
     <div class="flexlayout row center">
       <div class="flexlayout row center day">Date</div>
@@ -76,6 +76,21 @@
       <app-employee-leave-request-editor-day [employee]="employee" [request]="request"
         [leave]="leave" (changed)="onDayChange($event)">
       </app-employee-leave-request-editor-day>
+    }
+  </div>
+}
+@if (currentRequest().id !== '' && currentRequest().primarycode === 'mod') {
+  <div class="flexlayout column center" style="margin-top: 20px;">
+    <div class="flexlayout row center">
+      <div class="flexlayout row center day">Date</div>
+      <div class="flexlayout row center code">Type</div>
+      <div class="flexlayout row center hours">Hours</div>
+      <div class="flexlayout row center tagday">Workcenter</div>
+    </div>
+    @for (leave of currentRequest().requesteddays; track leave.leavedate) {
+      <app-employee-leave-request-editor-mod-day [employee]="employee" [request]="request"
+        [leave]="leave" (changed)="onDayChange($event)">
+      </app-employee-leave-request-editor-mod-day>
     }
   </div>
 }

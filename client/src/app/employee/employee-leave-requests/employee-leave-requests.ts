@@ -12,11 +12,15 @@ import { EmployeeLeaveRequestsEditor } from './employee-leave-requests-editor/em
 import { item } from '../../general/list/list.model';
 import { AuthService } from '../../services/auth-service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../../general/confirmation-dialog/confirmation-dialog';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-employee-leave-requests',
   imports: [
     MatCardModule,
+    MatButtonModule,
     List,
     EmployeeLeaveRequestsEditor
 ],
@@ -35,19 +39,23 @@ export class EmployeeLeaveRequests {
   }
   requests = signal<item[]>([]);
   selectedItem = signal<string>('');
+  refreshEditor = signal<boolean>(false);
   createdOn = signal<string>('');
   requestStatus = signal<string>('');
   approvedBy  = signal<string>('');
   approvedOn  = signal<string>('');
   ptoHours  = signal<string>('');
   holidayHours  = signal<string>('');
+  showSubmit = signal<boolean>(true);
+  siteid = signal<string>('');
 
   constructor(
     private authService: AuthService,
     private empService: EmployeeService,
     private siteService: SiteService,
     private teamService: TeamService,
-    private builder: FormBuilder
+    private builder: FormBuilder,
+    private dialog: MatDialog
   ) {
     if (this.employee === '') {
       const iEmp = this.empService.getEmployee();
@@ -79,6 +87,7 @@ export class EmployeeLeaveRequests {
             site.employees.forEach(emp => {
               if (!found && emp.id === this.employee) {
                 found = true;
+                this.siteid.set(emp.site);
                 const now = new Date();
                 emp.requests.sort((a,b) => b.compareTo(a));
                 emp.requests.forEach(request => {
@@ -101,6 +110,25 @@ export class EmployeeLeaveRequests {
     this.requests.set(list);
   }
 
+  showApproval(): boolean {
+    if (this.employee !== '') {
+      let approver = false;
+      let siteid = '';
+      const iEmp = this.empService.getEmployee();
+      if (iEmp) {
+        const emp = new Employee(iEmp);
+        siteid = emp.site;
+        if (emp.user) {
+          approver = ((emp.user.hasPermission('scheduler', 'scheduler')
+            || emp.user.hasPermission('scheduler', 'siteleader'))
+            && emp.id !== this.employee && this.siteid() === siteid);
+        }
+      }
+      return approver;
+    }
+    return false;
+  }
+
   onSelect(id: string) {
     this.selectedItem.set(id);
     const formatter = new Intl.DateTimeFormat('en-US',
@@ -116,6 +144,17 @@ export class EmployeeLeaveRequests {
     this.ptoHours.set('');
     this.holidayHours.set('');
     if (this.employee !== '') {
+      let approver = false;
+      let siteid = '';
+      const iEmp = this.empService.getEmployee();
+      if (iEmp) {
+        const emp = new Employee(iEmp);
+        siteid = emp.site;
+        if (emp.user) {
+          approver = (emp.user.hasPermission('scheduler', 'scheduler')
+            || emp.user.hasPermission('scheduler', 'siteleader'));
+        }
+      }
       const team = this.teamService.getTeam();
       if (team) {
         let found = false;
@@ -126,33 +165,10 @@ export class EmployeeLeaveRequests {
                 found = true;
                 emp.requests.forEach(request => {
                   if (request.id === id) {
-                    this.createdOn.set(formatter.format(request.requestDate));
-                    this.requestStatus.set(request.status.toUpperCase());
-                    this.approvedBy.set(this.getApprovedBy(request.approvedby));
-                    if (request.approvedby !== '') {
-                      this.approvedOn.set(formatter.format(request.approvalDate));
-                    } else {
-                      this.approvedOn.set('-');
-                    }
-                    let ptoHours = 0;
-                    let holHours = 0;
-                    request.requesteddays.forEach(day => {
-                      if (day.code.toLowerCase() === 'v') {
-                        ptoHours += day.hours;
-                      }
-                      if (day.code.toLowerCase() === 'h') {
-                        holHours += day.hours;
-                      }
-                    });
-                    if (Math.floor(ptoHours) === ptoHours) {
-                      this.ptoHours.set(ptoHours.toFixed(0));
-                    } else {
-                      this.ptoHours.set(ptoHours.toFixed(1));
-                    }
-                    if (Math.floor(holHours) === holHours) {
-                      this.holidayHours.set(holHours.toFixed(0));
-                    } else {
-                      this.holidayHours.set(holHours.toFixed(1));
+                    this.setRequest(request)
+                    this.showSubmit.set(false);
+                    if (request.status.toLowerCase() === 'draft') {
+                      this.showSubmit.set(true);
                     }
                   }
                 })
@@ -161,6 +177,44 @@ export class EmployeeLeaveRequests {
           }
         });
       }
+    }
+  }
+
+  setRequest(request: LeaveRequest) {
+    const formatter = new Intl.DateTimeFormat('en-US',
+      { year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }
+    );
+    this.showSubmit.set(request.status.toLowerCase() === 'draft');
+    this.createdOn.set(formatter.format(request.requestDate));
+    this.requestStatus.set(request.status.toUpperCase());
+    this.approvedBy.set(this.getApprovedBy(request.approvedby));
+    if (request.approvedby !== '') {
+      this.approvedOn.set(formatter.format(request.approvalDate));
+    } else {
+      this.approvedOn.set('-');
+    }
+    let ptoHours = 0;
+    let holHours = 0;
+    request.requesteddays.forEach(day => {
+      if (day.code.toLowerCase() === 'v') {
+        ptoHours += day.hours;
+      }
+      if (day.code.toLowerCase() === 'h') {
+        holHours += day.hours;
+      }
+    });
+    if (Math.floor(ptoHours) === ptoHours) {
+      this.ptoHours.set(ptoHours.toFixed(0));
+    } else {
+      this.ptoHours.set(ptoHours.toFixed(1));
+    }
+    if (Math.floor(holHours) === holHours) {
+      this.holidayHours.set(holHours.toFixed(0));
+    } else {
+      this.holidayHours.set(holHours.toFixed(1));
     }
   }
 
@@ -233,6 +287,13 @@ export class EmployeeLeaveRequests {
                   });
                 }
                 this.setEmployee();
+                employee.requests.forEach(request => {
+                  if (request.startdate.getTime() === start.getTime()) {
+                    this.selectedItem.set(request.id);
+                    this.showSubmit.set(true);
+                    this.setRequest(request);
+                  }
+                })
               }
             },
             error: (err) => {
@@ -242,13 +303,166 @@ export class EmployeeLeaveRequests {
                 }
               }
             }
-          })
+          });
         }
         break;
       case "delete":
+        const dialogRef = this.dialog.open(ConfirmationDialog, {
+          data: {
+            title: 'Leave Request Delete Confirmation',
+            message: 'Are you sure you want to delete this leave request?',
+            negativeButtonTitle: 'No',
+            affirmativeButtonTitle: 'Yes'
+          }
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result.toLowerCase() === 'yes') {
+            this.empService.deleteLeaveRequest(employeeid, requestid).subscribe({
+              next: (res) => {
+                const iEmp = (res.body as IEmployee);
+                if (iEmp) {
+                  const employee = new Employee(iEmp);
+                  const tEmp = this.empService.getEmployee();
+                  if (tEmp && tEmp.id === employee.id) {
+                    this.empService.setEmployee(employee);
+                  }
+                  const tSite = this.siteService.getSite();
+                  let found = false;
+                  if (tSite && tSite.employees) {
+                    tSite.employees.forEach((emp, e) => {
+                      if (!found && emp.id === employee.id && tSite.employees) {
+                        tSite.employees[e] = new Employee(employee);
+                        found = true;
+                        this.siteService.setSite(tSite);
+                      }
+                    });
+                  }
+                  found = false;
+                  const tTeam = this.teamService.getTeam();
+                  if (tTeam) {
+                    tTeam.sites.forEach((site, s) => {
+                      if (!found && site.employees) {
+                        site.employees.forEach((emp, e) => {
+                          if (!found && emp.id === employee.id && site.employees) {
+                            site.employees[e] = new Employee(employee);
+                            found = true;
+                            this.teamService.setTeam(tTeam);
+                          }
+                        });
+                      }
+                    });
+                  }
+                  this.setEmployee();
+                }
+              },
+              error: (err) => {
+                if (err instanceof HttpErrorResponse) {
+                  if (err.status >= 400 && err.status < 500) {
+                    this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+                  }
+                }
+              }
+            });
+            this.selectedItem.set('');
+          }
+        });
+        break;
       case "clear":
         this.selectedItem.set('');
         break;
+      case "comment":
+        this.updateLeaveRequest(employeeid, requestid, element, parts[3]);
+        break;
+      case "start":
+        const start = new Date(Number(parts[3]));
+        this.updateLeaveRequest(employeeid, requestid, element, start.toDateString());
+        break;
+      case "end":
+        const end = new Date(Number(parts[3]));
+        this.updateLeaveRequest(employeeid, requestid, element, end.toDateString());
+        break;
+      case "primarycode":
+        this.updateLeaveRequest(employeeid, requestid, element, parts[3]);
+        break;
+      case "day":
+        let chgString = '';
+        for (let i=3; i < parts.length; i++) {
+          if (i > 3) {
+            chgString += '|';
+          }
+          chgString += parts[i];
+        }
+        this.updateLeaveRequest(employeeid, requestid, element, chgString);
+        break;
+      default:
+        console.log(evt);
+        break;
     }
+  }
+
+  updateLeaveRequest(empid: string, requestid: string, field: string, 
+    value: string) {
+    this.refreshEditor.set(false);
+    this.empService.updateLeaveRequest(empid, requestid, field, value).subscribe({
+      next: (res) => {
+        const iEmp = (res.body as IEmployee);
+        if (iEmp) {
+          const employee = new Employee(iEmp);
+          const tEmp = this.empService.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.empService.setEmployee(employee);
+          }
+          const tSite = this.siteService.getSite();
+          let found = false;
+          if (tSite && tSite.employees) {
+            tSite.employees.forEach((emp, e) => {
+              if (!found && emp.id === employee.id && tSite.employees) {
+                tSite.employees[e] = new Employee(employee);
+                found = true;
+                this.siteService.setSite(tSite);
+              }
+            });
+          }
+          found = false;
+          const tTeam = this.teamService.getTeam();
+          if (tTeam) {
+            tTeam.sites.forEach((site, s) => {
+              if (!found && site.employees) {
+                site.employees.forEach((emp, e) => {
+                  if (!found && emp.id === employee.id && site.employees) {
+                    site.employees[e] = new Employee(employee);
+                    found = true;
+                    this.teamService.setTeam(tTeam);
+                  }
+                });
+              }
+            });
+          }
+          this.setEmployee();
+          employee.requests.forEach(request => {
+            if (request.id === requestid) {
+              this.setRequest(request);
+            }
+          })
+          this.refreshEditor.set(true);
+        }
+      },
+      error: (err) => {
+        if (err instanceof HttpErrorResponse) {
+          if (err.status >= 400 && err.status < 500) {
+            this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+          }
+        }
+      }
+    });
+  }
+
+  onSubmitForApproval() {
+    this.showSubmit.set(false);
+    this.updateLeaveRequest(this.employee, this.selectedItem(), 'requested', '');
+  }
+
+  onApprove() {
+
   }
 }

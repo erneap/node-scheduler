@@ -1,0 +1,14 @@
+<div class="page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: white;">Employee Contact Information</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="flexlayout row topcenter flexgap" style="margin: 20px;">
+      @for (ctype of contactTypes; track ctype.id) {
+        <app-employee-contact-information-item 
+        [employee]="employee" [contacttype]="ctype.id">
+        </app-employee-contact-information-item>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

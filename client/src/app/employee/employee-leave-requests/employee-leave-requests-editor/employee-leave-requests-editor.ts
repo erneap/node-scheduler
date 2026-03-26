@@ -15,6 +15,7 @@ import { SiteService } from '../../../services/site-service';
 import { TeamService } from '../../../services/team-service';
 import { Team } from 'scheduler-models/scheduler/teams';
 import { EmployeeLeaveRequestEditorDay } from './employee-leave-request-editor-day/employee-leave-request-editor-day';
+import { EmployeeLeaveRequestEditorModDay } from './employee-leave-request-editor-mod-day/employee-leave-request-editor-mod-day';
 
 @Component({
   selector: 'app-employee-leave-requests-editor',
@@ -26,7 +27,8 @@ import { EmployeeLeaveRequestEditorDay } from './employee-leave-request-editor-d
     MatDatepickerModule,
     MatTooltipModule,
     ReactiveFormsModule,
-    EmployeeLeaveRequestEditorDay
+    EmployeeLeaveRequestEditorDay,
+    EmployeeLeaveRequestEditorModDay
   ],
   templateUrl: './employee-leave-requests-editor.html',
   styleUrl: './employee-leave-requests-editor.scss',
@@ -58,6 +60,12 @@ export class EmployeeLeaveRequestsEditor {
   set request(id: string) {
     this._request = id;
     this.setRequest();
+  }
+  @Input()
+  set refresh(id: boolean) {
+    if (id) {
+      this.setRequest();
+    }
   }
   changed = output<string>();
   leavecodes: Workcode[];
@@ -106,6 +114,7 @@ export class EmployeeLeaveRequestsEditor {
                     this.requestForm.get('start')?.setValue(request.startdate);
                     this.requestForm.get('end')?.setValue(request.enddate);
                     this.requestForm.get('primarycode')?.setValue(request.primarycode);
+                    this.requestForm.get('comment')?.setValue('');
                   }
                 });
               }
@@ -119,11 +128,11 @@ export class EmployeeLeaveRequestsEditor {
       this.requestForm.get('start')?.setValue(now);
       this.requestForm.get('end')?.setValue(now);
       this.requestForm.get('primarycode')?.setValue('V');
+      this.requestForm.get('comment')?.setValue('');
     }
   }
 
   onDayChange(evt: string) {
-    console.log(evt);
     this.changed.emit(evt);
   }
 
@@ -134,11 +143,6 @@ export class EmployeeLeaveRequestsEditor {
       const other = this.requestForm.get('end')?.value;
       const oValue = new Date(other);
       if (oValue.getTime() < tValue.getTime()) {
-        if (this.request !== '') {
-          const chgString = `${this.employee}|${this.request}|end|`
-            + `${tValue.getTime()}`;
-          this.changed.emit(chgString);
-        }
         this.requestForm.get('end')?.setValue(value);
       }
       if (this.request !== '') {
@@ -151,10 +155,6 @@ export class EmployeeLeaveRequestsEditor {
       const other = this.requestForm.get('start')?.value;
       const oValue = new Date(other);
       if (oValue.getTime() > tValue.getTime()) {
-        if (this.request !== '') {
-          const chgString = `${this.employee}|${this.request}|start|${value}`;
-          this.changed.emit(chgString);
-        }
         this.requestForm.get('start')?.setValue(value);
       }
       if (this.request !== '') {
@@ -164,7 +164,6 @@ export class EmployeeLeaveRequestsEditor {
       }
     } else if (this.request !== '') {
       const chgString = `${this.employee}|${this.request}|${field}|${value}`;
-      console.log(chgString);
       this.changed.emit(chgString);
     }
   }

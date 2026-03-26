@@ -27,6 +27,15 @@ export class TeamService {
     let team: Team | undefined = undefined;
     let conn: PoolConnection | undefined;
     try {
+      const userMap = new Map<string, User>();
+      if (collections.users) {
+        const userCursor = collections.users.find<IUser>({});
+        const userArray = await userCursor.toArray();
+        userArray.forEach(iUser => {
+          const user = new User(iUser);
+          userMap.set(user.id, user);
+        });
+      }
       if (collections.teams) {
         if (teamid !== '') {
           const query = { _id: new ObjectId(teamid)};
@@ -45,6 +54,10 @@ export class TeamService {
                 team.sites.forEach((site, s) => {
                   if (!found && site.id.toLowerCase() === emp.site.toLowerCase()) {
                     const employee = new Employee(emp);
+                    const user = userMap.get(employee.id);
+                    if (user) {
+                      employee.user = user;
+                    }
                     site.employees.push(employee);
                     empList.push(employee.id);
                     team.sites[s] = site;
@@ -53,34 +66,6 @@ export class TeamService {
                 });
               });
               await Promise.allSettled(empPromises);
-
-              // pull users for the employees
-              if (collections.users) {
-                const userList:ObjectId[] = [];
-                empList.forEach(empID => {
-                  userList.push(new ObjectId(empID));
-                });
-                const userQuery = { _id: { '$in': userList }};
-                const userCursor = collections.users.find<IUser>(userQuery);
-                const userArray = await userCursor.toArray();
-                const userPromises = userArray.map(async(iUser) => {
-                  const user = new User(iUser);
-                  let found = false;
-                  team.sites.forEach((site, s) => {
-                    if (!found) {
-                      site.employees.forEach((emp, e) => {
-                        if (!found && emp.id === user.id) {
-                          emp.user = user;
-                          site.employees[e] = emp;
-                          team.sites[s] = site;
-                          found = true;
-                        }
-                      });
-                    }
-                  });
-                  await Promise.allSettled(userPromises);
-                });
-              }
 
               // pull work records for the employees
               if (mdbConnection.pool) {
@@ -108,7 +93,7 @@ export class TeamService {
                               chargenumber: wk.chargenumber,
                               extension: wk.extension,
                               paycode: Number(wk.paycode),
-                              modtime: (wk.modtime) ? (wk.modtime.toLowerCase() === 'true') : undefined,
+                              modtime: (wk.modtime === '1' || wk.modtime === 1),
                               hours: Number(wk.hours)
                             }));
                             found = true;
