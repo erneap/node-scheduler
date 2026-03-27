@@ -9,43 +9,45 @@
           <app-list [width]="200" [height]="300" [list]="requests()"
             (itemSelected)="onSelect($event)" [selectedItem]="selectedItem()"></app-list>
           @if (this.selectedItem() !== '') {
-            <div class="flexlayout column topcenter">
+            <div class="flexlayout column topcenter" style="width: 100%;">
               <div class="flexlayout row center" style="width: 100%;color: white;">
                 Request Status Info</div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">Created On</div>
                 <div class="flexlayout row center status">{{createdOn()}}</div>
               </div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">Status</div>
                 <div class="flexlayout row center status">{{requestStatus()}}</div>
               </div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">Approved By</div>
                 <div class="flexlayout row center status">{{approvedBy()}}</div>
               </div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">Approved On</div>
                 <div class="flexlayout row center status">{{approvedOn()}}</div>
               </div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">PTO Hours</div>
                 <div class="flexlayout row center status">{{ptoHours()}}</div>
               </div>
-              <div class="flexlayout row center">
+              <div class="flexlayout row center" style="width: 100%;">
                 <div class="flexlayout row center status">Holiday Hours</div>
                 <div class="flexlayout row center status">{{holidayHours()}}</div>
               </div>
             </div>
-            <div class="flexlayout row center">
+            <div class="flexlayout row center flexgap flexwrap" style="width: 100%;">
               @if (showSubmit()) {
                 <button matButton="filled" class="clear-button"
                 (click)="onSubmitForApproval()">
                   Submit For Approval</button>
               }
-              @if (showApproval()) {
-                <button matButton="filled" class="clear-button">
+              @if (showApprover()) {
+                <button matButton="filled" class="clear-button" (click)="onApprove()">
                   Approve</button>
+                <button matButton="filled" class="clear-button" (click)="onUnapprove()">
+                  Unapprove</button>
               }
             </div>
           }

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
-import { Employee, EmployeeContactSpecialtyUpdate, IEmployee, NewEmployeeLeaveRequest } from 'scheduler-models/scheduler/employees';
+import { Employee, EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, IEmployee, NewEmployeeLeaveRequest } from 'scheduler-models/scheduler/employees';
 import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -133,13 +133,36 @@ export class EmployeeService extends CacheService {
     );
   }
 
-  updateContactInformation(empid: string, contacttype: number, value: string) {
+  updateContactInformation(empid: string, contacttype: number, value: string)
+    : Observable<HttpResponse<Employee>> {
     const url = `${this.schedulerUrl}/employee/contact`;
     const data: EmployeeContactSpecialtyUpdate = {
       employee: empid,
       contactid: 0,
       typeid: contacttype,
       value: value
+    };
+    return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateSpecialties(empid: string, action: string, specialties: number[]): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/specialties`;
+    const data: EmployeeSpecialtiesUpdate = {
+      employee: empid,
+      action: action,
+      specialties: specialties
     };
     return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
       map(res => {

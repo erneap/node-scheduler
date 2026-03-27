@@ -20,8 +20,9 @@ export class Workcenter implements IWorkcenter {
   public id: string;
   public name: string;
   public sort: number;
-  public shifts?: Shift[];
-  public positions?: Position[];
+  public shifts: Shift[];
+  public positions: Position[];
+  public employees: Employee[];
 
   constructor(wc?: IWorkcenter) {
     this.id = (wc) ? wc.id : '';
@@ -43,6 +44,7 @@ export class Workcenter implements IWorkcenter {
       });
       this.positions.sort((a,b) => a.compareTo(b));
     }
+    this.employees = [];
   }
 
   /**

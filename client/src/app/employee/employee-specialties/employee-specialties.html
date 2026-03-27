@@ -1,0 +1,36 @@
+<div class="page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: white;">Security Information</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="flexlayout row topcenter flexgap" style="margin: 20px;">
+      <div class="flexlayout column center">
+        <div class="flexlayout row center">
+          <div class="flexlayout row center label">Available Specialties</div>
+          <div class="flexlayout row center mid">&nbsp;</div>
+          <div class="flexlayout row center label">Employee's Specialties</div>
+        </div>
+        <div class="flexlayout row center">
+          <app-list-multiple [width]="300" [height]="500" [list]="availableList()"
+            (itemSelected)="onSelectAvailable($event)">
+          </app-list-multiple>
+          <div class="flexlayout column center mid">
+            @if (availableToPush.length > 0) {
+              <mat-icon class="icon"
+              (click)="onSend()"
+              >chevron_right</mat-icon>
+            }
+            @if (specialtyToReturn.length > 0) {
+              <mat-icon class="icon"
+              (click)="onReturn()"
+              >chevron_left</mat-icon>
+            }
+          </div>
+          <app-list-multiple [width]="300" [height]="500" [list]="specialtiesList()"
+            (itemSelected)="onSelectSpecialty($event)">
+          </app-list-multiple>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

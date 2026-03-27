@@ -13,7 +13,6 @@ import { EmployeeService } from '../../services/employee-service';
 import { Employee, IEmployee } from 'scheduler-models/scheduler/employees';
 import { AuthService } from '../../services/auth-service';
 import { SiteService } from '../../services/site-service';
-import { item } from '../../general/list/list.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({

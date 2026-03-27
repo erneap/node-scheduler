@@ -4,17 +4,16 @@ import { MatCardModule } from '@angular/material/card';
 import { EmployeeService } from '../../services/employee-service';
 import { SiteService } from '../../services/site-service';
 import { TeamService } from '../../services/team-service';
-import { Workcode } from 'scheduler-models/scheduler/labor';
-import { Team } from 'scheduler-models/scheduler/teams';
 import { Employee, IEmployee, LeaveRequest } from 'scheduler-models/scheduler/employees';
 import { List } from '../../general/list/list';
 import { EmployeeLeaveRequestsEditor } from './employee-leave-requests-editor/employee-leave-requests-editor';
-import { item } from '../../general/list/list.model';
 import { AuthService } from '../../services/auth-service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialog } from '../../general/confirmation-dialog/confirmation-dialog';
+import { ConfirmationDialog, DialogData } from '../../general/confirmation-dialog/confirmation-dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MessageDialog } from '../../general/message-dialog/message-dialog';
+import { Item } from '../../general/list/list.model';
 
 @Component({
   selector: 'app-employee-leave-requests',
@@ -37,7 +36,7 @@ export class EmployeeLeaveRequests {
     this._employee = id;
     this.setEmployee();
   }
-  requests = signal<item[]>([]);
+  requests = signal<Item[]>([]);
   selectedItem = signal<string>('');
   refreshEditor = signal<boolean>(false);
   createdOn = signal<string>('');
@@ -47,6 +46,7 @@ export class EmployeeLeaveRequests {
   ptoHours  = signal<string>('');
   holidayHours  = signal<string>('');
   showSubmit = signal<boolean>(true);
+  showApprover = signal<boolean>(false);
   siteid = signal<string>('');
 
   constructor(
@@ -54,7 +54,6 @@ export class EmployeeLeaveRequests {
     private empService: EmployeeService,
     private siteService: SiteService,
     private teamService: TeamService,
-    private builder: FormBuilder,
     private dialog: MatDialog
   ) {
     if (this.employee === '') {
@@ -67,7 +66,7 @@ export class EmployeeLeaveRequests {
   }
 
   setEmployee() {
-    const list: item[] = [];
+    const list: Item[] = [];
     list.push({
       id: '',
       value: 'Add New Request'
@@ -165,11 +164,7 @@ export class EmployeeLeaveRequests {
                 found = true;
                 emp.requests.forEach(request => {
                   if (request.id === id) {
-                    this.setRequest(request)
-                    this.showSubmit.set(false);
-                    if (request.status.toLowerCase() === 'draft') {
-                      this.showSubmit.set(true);
-                    }
+                    this.setRequest(request);
                   }
                 })
               }
@@ -215,6 +210,15 @@ export class EmployeeLeaveRequests {
       this.holidayHours.set(holHours.toFixed(0));
     } else {
       this.holidayHours.set(holHours.toFixed(1));
+    }
+    this.showSubmit.set(false);
+    this.showApprover.set(false);
+    if (request.status.toLowerCase() === 'draft') {
+      this.showSubmit.set(true);
+    }
+    if (request.status.toLowerCase() === 'requested'
+      && this.showApproval()) {
+      this.showApprover.set(true);
     }
   }
 
@@ -463,6 +467,29 @@ export class EmployeeLeaveRequests {
   }
 
   onApprove() {
+    const iEmp = this.empService.getEmployee();
+    if (iEmp) {
+      const emp = new Employee(iEmp);
+      this.showApprover.set(false);
+      this.updateLeaveRequest(this.employee, this.selectedItem(), 'approve', emp.id);
+    }
+  }
 
+  onUnapprove() {
+    const data: DialogData = {
+      title: 'Reason for Unapproval',
+      inputlabel: 'Reason',
+      message: 'Please enter a reason the leave request was not approved.',
+      affirmativeButtonTitle: 'Unapprove',
+      negativeButtonTitle: 'Cancel'
+    };
+    const dialogRef = this.dialog.open(MessageDialog, {data: data});
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result !== '') {
+        this.updateLeaveRequest(this.employee, this.selectedItem(), 'unapprove', result);
+      } else {
+        this.authService.statusMessage.set('No unapprove reason given');
+      }
+    });
   }
 }

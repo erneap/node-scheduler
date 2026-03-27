@@ -18,7 +18,7 @@ export class Position implements IPosition {
   public name: string;
   public sort: number;
   public assigned: string[];
-  public employees?: Employee[];
+  public employees: Employee[];
 
   constructor(pos?: IPosition) {
     this.id = (pos) ? pos.id : '';
@@ -30,6 +30,7 @@ export class Position implements IPosition {
         this.assigned.push(emp);
       });
     }
+    this.employees = [];
   }
 
   /**

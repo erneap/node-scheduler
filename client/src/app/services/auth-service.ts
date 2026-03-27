@@ -1,11 +1,12 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthenticationRequest, IUser, UpdateUserRequest, User } 
   from 'scheduler-models/users';
 import { map, Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Message } from 'scheduler-models/general';
 
 @Injectable({
   providedIn: 'root',
@@ -23,9 +24,8 @@ export class AuthService extends CacheService {
       return (user.badAttempts < 0 || days > 120)
     }
     return false;
-  })
-  refreshToken = signal('');
-  accessToken = signal('');
+  });
+  interval: any;
 
   constructor(
     private http: HttpClient,
@@ -34,6 +34,7 @@ export class AuthService extends CacheService {
     super();
     const iUser = this.getUser();
     this.isAuthenticated = (iUser !== undefined);
+    this.startTokenRefresh();
   }
 
   setUser(iUser: IUser | undefined) {
@@ -104,11 +105,13 @@ export class AuthService extends CacheService {
           } else if (res.headers.has('Refreshtoken')) {
             this.setRefreshToken(res.headers.get('Refreshtoken') as string);
           }
+          this.startTokenRefresh();
         } else {
           this.removeItem('user');
           this.removeItem('accesstoken');
           this.removeItem('refreshtoken')
           this.isAuthenticated = false;
+          this.stopTokenRefresh();
         }
         return res;
       })
@@ -123,6 +126,7 @@ export class AuthService extends CacheService {
       this.removeItem('accesstoken');
       this.removeItem('refreshtoken');
       this.isAuthenticated = false;
+      this.stopTokenRefresh();
       return this.http.delete<any>(url);
     } else {
       return of({ "message": 'No recorded user'});
@@ -150,5 +154,53 @@ export class AuthService extends CacheService {
         return res;
       })
     );
+  }
+
+  processRefresh() {
+    const url = `${this.authUrl}/refresh`;
+    this.http.put<Message>(url, {}, {observe: 'response'}).subscribe({
+      next: (res) => {
+        const msg = (res.body as Message);
+        if (msg.message.toLowerCase() === 'refresh token') {
+          if (res.headers.has('authorization')) {
+            this.setAccessToken(res.headers.get('authorization') as string);
+          } else if (res.headers.has('Authorization')) {
+            this.setAccessToken(res.headers.get('Authorization') as string);
+          }
+          if (res.headers.has('refreshtoken')) {
+            this.setRefreshToken(res.headers.get('refreshtoken') as string);
+          } else if (res.headers.has('Refreshtoken')) {
+            this.setRefreshToken(res.headers.get('Refreshtoken') as string);
+          }
+        }
+      },
+      error: (err) => {
+          console.log(err);
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+      }
+    })
+  }
+
+  startTokenRefresh() {
+    let minutes = 60;
+    if (environment.refreshtoken) {
+      minutes = environment.refreshtoken;
+    }
+    if (this.interval && this.interval !== null) {
+      clearInterval(this.interval)
+    }
+    this.interval = setInterval(() => {
+      this.processRefresh();
+    }, minutes * 60000);
+  }
+
+  stopTokenRefresh() {
+    if (this.interval && this.interval !== null) {
+      clearInterval(this.interval);
+    }
   }
 }

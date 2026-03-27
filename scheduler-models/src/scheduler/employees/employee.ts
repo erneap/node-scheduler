@@ -1501,6 +1501,9 @@ export class Employee implements IEmployee {
     this.requests.forEach((req, r) => {
       if (req.useRequest(id)) {
         switch (field.toLowerCase()) {
+          case "approve":
+            this.approveLeaveRequest(id, value);
+            break;
           case "startdate":
           case "start":
             // parse the value to make a date object, then make sure the date is a UTC
@@ -1786,7 +1789,7 @@ export class Employee implements IEmployee {
             });
             req.comments.push(new LeaveRequestComment({
               commentdate: new Date(),
-              comment: value
+              comment: `Request was declined by approver: ${value}`
             }));
             req.comments.sort((a,b) => a.compareTo(b));
           
@@ -1898,7 +1901,7 @@ export class Employee implements IEmployee {
    * @returns A change leave request response containing any message to email and this
    * leave request.
    */
-  approveLeaveRequest(id: string, approver: string, leavecodes: Workcode[])
+  approveLeaveRequest(id: string, approver: string)
     : ChangeLeaveRequestResponse {
     const answer: ChangeLeaveRequestResponse = {
       message: '',
@@ -1911,14 +1914,13 @@ export class Employee implements IEmployee {
         req.approvedby = approver;
         req.status = 'Approved';
         let max = 0;
-        this.removeLeaves(req.startdate, req.enddate, req.id, false);
-        this.leaves.forEach(lv => {
-          if (max < lv.id) {
-            max = lv.id;
-          }
-        });
-
         if (req.primarycode.toLowerCase() !== 'mod') {
+          this.removeLeaves(req.startdate, req.enddate, req.id, false);
+          this.leaves.forEach(lv => {
+            if (max < lv.id) {
+              max = lv.id;
+            }
+          });
           req.requesteddays.forEach((day, d) => {
             if (day.code !== '') {
               max++;
@@ -1956,27 +1958,9 @@ export class Employee implements IEmployee {
               let lastcode = '';
               let workcenter = '';
               req.requesteddays.forEach(day => {
-                let isLeave = false;
-                leavecodes.forEach(wc => {
-                  if (wc.id.toLowerCase() === day.code.toLowerCase() && wc.isLeave) {
-                    isLeave = true;
-                  }
-                });
-                if (isLeave) {
-                  max++;
-                  this.leaves.push(new Leave({
-                    id: max,
-                    leavedate: new Date(day.leavedate),
-                    code: day.code,
-                    hours: day.hours,
-                    status: 'APPROVED',
-                    requestid: req.id,
-                    used: false
-                  }));
-                  this.leaves.sort((a,b) => a.compareTo(b));
-                } else {
+                if (day.code !== '') {
                   lastcode = day.code;
-                  workcenter = day.status;
+                  workcenter = day.tagday;
                 }
                 const dos = Math.floor((day.leavedate.getTime() - start.getTime()) 
                   / (24 * 3600000));
@@ -2181,7 +2165,7 @@ export class Employee implements IEmployee {
   deleteSpecialty(id: number) {
     let found = -1;
     this.specialties.forEach((spc, s) => {
-      if (spc.id === id) {
+      if (spc.specialtyid === id) {
         found = s;
       }
     });

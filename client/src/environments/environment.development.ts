@@ -4,5 +4,6 @@ export const environment = {
   schedulerUrl: 'http://localhost:7006/api/scheduler',
   generalUrl: 'http://localhost:7005/api/general',
   title: 'Osan Scheduler (Development)',
-  version: '4.0.0a'
-};
+  version: '4.0.0a',
+  refreshtoken: 15
+}

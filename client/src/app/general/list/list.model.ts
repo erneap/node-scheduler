@@ -1,8 +1,8 @@
-export interface item {
+export interface Item {
   id: string;
   value: string;
 }
 
-export interface itemList {
-  list: item[];
+export interface ItemList {
+  list: Item[];
 }

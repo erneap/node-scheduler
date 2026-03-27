@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{data.title}}</h2>
+<mat-dialog-content>
+  <p>{{data.message}}</p>
+  <mat-form-field style="width: 100%;">
+    <mat-label>{{data.inputlabel}}</mat-label>
+    <textarea matInput [(ngModel)]="answer" required="true"></textarea>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button matButton="filled" mat-dialog-close="">{{getNoButtonTitle()}}</button>
+  <button matButton="filled" [mat-dialog-close]="answer()" cdkFocusInitial>
+    {{getYesButtonTitle()}}</button>
+</mat-dialog-actions>

@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 
 export interface DialogData {
   title: string;
+  inputlabel?: string;
   message: string;
   negativeButtonTitle?: string;
   affirmativeButtonTitle?: string;

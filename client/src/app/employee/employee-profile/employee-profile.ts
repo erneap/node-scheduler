@@ -15,7 +15,7 @@ import { Employee, IEmployee } from 'scheduler-models/scheduler/employees';
 import { Company } from 'scheduler-models/scheduler/teams/company';
 import { MatTooltip } from "@angular/material/tooltip";
 import { List } from '../../general/list/list';
-import { item } from '../../general/list/list.model';
+import { Item } from '../../general/list/list.model';
 
 @Component({
   selector: 'app-employee-profile',
@@ -46,7 +46,7 @@ export class EmployeeProfile {
   }
   profileForm: FormGroup;
   selectedEmail = signal<string>('');
-  emailList = signal<item[]>([]);
+  emailList = signal<Item[]>([]);
 
   constructor(
     private authService: AuthService,
@@ -98,7 +98,7 @@ export class EmployeeProfile {
                   this.profileForm.controls['middle'].setValue(emp.name.middlename);
                   this.profileForm.controls['last'].setValue(emp.name.lastname);
                 }
-                let emailList: item[] = [];
+                let emailList: Item[] = [];
                 if (emp.user) {
                   emailList.push({
                     id: emp.user.emailAddress,
@@ -185,7 +185,7 @@ export class EmployeeProfile {
             this.authService.setUser(employee.user);
           }
           if (iEmp.user) {
-            const emailList: item[] = [];
+            const emailList: Item[] = [];
             emailList.push({
               id: iEmp.user.emailAddress,
               value: iEmp.user.emailAddress

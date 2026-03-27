@@ -22,7 +22,7 @@ export class Shift implements IShift {
   public associatedCodes: string[];
   public payCode: number;
   public minimums: number;
-  public employees?: Employee[];
+  public employees: Employee[];
 
   constructor(shft?: IShift) {
     this.id = (shft) ? shft.id : '';
@@ -37,6 +37,7 @@ export class Shift implements IShift {
     }
     this.payCode = (shft) ? shft.payCode : 1;
     this.minimums = (shft) ? shft.minimums : 1;
+    this.employees = [];
   }
 
   /**
