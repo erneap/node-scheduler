@@ -3,6 +3,8 @@ import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters/workcen
 import { SiteScheduleMonthWorkcenterEmployee } from './site-schedule-month-workcenter-employee/site-schedule-month-workcenter-employee';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SiteScheduleMonthWorkcenterEmployeeDay } from './site-schedule-month-workcenter-employee/site-schedule-month-workcenter-employee-day/site-schedule-month-workcenter-employee-day';
+import { ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule';
+import { Workcode } from 'scheduler-models/scheduler/labor';
 
 @Component({
   selector: 'app-site-schedule-month-workcenter',
@@ -15,7 +17,8 @@ import { SiteScheduleMonthWorkcenterEmployeeDay } from './site-schedule-month-wo
   styleUrl: './site-schedule-month-workcenter.scss',
 })
 export class SiteScheduleMonthWorkcenter {
-  workcenter = input<Workcenter>(new Workcenter());
+  workcenter = input<ScheduleWorkcenter>(new ScheduleWorkcenter());
+  workcodes = input<Workcode[]>([]);
   private _month: Date = new Date(0);
   @Input()
   get month(): Date {

@@ -1,9 +1,0 @@
-<div class="flexlayout row center">
-  <div class="name" [style]="getNameStyle()">
-    {{employee().name.getLastFirst()}}
-  </div>
-  @for (day of monthDates; track day.getTime()) {
-    <app-site-schedule-month-workcenter-employee-day [employee]="employee()"
-      [row]="row()" [date]="day"></app-site-schedule-month-workcenter-employee-day>
-  }
-</div>

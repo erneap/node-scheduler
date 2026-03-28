@@ -1,0 +1,11 @@
+<div class="flexlayout row center">
+  <div class="name" [style]="getNameStyle()">
+    {{employee().name}}
+  </div>
+  @for (day of monthDates; track day.getTime()) {
+    <app-site-schedule-month-workcenter-employee-day 
+      [workcodes]="workcodes()" [code]="getCode(day).code"
+      [row]="row()" [date]="day">
+    </app-site-schedule-month-workcenter-employee-day>
+  }
+</div>

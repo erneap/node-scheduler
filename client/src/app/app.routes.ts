@@ -10,7 +10,7 @@ import { EmployeeSecurity } from './employee/employee-security/employee-security
 import { EmployeeLeaveRequests } from './employee/employee-leave-requests/employee-leave-requests';
 import { EmployeeContactInformation } from './employee/employee-contact-information/employee-contact-information';
 import { EmployeeSpecialties } from './employee/employee-specialties/employee-specialties';
-import { SiteSchedule } from './site-schedules/site-schedule/site-schedule';
+import { SiteSchedule } from './site//site-schedules/site-schedule/site-schedule';
 
 export const routes: Routes = [
   { path: 'login', component: Login },

@@ -1,6 +1,8 @@
 import { Component, Input, input } from '@angular/core';
 import { Employee } from 'scheduler-models/scheduler/employees';
 import { SiteScheduleMonthWorkcenterEmployeeDay } from './site-schedule-month-workcenter-employee-day/site-schedule-month-workcenter-employee-day';
+import { ScheduleDay, ScheduleEmployee } from 'scheduler-models/scheduler/sites/schedule';
+import { Workcode } from 'scheduler-models/scheduler/labor';
 
 @Component({
   selector: 'app-site-schedule-month-workcenter-employee',
@@ -13,7 +15,8 @@ import { SiteScheduleMonthWorkcenterEmployeeDay } from './site-schedule-month-wo
 export class SiteScheduleMonthWorkcenterEmployee {
   private _date: Date = new Date(0);
   end: Date = new Date(0);
-  employee = input<Employee>(new Employee());
+  workcodes = input<Workcode[]>([]);
+  employee = input<ScheduleEmployee>(new ScheduleEmployee());
   row = input<string>('even');
   @Input()
   get start(): Date {
@@ -38,6 +41,14 @@ export class SiteScheduleMonthWorkcenterEmployee {
         start = new Date(start.getTime() + (24 * 3600000));
       }
     }
+  }
+
+  getCode(date: Date): ScheduleDay {
+    const day = date.getDate() - 1;
+    if (day < this.employee().days.length) {
+      return this.employee().days[day];
+    }
+    return new ScheduleDay();
   }
 
   getNameStyle(): string {

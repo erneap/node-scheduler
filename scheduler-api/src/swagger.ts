@@ -7,7 +7,7 @@ const doc = {
     description: 'OsanScheduler provides team/site scheduling information'
   },
   host: `localhost:${process.env.PORT || 7006}`,
-  basePath: '/api/authentication',
+  basePath: '/api/scheduler',
   securityDefinitions: {
     authorization: {
       type: 'apiKey',

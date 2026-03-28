@@ -34,8 +34,9 @@
   </div>
   <div class="flexlayout row center" style="width: 100%;">
     <mat-accordion displayMode="flat" multi style="width: 100%;">
-      @for (wkctr of site().workcenters; track wkctr) {
-        <app-site-schedule-month-workcenter [workcenter]="wkctr" [month]="month()">
+      @for (wkctr of workcenters(); track wkctr.id) {
+        <app-site-schedule-month-workcenter [workcenter]="wkctr" 
+          [month]="month()" [workcodes]="workcodes()">
         </app-site-schedule-month-workcenter>
       }
     </mat-accordion>

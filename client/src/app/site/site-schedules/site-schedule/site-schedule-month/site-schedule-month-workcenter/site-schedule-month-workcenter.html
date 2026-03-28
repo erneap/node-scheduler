@@ -25,24 +25,12 @@
         </div>
       </div>
     </div>
-    @if (workcenter().positions && workcenter().positions.length > 0) {
-      @for (posit of workcenter().positions; track posit.id) {
-        @if (posit.employees && posit.employees.length > 0) {
-          @for (emp of posit.employees; track emp.id) {
-            <app-site-schedule-month-workcenter-employee [employee]="emp" [start]="month">
-            </app-site-schedule-month-workcenter-employee>
-          }
-        }
-      }
-    }
-    @if (workcenter().shifts && workcenter().shifts.length > 0) {
-      @for (posit of workcenter().shifts; track posit.id) {
-        @if (posit.employees && posit.employees.length > 0) {
-          @for (emp of posit.employees; track emp.id) {
-            <app-site-schedule-month-workcenter-employee [employee]="emp" [start]="month">
-            </app-site-schedule-month-workcenter-employee>
-          }
-        }
+    @if (workcenter().employees.length > 0) {
+      @for (emp of workcenter().employees; track emp.id) {
+        <app-site-schedule-month-workcenter-employee [employee]="emp" 
+          [start]="month" [row]="(emp.id % 2 === 0) ? 'even' : 'odd'"
+          [workcodes]="workcodes()">
+        </app-site-schedule-month-workcenter-employee>
       }
     }
   </div>

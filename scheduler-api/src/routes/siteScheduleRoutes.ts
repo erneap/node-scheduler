@@ -62,6 +62,7 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
                       id: daysCount,
                       code: (wd) ? wd.code : ''
                     }));
+                    eStart = new Date(eStart.getTime() + (24 * 3600000));
                   }
                   sWc.employees.push(sEmp);
                 });
@@ -86,6 +87,7 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
                       id: daysCount,
                       code: (wd) ? wd.code : ''
                     }));
+                    eStart = new Date(eStart.getTime() + (24 * 3600000));
                   }
                   sWc.employees.push(sEmp);
                 });

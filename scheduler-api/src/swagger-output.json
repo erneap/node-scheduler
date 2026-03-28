@@ -34,12 +34,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -64,12 +68,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -90,39 +98,31 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "name": {
-                  "example": "any"
-                },
                 "user": {
-                  "example": "any"
-                },
-                "team": {
-                  "example": "any"
-                },
-                "site": {
                   "example": "any"
                 }
               }
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request"
@@ -135,6 +135,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -155,12 +165,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -191,12 +195,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -216,6 +224,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -241,12 +259,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "201": {
             "description": "Created"
@@ -262,6 +274,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -288,12 +310,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -324,12 +340,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -350,6 +370,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -368,12 +398,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -389,6 +413,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -412,12 +446,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -448,12 +476,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -474,6 +506,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -487,12 +529,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -510,6 +546,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -530,12 +576,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -566,12 +606,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -592,6 +636,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -611,12 +665,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -637,6 +685,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -653,12 +711,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -679,6 +731,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -698,12 +760,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -734,12 +790,155 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
-        "security": [
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/request": {
+      "post": {
+        "description": "",
+        "parameters": [
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "employee": {
+                  "example": "any"
+                },
+                "startdate": {
+                  "example": "any"
+                },
+                "enddate": {
+                  "example": "any"
+                },
+                "code": {
+                  "example": "any"
+                },
+                "comment": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                },
+                "optional": {
+                  "example": "any"
+                },
+                "field": {
+                  "example": "any"
+                },
+                "value": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/employee/request/{id}/{reqid}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "reqid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -782,12 +981,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -829,12 +1032,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "400": {
             "description": "Bad Request"
@@ -851,12 +1048,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -876,6 +1077,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -901,12 +1112,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -922,6 +1127,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -942,12 +1157,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -978,12 +1187,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1003,6 +1216,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1037,12 +1260,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1058,6 +1275,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1089,13 +1316,10 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "400": {
             "description": "Bad Request"
           },
@@ -1109,6 +1333,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1164,12 +1398,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1204,12 +1432,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1252,12 +1484,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1277,6 +1513,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1299,12 +1545,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1320,6 +1560,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1349,12 +1599,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -1391,12 +1635,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1416,6 +1664,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1447,12 +1705,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1468,6 +1720,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1496,12 +1758,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1519,6 +1775,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1548,12 +1814,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -1590,12 +1850,56 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
-        "security": [
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/site/schedule/schedule/{id}/{month}": {
+      "get": {
+        "description": "",
+        "parameters": [
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1620,12 +1924,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1648,12 +1956,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1674,6 +1986,16 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -1684,12 +2006,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -1707,6 +2023,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1729,12 +2055,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1752,6 +2072,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1792,12 +2122,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1813,6 +2137,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1833,12 +2167,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -1869,12 +2197,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -1894,6 +2226,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1922,12 +2264,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1943,6 +2279,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1963,12 +2309,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -1999,12 +2339,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -2024,6 +2368,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2055,13 +2409,10 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "400": {
             "description": "Bad Request"
           },
@@ -2073,6 +2424,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2093,12 +2454,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -2129,12 +2484,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -2154,6 +2513,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2176,12 +2545,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2197,6 +2560,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2220,12 +2593,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -2262,15 +2629,22 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "400": {
             "description": "Bad Request"
           },
@@ -2284,6 +2658,16 @@
       "post": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2309,12 +2693,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2330,6 +2708,16 @@
       "put": {
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2353,12 +2741,6 @@
                 }
               }
             }
-          }
-        ],
-        "security": [
-          {
-            "authorization": [],
-            "refreshtoken": []
           }
         ],
         "responses": {
@@ -2395,12 +2777,16 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "security": [
+          },
           {
-            "authorization": [],
-            "refreshtoken": []
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
