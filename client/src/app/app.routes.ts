@@ -10,6 +10,7 @@ import { EmployeeSecurity } from './employee/employee-security/employee-security
 import { EmployeeLeaveRequests } from './employee/employee-leave-requests/employee-leave-requests';
 import { EmployeeContactInformation } from './employee/employee-contact-information/employee-contact-information';
 import { EmployeeSpecialties } from './employee/employee-specialties/employee-specialties';
+import { SiteSchedule } from './site-schedules/site-schedule/site-schedule';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -27,6 +28,19 @@ export const routes: Routes = [
       { path: 'contacts', component: EmployeeContactInformation },
       { path: 'specialties', component: EmployeeSpecialties },
       { path: '**', component: EmployeeSchedule},
+    ]
+  },
+  { path: 'site', 
+    children: [
+      { path: '', redirectTo: 'site/schedule/schedule', pathMatch: 'full'},
+      { path: 'schedule',
+        children: [
+          { path: '', redirectTo: 'site/schedule/schedule', pathMatch: 'full' },
+          { path: 'schedule', component: SiteSchedule },
+          { path: '**', component: SiteSchedule },
+        ]
+      },
+      { path: '**', component: SiteSchedule },
     ]
   },
   { path: '**', redirectTo: '/login' }

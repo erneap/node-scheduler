@@ -21,6 +21,7 @@ export class SiteScheduleMonthWorkcenterEmployeeDay {
   dayStyle(): string {
     let bkColor = 'ffffff';
     let txColor = '000000';
+    let brColor = '000000';
     if (this.employee().id === '') {
       bkColor = '99ccff';
     }
@@ -38,7 +39,14 @@ export class SiteScheduleMonthWorkcenterEmployeeDay {
       }
     }
 
-    if (bkColor === 'ffffff') {
+    if (this.row().toLowerCase() === 'label' || this.row().toLowerCase() === 'day') {
+      bkColor = '000000';
+      txColor = 'ffffff';
+      if (this.date().getUTCDay() === 0 || this.date().getUTCDay() === 6) {
+        bkColor = 'a9a9a9';
+        txColor = '000000';
+      }
+    } else if (bkColor === 'ffffff') {
       if (this.date().getUTCDay() === 0 || this.date().getUTCDay() === 6) {
         if (this.row().toLowerCase() === 'even') {
           bkColor = '3399ff';
@@ -53,7 +61,7 @@ export class SiteScheduleMonthWorkcenterEmployeeDay {
         }
       }
     }
-    return `background-color: #${bkColor};color: #${txColor};`
+    return `background-color: #${bkColor};color: #${txColor};border: solid 1px #${txColor};`
   }
 
   dayValue(): string {

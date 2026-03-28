@@ -117,4 +117,31 @@ export class Site implements ISite {
     result.sort((a,b) => a.compareTo(b));
     return result;
   }
+
+  /**
+   * This method is used to clear employees from site/workcenter/position/shift employee
+   * lists.
+   */
+  clearWorkcenters() {
+    this.workcenters.forEach(wkctr => {
+      wkctr.clearEmployees();
+    });
+  }
+
+  /**
+   * This method is used to place an employee in the correct workcenter and correct
+   * workcenter position or shift.
+   * @param emp The employee object for adding to employee list
+   * @param start The date for the start of the period
+   * @param end the date for the end of the period.
+   */
+  assign(emp: Employee, start: Date, end: Date) {
+    if (emp.atSite(this.id, start, end)) {
+      this.workcenters.forEach(wkctr => {
+        if (emp.isAssigned(this.id, wkctr.id, start, end)) {
+          wkctr.assign(emp, start);
+        }
+      });
+    }
+  }
 }

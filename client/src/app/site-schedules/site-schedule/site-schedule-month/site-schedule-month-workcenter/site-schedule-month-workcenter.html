@@ -1,1 +1,49 @@
-<p>site-schedule-month-workcenter works!</p>
+<mat-expansion-panel [expanded]="expanded()" class="workcenter"
+  (opened)="changePanelStatus('opened')" (closed)="changePanelStatus('closed')">
+  <mat-expansion-panel-header [collapsedHeight]="'25px'" [expandedHeight]="'25px'">
+    <mat-panel-description>
+      {{workcenter().name.toUpperCase()}}
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <!-- Show content of matrix header, then go through the positions and shifts to show
+    the employees -->
+  <div class="flexlayout column center">
+    <div class="flexlayout row topleft">
+      <div class="flexlayout column center name">NAME</div>
+      <div class="flexlayout column topleft">
+        <div class="flexlayout row topleft">
+          @for (date of monthDates(); track date.getTime()) {
+            <app-site-schedule-month-workcenter-employee-day [row]="'day'" [date]="date">
+            </app-site-schedule-month-workcenter-employee-day>
+          }
+        </div>
+        <div class="flexlayout row topleft">
+          @for (date of monthDates(); track date.getTime()) {
+            <app-site-schedule-month-workcenter-employee-day [row]="'label'" [date]="date">
+            </app-site-schedule-month-workcenter-employee-day>
+          }
+        </div>
+      </div>
+    </div>
+    @if (workcenter().positions && workcenter().positions.length > 0) {
+      @for (posit of workcenter().positions; track posit.id) {
+        @if (posit.employees && posit.employees.length > 0) {
+          @for (emp of posit.employees; track emp.id) {
+            <app-site-schedule-month-workcenter-employee [employee]="emp" [start]="month">
+            </app-site-schedule-month-workcenter-employee>
+          }
+        }
+      }
+    }
+    @if (workcenter().shifts && workcenter().shifts.length > 0) {
+      @for (posit of workcenter().shifts; track posit.id) {
+        @if (posit.employees && posit.employees.length > 0) {
+          @for (emp of posit.employees; track emp.id) {
+            <app-site-schedule-month-workcenter-employee [employee]="emp" [start]="month">
+            </app-site-schedule-month-workcenter-employee>
+          }
+        }
+      }
+    }
+  </div>
+</mat-expansion-panel>

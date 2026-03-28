@@ -1,43 +1,47 @@
-import { Component, input, Input } from '@angular/core';
-import { Employee } from 'scheduler-models/scheduler/employees';
+import { Component, input, Input, output, signal } from '@angular/core';
 import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters/workcenter';
 import { SiteScheduleMonthWorkcenterEmployee } from './site-schedule-month-workcenter-employee/site-schedule-month-workcenter-employee';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { SiteScheduleMonthWorkcenterEmployeeDay } from './site-schedule-month-workcenter-employee/site-schedule-month-workcenter-employee-day/site-schedule-month-workcenter-employee-day';
 
 @Component({
   selector: 'app-site-schedule-month-workcenter',
   imports: [
-    SiteScheduleMonthWorkcenterEmployee
+    MatExpansionModule,
+    SiteScheduleMonthWorkcenterEmployee,
+    SiteScheduleMonthWorkcenterEmployeeDay
   ],
   templateUrl: './site-schedule-month-workcenter.html',
   styleUrl: './site-schedule-month-workcenter.scss',
 })
 export class SiteScheduleMonthWorkcenter {
-  private _workcenter: Workcenter = new Workcenter();
-  private _employeeList: Employee[] = [];
+  workcenter = input<Workcenter>(new Workcenter());
+  private _month: Date = new Date(0);
   @Input()
-  get workcenter(): Workcenter {
-    return this._workcenter;
+  get month(): Date {
+    return this._month;
   }
-  set workcenter(wkctr: Workcenter) {
-    this._workcenter = new Workcenter(wkctr);
+  set month(start: Date) {
+    this._month = new Date(start);
+    this.setDates();
   }
-  @Input()
-  get employees(): Employee[] {
-    return this._employeeList;
-  }
-  set employees(list: Employee[]) {
-    this._employeeList = [];
-    list.forEach(emp => {
-      this._employeeList.push(new Employee(emp))
-    });
-  }
-  date = input<Date>(new Date());
+  expanded = input<boolean>(false);
+  panelStatus = output<string>({alias: 'panelChanged'});
+  monthDates = signal<Date[]>([]);
 
-  setWorkcenter() {
-    if (this.workcenter.id !== '' && this.employees.length > 0) {
-      this.employees.forEach(emp => {
-        this.workcenter.assign(emp, this.date());
-      });
+  changePanelStatus(direction: string) {
+    const chg = `${this.workcenter().id}|${direction}`;
+    this.panelStatus.emit(chg);
+  }
+
+  setDates() {
+    const list: Date[] = [];
+    let start = new Date(this.month);
+    const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
+    while (start.getTime() < end.getTime()) {
+      list.push(new Date(start));
+      start = new Date(start.getTime() + (24 * 3600000));
     }
+    this.monthDates.set(list);
   }
 }

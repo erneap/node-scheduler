@@ -90,7 +90,14 @@ export class Workcenter implements IWorkcenter {
     }
     // if not assigned to a position, find their shift and assign to a shift.
     if (!bPosition && this.shifts) {
-      let wd = emp.getWorkday(date);
+      let wd = emp.getWorkday(date, 'noleaves');
+      if (wd.code === '') {
+        let start = new Date(date);
+        while (wd.code === '' && date.getMonth() === start.getMonth()) {
+          start = new Date(start.getTime() + (24 * 3600000));
+          wd = emp.getWorkday(start, 'noleaves');
+        }
+      }
       this.shifts.forEach((shft, s) => {
         shft.associatedCodes.forEach(cd => {
           if (cd.toLowerCase() === wd?.code.toLowerCase()) {
