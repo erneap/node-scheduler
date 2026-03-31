@@ -1,0 +1,68 @@
+.direction {
+  font-weight: bold;
+  font-size: 1.2rem;
+  background-color: #e60000;
+  color: white;
+  border: solid 1px white;
+  cursor: pointer;
+  height: 33px;
+  width: 98px
+}
+
+.print {
+  font-size: 1.2em;
+  font-weight: bold;
+  height: 35px;
+  width: 35px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.notprint {
+  font-size: 1.2em;
+  font-weight: bold;
+  height: 35px;
+  width: 35px;
+  background-color: transparent;
+  color: white;
+  border: none;
+}
+
+.month {
+  font-weight: bold;
+  background-color: transparent;
+  font-size: 1.2rem;
+  color: white;
+  height: 33px;
+  width: 693px;
+  border: none;
+}
+
+.monthSelect {
+  text-align: center;
+  font-size: 1.4rem;
+  background-color: transparent;
+  color: white;
+  border: none;
+  width: 120px;
+}
+
+.monthSelectOption {
+  background-color: #673ab7;
+  color: white;
+}
+
+.yearSelect {
+  text-align: center;
+  font-size: 1.4rem;
+  background-color: transparent;
+  color: white;
+  border: none;
+  width: 80px;
+}
+
+.border {
+  border: solid 1px white;
+}

@@ -9,11 +9,12 @@ import { MidShiftReport } from "../reports/scheduler/midShiftReport";
 import { ModTimeReport } from "../reports/scheduler/modtimeReport";
 import { collections, postLogEntry } from "scheduler-services";
 import { ReportRequest } from "scheduler-models/general";
+import { auth } from "../middleware/authorization.middleware";
 const router = Router();
 const logger = new Logger(
   `${process.env.LOG_DIR}/general/process_${(new Date().toDateString())}.log`);
 
-router.post('/report', async(req: Request, res: Response) => {
+router.post('/report', auth, async(req: Request, res: Response) => {
   // there are two general types of reports, metrics and scheduler.  Metrics reports can 
   // distinguished by containing 'summary' in the report type.  all others are scheduler
   // type
@@ -112,7 +113,7 @@ router.post('/report', async(req: Request, res: Response) => {
     } else {
       throw new Error(`No Report created: ${data.reportType}`);
     }
-  } catch (err) {
+  } catch (err: any) {
     const error = err as Error;
     await postLogEntry('general', `report: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});

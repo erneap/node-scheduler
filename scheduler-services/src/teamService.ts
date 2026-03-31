@@ -118,6 +118,7 @@ export class TeamService {
         throw new Error('No team collection provided');
       }
     } catch (err) {
+      console.log(err.stackTrace)
       throw err;
     } finally {
       if (conn) conn.release();

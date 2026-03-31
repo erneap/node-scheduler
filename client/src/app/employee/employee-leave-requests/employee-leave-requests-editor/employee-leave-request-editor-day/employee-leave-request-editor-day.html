@@ -1,4 +1,5 @@
 <form [formGroup]="dayForm" class="flexlayout row center">
+  <div class="flexlayout column center weekday">{{getDayDate('weekday')}}</div>
   <div class="flexlayout column center day">{{getDayDate()}}</div>
   <div class="flexlayout column center code">
     <select matNativeControl formControlName="code" class="input"

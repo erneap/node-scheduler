@@ -121,7 +121,13 @@ export class EmployeeLeaveRequestEditorDay {
     }
   }
 
-  getDayDate(): string {
+  getDayDate(style?: string): string {
+    if (style === 'weekday') {
+      const wdFormatter = new Intl.DateTimeFormat('en-US',
+        { weekday: 'short' }
+      )
+      return wdFormatter.format(this.leave.leavedate);
+    }
     const formatter = new Intl.DateTimeFormat('en-US',
       { year: '2-digit',
         month: '2-digit',

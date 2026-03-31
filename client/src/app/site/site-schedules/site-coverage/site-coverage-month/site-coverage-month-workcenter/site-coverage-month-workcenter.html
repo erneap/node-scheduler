@@ -1,1 +1,25 @@
-<p>site-coverage-month-workcenter works!</p>
+<mat-expansion-panel class="workcenter" expanded="true">
+  <mat-expansion-panel-header [collapsedHeight]="'25px'" [expandedHeight]="'25px'">
+    <mat-panel-description>
+      {{workcenter().name.toUpperCase()}}
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <!-- Show content of matrix header, then go through the positions and shifts to show
+    the employees -->
+  <div class="flexlayout column center">
+    <div class="flexlayout row center coverage" [style]="coverageStyle()">
+      Shift Coverage</div>
+    <div class="flexlayout row topleft">
+      <div class="flexlayout column center shift">Shift</div>
+      @for (date of monthDates(); track date.getTime()) {
+        <app-site-schedule-month-workcenter-employee-day [row]="'label'" [date]="date">
+        </app-site-schedule-month-workcenter-employee-day>
+      }
+    </div>
+    @for (shift of workcenter().shifts; track shift.id) {
+      <app-site-schedule-month-workcenter-shiftcoverage [shift]="shift" 
+        [row]="(shift.id % 2 === 0) ? 'even' : 'odd'" [start]="month">
+      </app-site-schedule-month-workcenter-shiftcoverage>
+    }
+  </div>
+</mat-expansion-panel>

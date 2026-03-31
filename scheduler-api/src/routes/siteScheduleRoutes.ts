@@ -39,12 +39,12 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
         site.workcenters.forEach((wkctr, w) => {
           const sWc = new ScheduleWorkcenter({
             id: wcCount++,
+            wkctrID: wkctr.id,
             name: wkctr.name,
             employees: [],
             shifts: []
           });
           answer.push(sWc);
-          console.log(`${answer.length}`);
           let empCount = 0;
           if (wkctr.positions && wkctr.positions.length > 0) {
             wkctr.positions.forEach(posit => {

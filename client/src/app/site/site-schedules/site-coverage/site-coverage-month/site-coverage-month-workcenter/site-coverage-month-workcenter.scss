@@ -1,0 +1,43 @@
+@use '@angular/material' as mat;
+
+.workcenter {
+  @include mat.expansion-overrides((
+    header-description-color: white,
+    container-background-color: black,
+    header-collapsed-state-height: 35px,
+    actions-divider-color: yellow,
+  ));
+}
+
+.name {
+  background-color: black;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 248px;
+  height: 48px;
+  border: solid 1px white;
+}
+
+.shift {
+  background-color: black;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 248px;
+  height: 23px;
+  border: solid 1px white;
+}
+
+.coverage {
+  background-color: black;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  height: 23px;
+  border: solid 1px white;
+}
+
+.dates {
+  border: none;
+}

@@ -101,6 +101,7 @@ export class ScheduleReport extends Report{
           });
           team.sites.forEach(site => {
             if (site.id.toLowerCase() === siteid.toLowerCase()) {
+              this.site = new Site(site);
               if (site.employees) {
                 site.employees.forEach(emp => {
                   this.employees.push(new Employee(emp));

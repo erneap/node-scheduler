@@ -1,1 +1,44 @@
-<p>site-coverage-month works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft border">
+    <div class="flexlayout row center direction"
+    (click)="changeMonth('down', 'year')">&lt;&lt;</div>
+    <div class="flexlayout row center direction"
+    (click)="changeMonth('down', 'month')">&lt;</div>
+    <div class="overall flexlayout row center">
+      <div class="flex-spacer">&nbsp;</div>
+      <div class="flexlayout row center month">
+        <form [formGroup]="monthForm" class="flexlayout row center flexgap">
+          <select class="monthSelect" (change)="selectMonth()"
+            formControlName="month">
+            @for (m of months; track m; let i = $index) {
+              <option [value]="i"
+                class="monthSelectOption">
+                {{m}}
+              </option>
+            }
+          </select>
+          <input type="number" (change)="selectMonth()" formControlName="year"
+            class="yearSelect">
+        </form>
+      </div>
+      <div class="flex-spacer"></div>
+      <div class="flexlayout column center">
+        &nbsp;
+      </div>
+    </div>
+    <div class="flexlayout row center direction"
+    (click)="changeMonth('up', 'month')">&gt;</div>
+    <div class="flexlayout row center direction"
+    (click)="changeMonth('up', 'year')">&gt;&gt;</div>
+  </div>
+  <div class="flexlayout row center" style="width: 100%;">
+    <mat-accordion displayMode="flat" multi style="width: 100%;">
+      @for (wkctr of workcenters(); track wkctr.id) {
+        @if (wkctr.shifts.length > 0) {
+          <app-site-coverage-month-workcenter [workcenter]="wkctr" [month]="month()">
+          </app-site-coverage-month-workcenter>
+        }
+      }
+    </mat-accordion>
+  </div>
+</div>

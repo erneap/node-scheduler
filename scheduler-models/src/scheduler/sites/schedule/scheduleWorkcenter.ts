@@ -3,6 +3,7 @@ import { IScheduleShift, ScheduleShift } from "./scheduleShift";
 
 export interface IScheduleWorkcenter {
   id: number;
+  wkctrID: string;
   name: string;
   employees: IScheduleEmployee[];
   shifts: IScheduleShift[];
@@ -10,12 +11,14 @@ export interface IScheduleWorkcenter {
 
 export class ScheduleWorkcenter implements IScheduleWorkcenter {
   public id: number;
+  public wkctrID: string;
   public name: string;
   public employees: ScheduleEmployee[];
   public shifts: ScheduleShift[];
 
   constructor(wc?: IScheduleWorkcenter) {
     this.id = (wc) ? wc.id : 0;
+    this.wkctrID = (wc) ? wc.wkctrID : '';
     this.name = (wc) ? wc.name : '';
     this.employees = [];
     if (wc && wc.employees.length > 0) {

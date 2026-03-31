@@ -36,7 +36,7 @@ export class SiteScheduleMonthWorkcenter {
   coverageStyle = signal<string>('width: 248px;');
 
   changePanelStatus(direction: string) {
-    const chg = `${this.workcenter().id}|${direction}`;
+    const chg = `${this.workcenter().wkctrID}|${direction}`;
     this.panelStatus.emit(chg);
   }
 

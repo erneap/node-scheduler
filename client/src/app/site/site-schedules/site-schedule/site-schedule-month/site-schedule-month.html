@@ -37,7 +37,8 @@
       @for (wkctr of workcenters(); track wkctr.id) {
         @if (wkctr.employees.length > 0) {
           <app-site-schedule-month-workcenter [workcenter]="wkctr" 
-            [month]="month()" [workcodes]="workcodes()" [showCoverage]="leader()">
+            [month]="month()" [workcodes]="workcodes()" [showCoverage]="leader()"
+            [expanded]="isExpanded(wkctr.name)" (panelChanged)="panelChanged($event)">
           </app-site-schedule-month-workcenter>
         }
       }

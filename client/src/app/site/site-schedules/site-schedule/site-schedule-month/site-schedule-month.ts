@@ -18,6 +18,7 @@ import { environment } from '../../../../../environments/environment';
 import { TeamService } from '../../../../services/team-service';
 import { ReportRequest } from 'scheduler-models/general'
 import { Team } from 'scheduler-models/scheduler/teams';
+import { EmployeeService } from '../../../../services/employee-service';
 
 @Component({
   selector: 'app-site-schedule-month',
@@ -42,10 +43,12 @@ export class SiteScheduleMonth {
   month = signal<Date>(new Date());
   site = signal<Site>(new Site());
   leader = signal<boolean>(false);
+  expanded = signal<string>('')
   monthForm: FormGroup;
 
   constructor(
     private authService: AuthService,
+    private empService: EmployeeService,
     private siteService: SiteService,
     private teamService: TeamService,
     private builder: FormBuilder,
@@ -59,6 +62,17 @@ export class SiteScheduleMonth {
       month: this.month().getUTCMonth(),
       year: this.month().getUTCFullYear(),
     });
+    const iEmp = this.empService.getEmployee();
+    if (iEmp) {
+      const emp = new Employee(iEmp);
+      let date = new Date(this.month());
+      let wd = emp.getWorkday(this.month());
+      while (!wd || wd.workcenter === '') {
+        date = new Date(date.getTime() + (24 * 3600000));
+        wd = emp.getWorkday(date);
+      }
+      this.expanded.set(wd.workcenter);
+    }
     const iUser = this.authService.getUser();
     if (iUser) {
       const user = new User(iUser);
@@ -77,7 +91,8 @@ export class SiteScheduleMonth {
           const wkctrs: ScheduleWorkcenter[] = [];
           const data = res.body as IScheduleWorkcenter[];
           data.forEach(wc => {
-            wkctrs.push(new ScheduleWorkcenter(wc));
+            const nWc = new ScheduleWorkcenter(wc);
+            wkctrs.push(nWc);
           });
           wkctrs.sort((a,b) => a.compareTo(b));
           this.workcenters.set(wkctrs);
@@ -172,6 +187,25 @@ export class SiteScheduleMonth {
               URL.revokeObjectURL(url);
           }
         })
+    }
+  }
+
+  isExpanded(workcenter: string) {
+    return (this.expanded().toLowerCase() === workcenter.toLowerCase());
+  }
+
+  panelChanged(action: string) {
+    const parts = action.split('|');
+    if (parts.length > 1) {
+      if (parts[1].toLowerCase() === 'closed' 
+        && this.expanded().toLowerCase() === parts[0].toLowerCase()) {
+        this.expanded.set('');
+      } else if (parts[1].toLowerCase() === 'opened'
+        && this.expanded().toLowerCase() !== parts[0].toLowerCase()) {
+        this.expanded.set(parts[0]);
+      }
+    } else if (parts.length === 1) {
+      this.expanded.set(parts[0]);
     }
   }
 }
