@@ -3,7 +3,8 @@ import { Employee } from "scheduler-models/scheduler/employees";
 import { User } from "scheduler-models/users";
 import { ModMonth, ModWeek } from "./modPeriods";
 import { Team } from "scheduler-models/scheduler/teams";
-import { Formula, Report, ReportRequest, TeamService } from "scheduler-services";
+import { Formula, Report, TeamService } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class ModTimeReport extends Report {
   private currentAsOf: Date;

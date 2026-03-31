@@ -33,5 +33,21 @@
         </app-site-schedule-month-workcenter-employee>
       }
     }
+    @if (leader() && workcenter().shifts.length > 0) {
+      <div class="flexlayout row center coverage" [style]="coverageStyle()">
+        Shift Coverage</div>
+      <div class="flexlayout row topleft">
+        <div class="flexlayout column center shift">Shift</div>
+        @for (date of monthDates(); track date.getTime()) {
+          <app-site-schedule-month-workcenter-employee-day [row]="'label'" [date]="date">
+          </app-site-schedule-month-workcenter-employee-day>
+        }
+      </div>
+      @for (shift of workcenter().shifts; track shift.id) {
+        <app-site-schedule-month-workcenter-shiftcoverage [shift]="shift" 
+          [row]="(shift.id % 2 === 0) ? 'even' : 'odd'" [start]="month">
+        </app-site-schedule-month-workcenter-shiftcoverage>
+      }
+    }
   </div>
 </mat-expansion-panel>

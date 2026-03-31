@@ -12,7 +12,12 @@ import { SiteScheduleMonthWorkcenter } from './site-schedule-month-workcenter/si
 import { Workcode } from 'scheduler-models/scheduler/labor';
 import { AuthService } from '../../../../services/auth-service';
 import { IScheduleWorkcenter, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { User } from 'scheduler-models/users';
+import { environment } from '../../../../../environments/environment';
+import { TeamService } from '../../../../services/team-service';
+import { ReportRequest } from 'scheduler-models/general'
+import { Team } from 'scheduler-models/scheduler/teams';
 
 @Component({
   selector: 'app-site-schedule-month',
@@ -36,12 +41,15 @@ export class SiteScheduleMonth {
   workcenters = signal<ScheduleWorkcenter[]>([]);
   month = signal<Date>(new Date());
   site = signal<Site>(new Site());
+  leader = signal<boolean>(false);
   monthForm: FormGroup;
 
   constructor(
     private authService: AuthService,
     private siteService: SiteService,
-    private builder: FormBuilder
+    private teamService: TeamService,
+    private builder: FormBuilder,
+    private http: HttpClient
   ) {
     const iSite = this.siteService.getSite();
     this.site.set(new Site(iSite));
@@ -51,7 +59,14 @@ export class SiteScheduleMonth {
       month: this.month().getUTCMonth(),
       year: this.month().getUTCFullYear(),
     });
+    const iUser = this.authService.getUser();
+    if (iUser) {
+      const user = new User(iUser);
+      this.leader.set(user.hasPermission('scheduler', 'siteleader') 
+        || user.hasPermission('scheduler', 'scheduler'));
+    }
     this.getMonth();
+    
   }
 
   getMonth() {
@@ -103,10 +118,60 @@ export class SiteScheduleMonth {
   }
 
   selectMonth() {
-
+    const iMonth = this.monthForm.get('month')?.value
+    const iYear = this.monthForm.get('year')?.value;
+    if (iMonth && iYear) {
+      this.month.set(new Date(Date.UTC(Number(iYear), Number(iMonth), 1)));
+      this.getMonth();
+    }
   }
 
   onPrintSubmit() {
-
+    const generalURL = environment.generalUrl;
+    const url = `${generalURL}/report`;
+    const iTeam = this.teamService.getTeam();
+    const iSite = this.siteService.getSite();
+    if (iTeam && iSite) {
+      const team = new Team(iTeam);
+      console.log(team.id);
+      const request: ReportRequest = {
+        reportType: 'siteschedule',
+        period: ``,
+        teamid: team.id,
+        siteid: iSite.id,
+        includeDaily: false
+      };
+      this.http.post(url, request, { responseType: "blob", observe: 'response'})
+        .subscribe(file => {
+          if (file.body) {
+            const blob = new Blob([file.body],
+              {type: 'application/vnd.openxmlformat-officedocument.spreadsheetml.sheet'});
+              let contentDisposition = file.headers.get('Content-Disposition');
+              let parts = contentDisposition?.split(' ');
+              let fileName = '';
+              parts?.forEach(pt => {
+                if (pt.startsWith('filename')) {
+                  let fParts = pt.split('=');
+                  if (fParts.length > 1) {
+                    fileName = fParts[1];
+                  }
+                }
+              });
+              if (!fileName) {
+                fileName = 'SiteSchedule.xlsx';
+              }
+              const url = window.URL.createObjectURL(blob);
+              
+              const a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+    
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+          }
+        })
+    }
   }
 }

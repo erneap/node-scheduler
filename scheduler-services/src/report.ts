@@ -77,17 +77,3 @@ export class Report {
     return value.toFixed(decimal)
   }
 }
-
-export interface ReportRequest {
-  reportType: string;
-  period?: string;
-  subreport?: string;
-  teamid?: string;
-  siteid?: string;
-  companyid?: string;
-  password?: string;
-  startDate?: string;
-  endDate?: string;
-  userid?: string;
-  includeDaily: boolean;
-}

@@ -1,0 +1,11 @@
+<div class="flexlayout row center">
+  <div class="name" [style]="getNameStyle()">
+    {{workshift().name}}
+  </div>
+  @for (day of monthDates; track day.getTime()) {
+    <app-site-schedule-month-workcenter-shiftcoverage-day
+      [coverage]="getCoverage(day)" [row]="row()" [date]="day" 
+      [minimums]="workshift().minimums">
+    </app-site-schedule-month-workcenter-shiftcoverage-day>
+  }
+</div>

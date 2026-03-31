@@ -33,11 +33,13 @@
     (click)="changeMonth('up', 'year')">&gt;&gt;</div>
   </div>
   <div class="flexlayout row center" style="width: 100%;">
-    <mat-accordion displayMode="flat" multi style="width: 100%;">
+    <mat-accordion displayMode="flat" style="width: 100%;">
       @for (wkctr of workcenters(); track wkctr.id) {
-        <app-site-schedule-month-workcenter [workcenter]="wkctr" 
-          [month]="month()" [workcodes]="workcodes()">
-        </app-site-schedule-month-workcenter>
+        @if (wkctr.employees.length > 0) {
+          <app-site-schedule-month-workcenter [workcenter]="wkctr" 
+            [month]="month()" [workcodes]="workcodes()" [showCoverage]="leader()">
+          </app-site-schedule-month-workcenter>
+        }
       }
     </mat-accordion>
   </div>

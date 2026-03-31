@@ -1,9 +1,10 @@
 import AdmZip from "adm-zip";
+import { ReportRequest } from "scheduler-models/general";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
 import { Workcode } from "scheduler-models/scheduler/labor";
 import { Site } from "scheduler-models/scheduler/sites";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
-import { BuildInitial, ReportRequest } from "scheduler-services";
+import { BuildInitial } from "scheduler-services";
 
 /**
  * This report formatter will be used by the application to compile the site's Certificate

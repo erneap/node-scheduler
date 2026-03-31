@@ -5,7 +5,8 @@ import { User } from "scheduler-models/users";
 import { MissionDay } from "./missionDay";
 import { OutageDay } from "./outageDay";
 import fs from 'fs';
-import { collections, Report, ReportRequest } from "scheduler-services";
+import { collections, Report } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class DrawSummary extends Report {
   private reportType: GeneralTypes;

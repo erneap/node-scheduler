@@ -307,12 +307,8 @@ export class Employee implements IEmployee {
     this.assignments.forEach(a => {
       if (a.site.toLowerCase() === site.toLowerCase()
         && a.workcenter.toLowerCase() === wkctr.toLowerCase() 
-        && ((start.getTime() < a.startDate.getTime() 
-        && end.getTime() > a.endDate.getTime()) 
-        || (end.getTime() > a.startDate.getTime()
-        && end.getTime() < a.endDate.getTime())
-        || (start.getTime() > a.startDate.getTime()
-        && end.getTime() < a.endDate.getTime()))) {
+        && start.getTime() < a.endDate.getTime()
+        && end.getTime() > a.startDate.getTime()) {
         result = true;
       }
     });
@@ -332,12 +328,8 @@ export class Employee implements IEmployee {
     let result = false;
     this.assignments.forEach(a => {
       if (a.site.toLowerCase() === site.toLowerCase() 
-        && ((start.getTime() < a.startDate.getTime() 
-        && end.getTime() > a.endDate.getTime()) 
-        || (end.getTime() > a.startDate.getTime()
-        && end.getTime() < a.endDate.getTime())
-        || (start.getTime() > a.startDate.getTime()
-        && end.getTime() < a.endDate.getTime()))) {
+        && start.getTime() < a.endDate.getTime()
+        && end.getTime() > a.startDate.getTime()) {
         result = true;
       }
     });

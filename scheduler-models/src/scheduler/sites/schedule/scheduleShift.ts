@@ -83,4 +83,14 @@ export class ScheduleShift implements IScheduleShift {
     }
     return false;
   }
+
+  hasCode(code: string): boolean {
+    let answer = false;
+    this.codes.forEach(cd => {
+      if (cd.toLowerCase() === code.toLowerCase()) {
+        answer = true;
+      }
+    });
+    return answer;
+  }
 }

@@ -7,7 +7,8 @@ import { User } from "scheduler-models/users";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { Site } from "scheduler-models/scheduler/sites";
-import { BuildInitial, Formula, Report, ReportRequest } from "scheduler-services";
+import { BuildInitial, Formula, Report } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class LeaveReport extends Report {
   private site: Site;

@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { Site } from "scheduler-models/scheduler/sites";
-import { ScheduleDay, ScheduleEmployee, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
+import { ScheduleDay, ScheduleEmployee, ScheduleShift, ScheduleShiftCount, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 import { BuildInitial, postLogEntry } from "scheduler-services";
 
 const router = Router();
@@ -40,9 +40,11 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
           const sWc = new ScheduleWorkcenter({
             id: wcCount++,
             name: wkctr.name,
-            employees: []
+            employees: [],
+            shifts: []
           });
           answer.push(sWc);
+          console.log(`${answer.length}`);
           let empCount = 0;
           if (wkctr.positions && wkctr.positions.length > 0) {
             wkctr.positions.forEach(posit => {
@@ -70,7 +72,17 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
             })
           }
           if (wkctr.shifts && wkctr.shifts.length > 0) {
+            let shftcount = 0;
             wkctr.shifts.forEach(shft => {
+              const schShft = new ScheduleShift({
+                id: shftcount++,
+                name: shft.name,
+                codes: shft.associatedCodes,
+                minimums: shft.minimums,
+                counts: []
+              });
+              schShft.setCounts(start);
+              sWc.shifts.push(schShft);
               if (shft.employees && shft.employees.length > 0) {
                 shft.employees.forEach(iEmp => {
                   const sEmp = new ScheduleEmployee({
@@ -92,6 +104,19 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
                   sWc.employees.push(sEmp);
                 });
               }
+            })
+          }
+        });
+        answer.forEach(wkctr => {
+          if (wkctr.employees.length > 0 && wkctr.shifts.length > 0) {
+            wkctr.shifts.forEach(shft => {
+              wkctr.employees.forEach(emp => {
+                emp.days.forEach(day => {
+                  if (shft.hasCode(day.code)) {
+                    shft.counts[day.id - 1].increment();
+                  }
+                })
+              });
             })
           }
         });

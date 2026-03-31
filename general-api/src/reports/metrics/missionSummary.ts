@@ -5,7 +5,8 @@ import { IMission, IOutage, Mission } from "scheduler-models/metrics";
 import { Outage } from "scheduler-models/metrics";
 import { MissionType } from "./missionType";
 import fs from 'fs';
-import { collections, Report, ReportRequest } from "scheduler-services";
+import { collections, Report } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class MissionSummary extends Report {
   private reportType: GeneralTypes;

@@ -11,3 +11,17 @@ export interface UpdateRequest {
 export interface Message {
   message: string;
 }
+
+export interface ReportRequest {
+  reportType: string;
+  period?: string;
+  subreport?: string;
+  teamid?: string;
+  siteid?: string;
+  companyid?: string;
+  password?: string;
+  startDate?: string;
+  endDate?: string;
+  userid?: string;
+  includeDaily: boolean;
+}

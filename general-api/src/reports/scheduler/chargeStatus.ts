@@ -8,7 +8,8 @@ import { Forecast, Period } from "scheduler-models/scheduler/sites/reports";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
 import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
-import { BuildInitial, Formula, Report, ReportRequest, TeamService } from 'scheduler-services'
+import { BuildInitial, Formula, Report, TeamService } from 'scheduler-services'
+import { ReportRequest } from "scheduler-models/general";
 
 export class ChargeStatusReport extends Report {
   private site: Site;

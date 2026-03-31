@@ -1,4 +1,4 @@
-import { Report, ReportRequest } from "scheduler-services";
+import { Report } from "scheduler-services";
 import { Workcode } from "scheduler-models/scheduler/labor";
 import { Site } from "scheduler-models/scheduler/sites";
 import { Employee, IEmployee, IWorkRecord, Work, WorkRecord } from "scheduler-models/scheduler/employees";
@@ -8,6 +8,7 @@ import { ObjectId } from "mongodb";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
 import { TeamService } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class ScheduleReport extends Report{
   private styles: Map<string, Partial<Style>>;

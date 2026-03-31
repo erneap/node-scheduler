@@ -5,7 +5,8 @@ import { Site } from "scheduler-models/scheduler/sites";
 import { Employee } from "scheduler-models/scheduler/employees";
 import { Holiday } from "scheduler-models/scheduler/teams/company";
 
-import { BuildInitial, collections, Report, ReportRequest } from "scheduler-services";
+import { BuildInitial, collections, Report } from "scheduler-services";
+import { ReportRequest } from "scheduler-models/general";
 
 export class EnterpriseSchedule extends Report {
   private fonts: Map<string, Partial<Font>>;
