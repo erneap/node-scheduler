@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { ISite, Site } from 'scheduler-models/scheduler/sites';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
+import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 
 @Injectable({
   providedIn: 'root',
@@ -39,5 +39,10 @@ export class SiteService extends CacheService {
     const url = `${this.schedulerUrl}/site/schedule/schedule/${userid}/`
       + `${date.getTime()}`;
     return this.http.get<ScheduleWorkcenter[]>(url, { observe: 'response'});
+  }
+
+  getSiteMids(userid: string, year: number) : Observable<HttpResponse<MidListItem[]>> {
+    const url = `${this.schedulerUrl}/site/schedule/mids/${userid}/${year}`;
+    return this.http.get<MidListItem[]>(url, { observe: 'response' });
   }
 }

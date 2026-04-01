@@ -1,0 +1,19 @@
+<div class="page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: white;">Team Query (Who's Working)</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="flexlayout column center" style="margin: 20px;">
+      <div class="flexlayout column center">
+        <div class="flexlayout row center" style="width: 100%;">
+          <!-- Query Form Area -->
+        </div>
+        <div class="flexlayout row center" style="width: 100%;">
+          <div class="flexlayout column center">
+            <app-list [list]="employeeList()" [height]="600" [width]="250"></app-list>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

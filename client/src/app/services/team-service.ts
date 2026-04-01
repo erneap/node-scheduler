@@ -2,8 +2,10 @@ import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
 import { environment } from '../../environments/environment';
 import { ITeam, Team } from 'scheduler-models/scheduler/teams';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { SecurityQuestion } from 'scheduler-models/users';
+import { Observable } from 'rxjs';
+import { Employee } from 'scheduler-models/scheduler/employees';
 
 @Injectable({
   providedIn: 'root',
@@ -51,5 +53,10 @@ export class TeamService extends CacheService {
 
   removeQuestions() {
     this.removeItem('questions');
+  }
+
+  getSimpleQuery(teamid: string): Observable<HttpResponse<Employee[]>> {
+    const url = `${this.schedulerUrl}/team/query/${teamid}`;
+    return this.http.get<Employee[]>(url, { observe: 'response'});
   }
 }

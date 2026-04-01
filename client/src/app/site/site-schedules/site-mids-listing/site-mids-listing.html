@@ -1,1 +1,30 @@
-<p>site-mids-listing works!</p>
+<div class="page">
+  <mat-card>
+    <mat-card-content class="flexlayout column center" style="margin: 20px;">
+      <div class="flexlayout column topleft">
+        <div class="flexlayout row center headline">Mid-Shift Coverage</div>
+        <div class="flexlayout column center chart">
+          <div class="flexlayout row center">
+            <div class="flexlayout column center direction" 
+              (click)="updateYear('down')">&lt;&lt;</div>
+            <div class="flexlayout column center year">{{year()}}</div>
+            <div class="flexlayout column center direction" 
+              (click)="updateYear('up')">&gt;&gt;</div>
+          </div>
+          <div class="flexlayout row center">
+            <div class="flexlayout column center namelabel">NAME</div>
+            <div class="flexlayout column center datelabel">FROM</div>
+            <div class="flexlayout column center datelabel">TO</div>
+          </div>
+          @for (eVar of list(); track eVar) {
+            <div class="flexlayout row center data">
+              <div class="flexlayout column center name">{{eVar.name}}</div>
+              <div class="flexlayout column center date">{{dateString(eVar.start)}}</div>
+              <div class="flexlayout column center date">{{dateString(eVar.end)}}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

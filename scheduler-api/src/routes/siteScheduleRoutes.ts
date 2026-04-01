@@ -1,8 +1,10 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { Site } from "scheduler-models/scheduler/sites";
-import { ScheduleDay, ScheduleEmployee, ScheduleShift, ScheduleShiftCount, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
+import { MidListItem, ScheduleDay, ScheduleEmployee, ScheduleShift, ScheduleWorkcenter } 
+  from 'scheduler-models/scheduler/sites/schedule'
 import { BuildInitial, postLogEntry } from "scheduler-services";
+import { Employee } from "scheduler-models/scheduler/employees";
 
 const router = Router();
 export default router;
@@ -120,6 +122,57 @@ router.get('/site/schedule/schedule/:id/:month', auth, async(req: Request, res: 
             })
           }
         });
+        res.status(200).json(answer);
+      } else {
+        throw new Error('Site not provided')
+      }
+    } else {
+      throw new Error('No User ID provided');
+    }
+  } catch (err) {
+    const error = err as Error;
+    await postLogEntry('site', `site: Get: Error: ${error.message}`);
+    res.status(400).json({'message': error.message});
+  }
+});
+
+/**
+ * This method will be used to get the current site information for the account logged
+ * in as.  This is part of the user's information, so it will be obtained from the user's
+ * identifier.
+ */
+router.get('/site/schedule/mids/:id/:year', auth, async(req: Request, res: Response) => {
+  try {
+    const userid = req.params.id as string;
+    const sYear = req.params.year as string;
+    if (userid && sYear) {
+      const start = new Date(Date.UTC(Number(sYear), 0, 1));
+      const end = new Date(Date.UTC(start.getUTCFullYear() + 1, 0, 1));
+      const build = new BuildInitial(userid);
+      const initial = await build.build();
+      if (initial.site) {
+        const site = new Site(initial.site);
+        const answer: MidListItem[] = [];
+        if (site.employees) {
+          site.employees.forEach(iEmp => {
+            const emp = new Employee(iEmp);
+            if (emp.atSite(site.id, start, end)) {
+              emp.variations.forEach(vari => {
+                if (vari.startdate.getTime() < end.getTime()
+                  && vari.enddate.getTime() >= start.getTime()
+                  && vari.mids) {
+                  const mlItem = new MidListItem({
+                    name: emp.name.getLastFirst(),
+                    start: new Date(vari.startdate),
+                    end: new Date(vari.enddate)
+                  });
+                  answer.push(mlItem);
+                }
+              });
+            }
+          });
+        }
+        answer.sort((a,b) => a.compareTo(b));
         res.status(200).json(answer);
       } else {
         throw new Error('Site not provided')

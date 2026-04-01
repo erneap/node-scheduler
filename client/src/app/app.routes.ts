@@ -12,6 +12,8 @@ import { EmployeeContactInformation } from './employee/employee-contact-informat
 import { EmployeeSpecialties } from './employee/employee-specialties/employee-specialties';
 import { SiteSchedule } from './site//site-schedules/site-schedule/site-schedule';
 import { SiteCoverage } from './site/site-schedules/site-coverage/site-coverage';
+import { SiteMidsListing } from './site/site-schedules/site-mids-listing/site-mids-listing';
+import { TeamQuery } from './team/team-query/team-query';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -39,11 +41,13 @@ export const routes: Routes = [
           { path: '', redirectTo: 'site/schedule/schedule', pathMatch: 'full' },
           { path: 'schedule', component: SiteSchedule },
           { path: 'coverage', component: SiteCoverage },
+          { path: 'mids', component: SiteMidsListing },
           { path: '**', component: SiteSchedule },
         ]
       },
       { path: '**', component: SiteSchedule },
     ]
   },
+  { path: 'query', component: TeamQuery },
   { path: '**', redirectTo: '/login' }
 ];
