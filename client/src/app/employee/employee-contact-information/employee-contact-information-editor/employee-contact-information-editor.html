@@ -1,0 +1,5 @@
+@for (ctype of contactTypes; track ctype.id) {
+  <app-employee-contact-information-item 
+  [employee]="employee" [contacttype]="ctype.id">
+  </app-employee-contact-information-item>
+}

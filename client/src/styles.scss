@@ -73,7 +73,15 @@ body {
     container-color: darkred,
     subhead-color: white,
     supporting-text-color: white,
-  ))
+  ));
+  @include mat.checkbox-overrides((
+    label-text-color: white,
+    selected-checkmark-color: blue,
+    selected-icon-color: white,
+    selected-focus-icon-color: white,
+    unselected-icon-color: white,
+    unselected-focus-icon-color: white,
+  ));
 }
 
 /* You can add global styles to this file, and also import other style files */

@@ -1,18 +1,20 @@
 import { Component, signal } from '@angular/core';
 import { Employee, IEmployee } from 'scheduler-models/scheduler/employees';
 import { TeamService } from '../../services/team-service';
-import { Team } from 'scheduler-models/scheduler/teams';
+import { Contact, Specialty, Team } from 'scheduler-models/scheduler/teams';
 import { AuthService } from '../../services/auth-service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { List } from '../../general/list/list';
 import { Item } from '../../general/list/list.model';
+import { TeamQueryContact } from './team-query-contact/team-query-contact';
 
 @Component({
   selector: 'app-team-query',
   imports: [
     MatCardModule,
-    List
+    List,
+    TeamQueryContact
   ],
   templateUrl: './team-query.html',
   styleUrl: './team-query.scss',
@@ -21,6 +23,9 @@ export class TeamQuery {
   employees = signal<Employee[]>([]);
   employeeList = signal<Item[]>([]);
   teamid = signal<string>('');
+  contactTypeList = signal<Contact[]>([]);
+  specialtiesList = signal<Specialty[]>([]);
+  selectedEmployee = signal<Employee>(new Employee());
 
   constructor(
     private authService: AuthService,
@@ -30,6 +35,18 @@ export class TeamQuery {
     if (iTeam) {
       const team = new Team(iTeam);
       this.teamid.set(team.id);
+      const specList: Specialty[] = [];
+      const cTypesList: Contact[] = [];
+      team.contacttypes.forEach(ct => {
+        cTypesList.push(new Contact(ct));
+      });
+      cTypesList.sort((a,b) => a.compareTo(b));
+      team.specialties.forEach(spec => {
+        specList.push(new Specialty(spec));
+      });
+      specList.sort((a,b) => a.compareTo(b));
+      this.contactTypeList.set(cTypesList);
+      this.specialtiesList.set(specList);
     }
     this.setEmployees();
   }
@@ -38,7 +55,6 @@ export class TeamQuery {
     this.teamService.getSimpleQuery(this.teamid()).subscribe({
       next: (res) => {
         const tEmployees = res.body as IEmployee[];
-        console.log(tEmployees.length);
         if (tEmployees.length > 0) {
           const list: Employee[] = [];
           const eList: Item[] = [];
@@ -63,5 +79,24 @@ export class TeamQuery {
         }
       }
     });
+  }
+
+  onSelect(id: string) {
+    this.employees().forEach(iEmp => {
+      const emp = new Employee(iEmp);
+      if (emp.id === id) {
+        this.selectedEmployee.set(emp);
+      }
+    })
+  }
+
+  getSpecialtyName(id: number): string {
+    let answer = '';
+    this.specialtiesList().forEach(spec => {
+      if (spec.id === id) {
+        answer = spec.name;
+      }
+    });
+    return answer;
   }
 }

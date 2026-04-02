@@ -1,49 +1,31 @@
-import { Component, Input } from '@angular/core';
-import { Contact, Team } from 'scheduler-models/scheduler/teams';
+import { Component, Input, signal } from '@angular/core';
 import { TeamService } from '../../services/team-service';
 import { MatCardModule } from '@angular/material/card';
-import { EmployeeContactInformationItem } from './employee-contact-information-item/employee-contact-information-item';
 import { EmployeeService } from '../../services/employee-service';
 import { Employee } from 'scheduler-models/scheduler/employees';
+import { EmployeeContactInformationEditor } from './employee-contact-information-editor/employee-contact-information-editor';
 
 @Component({
   selector: 'app-employee-contact-information',
   imports: [
     MatCardModule,
-    EmployeeContactInformationItem
+    EmployeeContactInformationEditor
   ],
   templateUrl: './employee-contact-information.html',
   styleUrl: './employee-contact-information.scss',
 })
 export class EmployeeContactInformation {
-  private _employee: string = '';
-  @Input()
-  get employee(): string {
-    return this._employee;
-  }
-  set employee(id: string) {
-    this._employee = id;
-  }
-  contactTypes: Contact[];
+  employee = signal<string>('');
 
   constructor(
     private empService: EmployeeService,
     private teamService: TeamService
   ) {
-    this.contactTypes = [];
-    const iTeam = this.teamService.getTeam();
-    if (iTeam) {
-      const team = new Team(iTeam);
-      team.contacttypes.forEach(ct => {
-        this.contactTypes.push(new Contact(ct));
-      });
-      this.contactTypes.sort((a,b) => a.compareTo(b));
-    }
-    if (this.employee === '') {
+    if (this.employee() === '') {
       const iEmp = this.empService.getEmployee();
       if (iEmp) {
         const emp = new Employee(iEmp);
-        this.employee = emp.id;
+        this.employee.set(emp.id);
       }
     }
   }

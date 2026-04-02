@@ -50,7 +50,6 @@ router.get('/team/query/:team', async(req: Request, res: Response) => {
                   });
                 }
                 if (bAdd) {
-                  console.log(emp.name.lastname);
                   answer.push(emp);
                 }
               }

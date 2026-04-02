@@ -1,7 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationRequest, IUser, UpdateUserRequest, User } 
   from 'scheduler-models/users';
 import { map, Observable, of } from 'rxjs';
@@ -14,6 +14,7 @@ import { Message } from 'scheduler-models/general';
 export class AuthService extends CacheService {
   private authUrl  = `${environment.authUrl}`;
   statusMessage = signal('');
+  showMenu = signal<boolean>(false);
   isAuthenticated = false;
   mustChange = computed(() => {
     const iUser = this.getItem<IUser>('user');
@@ -29,7 +30,8 @@ export class AuthService extends CacheService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) {
     super();
     const iUser = this.getUser();

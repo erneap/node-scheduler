@@ -11,6 +11,7 @@ import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/site
 })
 export class SiteService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
+  public selectedEmployee = signal<string>('new');
 
   constructor(
     private http: HttpClient
@@ -44,5 +45,21 @@ export class SiteService extends CacheService {
   getSiteMids(userid: string, year: number) : Observable<HttpResponse<MidListItem[]>> {
     const url = `${this.schedulerUrl}/site/schedule/mids/${userid}/${year}`;
     return this.http.get<MidListItem[]>(url, { observe: 'response' });
+  }
+
+  setSelectedEmployee(id: string) {
+    this.setItem('selectedemployee', id);
+  }
+
+  removeSelectedEmployee() {
+    this.removeItem('selectedemployee');
+  }
+
+  getSelectedEmployee(): string {
+    const eid = this.getItem<string>('selectedemployee');
+    if (eid) {
+      return eid;
+    }
+    return 'new';
   }
 }

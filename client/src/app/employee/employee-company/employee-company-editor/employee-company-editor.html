@@ -1,0 +1,48 @@
+<form [formGroup]="profileForm" class="flexlayout column center">
+  <div class="flexlayout row center flexwrap flexgap">
+    <mat-form-field>
+      <mat-label>Employee's Company</mat-label>
+      <select matNativeControl required formControlName="company"
+        (change)="updateUserField('company')">
+        <option value="">None Selected</option>
+        @for (company of this.getTeamCompanies(); track company.name) {
+          <option [value]="company.id">{{company.name}}</option>
+        }
+      </select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Employee ID</mat-label>
+      <input matInput formControlName="employeeid"
+        (change)="updateUserField('employeeid')">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Alternate ID (Optional)</mat-label>
+      <input matInput formControlName="alternateid"
+        (change)="updateUserField('alternateid')">
+    </mat-form-field>
+  </div>
+  <div class="flexlayout row center flexwrap flexgap" style="width: 95%;">
+    <mat-form-field style="width: 85%;">
+      <mat-label>Job Title</mat-label>
+      <input matInput formControlName="jobtitle"
+        (change)="updateUserField('jobtitle')">
+    </mat-form-field>
+  </div>
+  <div class="flexlayout row center flexwrap flexgap">
+    <mat-form-field>
+      <mat-label>Employee's Company</mat-label>
+      <input matInput formControlName="rank"
+        (change)="updateUserField('rank')">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Cost Center</mat-label>
+      <input matInput formControlName="costcenter"
+        (change)="updateUserField('costcenter')">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Division</mat-label>
+      <input matInput formControlName="division"
+        (change)="updateUserField('division')">
+    </mat-form-field>
+  </div>
+</form>

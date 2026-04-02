@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { AuthService } from '../../services/auth-service';
 import { Router } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -14,6 +14,7 @@ import { MatListModule } from '@angular/material/list';
   styleUrl: './navigation-menu.scss',
 })
 export class NavigationMenu {
+  toggle = output<boolean>();
   constructor(
     private authService: AuthService,
     private router: Router
@@ -28,7 +29,10 @@ export class NavigationMenu {
     return answer;
   }
 
-  goToLink(url: string) {
+  goToLink(url: string, toggle?: boolean) {
+    if (toggle) {
+      this.toggle.emit(toggle);
+    }
     this.router.navigateByUrl(url);
   }
 }

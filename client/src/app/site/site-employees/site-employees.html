@@ -1,0 +1,32 @@
+<div class="flexlayout column topleft view">
+  <div class="flexlayout row center" style="width: 100%;">
+    <h2 style="color: white;">Site Employees Editor</h2>
+  </div>
+  <div class="flexlayout row topleft" style="width: 100%;">
+    <div class="flexlayout column center" style="margin-left: 10px;">
+      <h3 style="color: white;">List of Employees</h3>
+      <app-list [height]="getEmployeeListHeight()" [width]="250"
+        [list]="employeeList()" (itemSelected)="onSelect($event)"
+        [selectedItem]="selectedEmployeeID()">
+      </app-list>
+      <div class="flexlayout row center" style="width: 100%;">
+        <mat-checkbox style="color: white;"
+          (change)="onShowAll($event.checked)">Show All Employees</mat-checkbox>
+      </div>
+    </div>
+    <div class="flexlayout column topcenter router">
+      <router-outlet style="width: 100%; height: 100%;"></router-outlet>
+      <!--@if (selectedEmployeeID().toLowerCase() === 'new') {
+        <app-site-new-employee
+          class="flexlayout column topcenter"
+          style="width: 100%;height: 100%;"></app-site-new-employee>
+      }
+      @else {
+        <app-site-edit-employee
+          class="flexlayout column topcenter"
+          style="width: 100%;height: 100%;">
+        </app-site-edit-employee>
+      }-->
+    </div>
+  </div>
+</div>

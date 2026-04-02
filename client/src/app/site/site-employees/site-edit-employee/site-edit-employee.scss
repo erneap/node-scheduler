@@ -1,0 +1,22 @@
+@use '@angular/material' as mat;
+
+@include mat.toolbar-overrides((
+  container-background-color: darkred,
+  container-text-color: white,
+));
+
+.page {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.toolbar {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  border-bottom: solid 1px white;
+}

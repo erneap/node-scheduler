@@ -8,9 +8,32 @@
         <div class="flexlayout row center" style="width: 100%;">
           <!-- Query Form Area -->
         </div>
-        <div class="flexlayout row center" style="width: 100%;">
+        <div class="flexlayout row topcenter flexgap" style="width: 100%;">
           <div class="flexlayout column center">
-            <app-list [list]="employeeList()" [height]="600" [width]="250"></app-list>
+            <app-list [list]="employeeList()" [height]="600" [width]="250"
+              (itemSelected)="onSelect($event)"></app-list>
+          </div>
+          <div class="flexlayout column topcenter">
+            @if (selectedEmployee().id !== '') {
+              <div class="flexlayout row center employee">
+                {{selectedEmployee().name.getLastFirst()}}
+              </div>
+              <div class="flexlayout column center" style="margin-bottom: 10px;">
+                <div class="flexlayout column center label">Contact Information</div>
+                @for (ctype of contactTypeList(); track ctype.id) {
+                  <app-team-query-contact [contactType]="ctype"
+                    [contacts]="selectedEmployee().contactinfo"></app-team-query-contact>
+                }
+              </div>
+              <div class="flexlayout column center" style="width: 100%;">
+                <div class="flexlayout column center label">Specialties</div>
+                @for (specialty of selectedEmployee().specialties; track specialty.id) {
+                  <div class="flexlayout row center specialty">
+                    {{getSpecialtyName(specialty.specialtyid)}}
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
       </div>

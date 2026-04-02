@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon, MatIconRegistry } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { version } from '../../package.json';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from './services/auth-service';
@@ -28,8 +28,10 @@ import { NavigationMenu } from './general/navigation-menu/navigation-menu';
   styleUrl: './app.scss'
 })
 export class App {
+  @ViewChild('sidenav') sidenav!: MatSidenav;
   protected readonly title = signal('Osan Scheduler');
   protected readonly appVersion = signal('0.0.0');
+  showMenu = signal<boolean>(true)
 
   constructor(
     private iconRegistry: MatIconRegistry,
@@ -58,5 +60,15 @@ export class App {
     this.teamService.removeTeam();
     this.msgService.stopNotices();
     this.router.navigate(['/login'])
+  }
+
+  onToggle(close: boolean) {
+    if (close) {
+      this.sidenav.close();
+      this.showMenu.set(false);
+    } else {
+      this.sidenav.open();
+      this.showMenu.set(true);
+    }
   }
 }

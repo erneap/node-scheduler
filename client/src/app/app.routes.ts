@@ -14,6 +14,16 @@ import { SiteSchedule } from './site//site-schedules/site-schedule/site-schedule
 import { SiteCoverage } from './site/site-schedules/site-coverage/site-coverage';
 import { SiteMidsListing } from './site/site-schedules/site-mids-listing/site-mids-listing';
 import { TeamQuery } from './team/team-query/team-query';
+import { SiteEmployees } from './site/site-employees/site-employees';
+import { SiteEditEmployeePTO } from './site/site-employees/site-edit-employee/site-edit-employee-pto/site-edit-employee-pto';
+import { SiteNewEmployee } from './site/site-employees/site-new-employee/site-new-employee';
+import { SiteEditEmployee } from './site/site-employees/site-edit-employee/site-edit-employee';
+import { SiteEditEmployeeLeaveRequests } from './site/site-employees/site-edit-employee/site-edit-employee-leave-requests/site-edit-employee-leave-requests';
+import { SiteEditEmployeeProfile } from './site/site-employees/site-edit-employee/site-edit-employee-profile/site-edit-employee-profile';
+import { SiteEditEmployeeSecurity } from './site/site-employees/site-edit-employee/site-edit-employee-security/site-edit-employee-security';
+import { SiteEditEmployeeCompany } from './site/site-employees/site-edit-employee/site-edit-employee-company/site-edit-employee-company';
+import { SiteEditEmployeeContacts } from './site/site-employees/site-edit-employee/site-edit-employee-contacts/site-edit-employee-contacts';
+import { SiteEditEmployeeSpecialties } from './site/site-employees/site-edit-employee/site-edit-employee-specialties/site-edit-employee-specialties';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -45,6 +55,24 @@ export const routes: Routes = [
           { path: '**', component: SiteSchedule },
         ]
       },
+      { path: 'employees', component: SiteEmployees,
+        children: [
+          {path: 'new', component: SiteNewEmployee },
+          { path: 'edit', component: SiteEditEmployee,
+            children: [
+              { path: '', redirectTo: '/site/employees/edit/pto', pathMatch: 'full' },
+              { path: 'pto', component: SiteEditEmployeePTO },
+              { path: 'leaverequests', component: SiteEditEmployeeLeaveRequests },
+              { path: 'personal', component: SiteEditEmployeeProfile },
+              { path: 'security', component: SiteEditEmployeeSecurity },
+              { path: 'company', component: SiteEditEmployeeCompany },
+              { path: 'contacts', component: SiteEditEmployeeContacts },
+              { path: 'specialties', component: SiteEditEmployeeSpecialties },
+              { path: '**', component: SiteEditEmployeePTO }
+            ]
+          }
+        ]
+       },
       { path: '**', component: SiteSchedule },
     ]
   },
