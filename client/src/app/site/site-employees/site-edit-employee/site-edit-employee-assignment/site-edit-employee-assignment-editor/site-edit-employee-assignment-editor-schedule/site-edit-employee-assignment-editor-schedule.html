@@ -1,1 +1,34 @@
-<p>site-edit-employee-assignment-editor-schedule works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft schedule">
+    <div class="flexlayout column center scheduleField">
+      <mat-icon class="icon">plus</mat-icon>
+      @if (schedules() > 1) {
+        <mat-icon class="icon">minus</mat-icon>
+      }
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="flexlayout row center scheduleField">
+      SCHEDULE: <input type="number"  class="input" 
+      [formField]="scheduleForm.scheduleid" (change)="changeSchedule('id')">
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="flexlayout row center">
+      Days: <input type="number" class="input" 
+      [formField]="scheduleForm.scheduleDays" (change)="changeSchedule('days')">
+    </div>
+  </div>
+  <div class="flexlayout row topleft">
+    <div class="flexlayout column center weekday">Day</div>
+    <div class="flexlayout column center weekday">ID</div>
+    <div class="flexlayout column center code">Work Code</div>
+    <div class="flexlayout column center code">Workcenter</div>
+    <div class="flexlayout column center hours">Hours</div>
+    <div class="flexlayout column center copy">&nbsp;</div>
+  </div>
+  @for (workday of schedule.workdays; track workday.id) {
+    <app-site-edit-employee-assignment-editor-workday [workday]="workday"
+      [workcodes]="workcodes()" [workcenters]="workcenters()"
+      (changed)="onChanged($event)">
+    </app-site-edit-employee-assignment-editor-workday>
+  }
+</div>
