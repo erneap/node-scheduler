@@ -1,0 +1,112 @@
+<div class="flexlayout column center">
+  <form [formGroup]="newLeaveForm" class="flexlayout column center">
+    <div class="flexlayout row center">
+      <div class="flexlayout column center formdate">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>New Date</mat-label>
+          <input matInput class="form-field" formControlName="date" [matDatepicker]="picker">
+          <mat-hint>MM/DD/YYYY</mat-hint>
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          @if (newLeaveForm.get('date')?.hasError('required')) {
+            <mat-error class="error formerror" >
+              * Required
+            </mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flexlayout column center formcode">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Leave Type</mat-label>
+          <mat-select class="form-field" formControlName="code" >
+            @for (lc of leavecodes(); track lc) {
+              <mat-option [value]="lc.id">
+                {{lc.title}}
+              </mat-option>
+            }
+          </mat-select>
+          @if (newLeaveForm.get('code')?.hasError('required')) {
+            <mat-error class="error formerror">
+              * Required
+            </mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flexlayout column center formhours">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Hours</mat-label>
+          <input matInput type="number" class="form-field"
+            formControlName="hours" step="0.1">
+          <mat-hint>0.0</mat-hint>
+          @if (newLeaveForm.get('hours')?.hasError('required')) {
+            <mat-error class="error formerror">
+              * Required
+            </mat-error>
+          }
+          @if (newLeaveForm.get('hours')?.hasError('min')) {
+            <mat-error class="error formerror">
+              * &gt; 0.1
+            </mat-error>
+          }
+          @if (newLeaveForm.get('hours')?.hasError('max')) {
+            <mat-error class="error formerror">
+              * &lt;= 12.0
+            </mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flexlayout column center formstatus">
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Status</mat-label>
+          <mat-select class="form-field" formControlName="status">
+            <mat-option value="REQUESTED">Requested</mat-option>
+            <mat-option value="APPROVED">Approved</mat-option>
+            <mat-option value="ACTUAL">Actual</mat-option>
+          </mat-select>
+          @if (newLeaveForm.get('status')?.hasError('required')) {
+            <mat-error class="error formerror">
+              * Required
+            </mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="flexlayout row center">
+      @if (newLeaveForm.valid) {
+        <button matButton="filled" class="add-button" (click)="onAdd()">
+          Add Leave
+        </button>
+      }
+      <button matButton="filled" class="clear-button" (click)="onClear()">
+        Clear
+      </button>
+    </div>
+  </form>
+  <div class="flexlayout row topleft" style="width: 100%;margin-top: 20px;">
+    <div class="flexlayout column center direction" (click)="updateYear('down')">
+      &lt;&lt;</div>
+    <div class="flexlayout column center year">{{year()}}</div>
+    <div class="flexlayout column center direction" (click)="updateYear('up')">
+      &gt;&gt;</div>
+  </div>
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row center">
+      <div class="flexlayout row center day">Date</div>
+      <div class="flexlayout row center code">Type</div>
+      <div class="flexlayout row center hours">Hours</div>
+      <div class="flexlayout row center code">Status</div>
+      <div class="flexlayout row center tagday">Holiday?</div>
+      <div class="flexlayout row center hours">&nbsp;</div>
+    </div>
+    <div class="scrollview" [style]="leaveDisplayStyle()">
+      <div class="flexlayout column topleft">
+        @for (leave of leaves(); track leave.leavedate) {
+          <app-employee-leave-request-editor-day [employee]="employee" 
+            [request]="`${leave.id}`" [leave]="leave" [showDelete]="true" 
+            (changed)="onChange($event)">
+          </app-employee-leave-request-editor-day>
+        }
+      </div>
+    </div>
+  </div>
+</div>

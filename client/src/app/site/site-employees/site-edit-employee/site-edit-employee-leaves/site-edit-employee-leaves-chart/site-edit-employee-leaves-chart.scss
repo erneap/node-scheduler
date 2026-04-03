@@ -1,0 +1,120 @@
+@use '@angular/material' as mat;
+
+.direction {
+  width: 100px;
+  background-color: #e60000;
+  color: white;
+  border: solid 1px white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.year {
+  width: 519px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.form-field {
+  width: 99%;
+  height: 99%;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: white;
+  color: black;
+  border: none;
+}
+
+.formdate {
+  padding: 0;
+  margin: 0;
+  width: 152px;
+  border: solid 1px white;
+}
+
+.formcode {
+  padding: 0;
+  margin: 0;
+  width: 250px;
+  border: solid 1px white;
+}
+
+.formhours {
+  padding: 0;
+  margin: 0;
+  width: 100px;
+  border: solid 1px white;
+}
+
+.formstatus {
+  padding: 0;
+  margin: 0;
+  width: 215px;
+  border: solid 1px white;
+}
+
+.formerror {
+  color: orange;
+}
+
+.day {
+  width: 112px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.code {
+  width: 200px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.hours {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.tagday {
+  width: 100px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.scrollview {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 744px;
+  overflow-y: auto;
+}
+
+.clear-button {
+  @include mat.button-overrides((
+    filled-container-color: white,
+    filled-label-text-color: darkmagenta,
+  ));
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
+}

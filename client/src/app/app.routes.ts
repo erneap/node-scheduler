@@ -24,6 +24,8 @@ import { SiteEditEmployeeSecurity } from './site/site-employees/site-edit-employ
 import { SiteEditEmployeeCompany } from './site/site-employees/site-edit-employee/site-edit-employee-company/site-edit-employee-company';
 import { SiteEditEmployeeContacts } from './site/site-employees/site-edit-employee/site-edit-employee-contacts/site-edit-employee-contacts';
 import { SiteEditEmployeeSpecialties } from './site/site-employees/site-edit-employee/site-edit-employee-specialties/site-edit-employee-specialties';
+import { SiteEditEmployeeLeaves } from './site/site-employees/site-edit-employee/site-edit-employee-leaves/site-edit-employee-leaves';
+import { SiteEditEmployeeLeaveBalances } from './site/site-employees/site-edit-employee/site-edit-employee-leave-balances/site-edit-employee-leave-balances';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -62,6 +64,8 @@ export const routes: Routes = [
             children: [
               { path: '', redirectTo: '/site/employees/edit/pto', pathMatch: 'full' },
               { path: 'pto', component: SiteEditEmployeePTO },
+              { path: 'leaves', component: SiteEditEmployeeLeaves },
+              { path: 'balances', component: SiteEditEmployeeLeaveBalances },
               { path: 'leaverequests', component: SiteEditEmployeeLeaveRequests },
               { path: 'personal', component: SiteEditEmployeeProfile },
               { path: 'security', component: SiteEditEmployeeSecurity },

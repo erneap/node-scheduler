@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
-import { Employee, EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, IEmployee, NewEmployeeLeaveRequest } from 'scheduler-models/scheduler/employees';
+import { Employee, EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, IEmployee, LeaveStatus, NewEmployeeLeaveRequest, NewLeaveBalance, NewLeaveRequest, UpdateLeave, UpdateLeaveBalance } from 'scheduler-models/scheduler/employees';
 import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -157,7 +157,8 @@ export class EmployeeService extends CacheService {
     );
   }
 
-  updateSpecialties(empid: string, action: string, specialties: number[]): Observable<HttpResponse<Employee>> {
+  updateSpecialties(empid: string, action: string, specialties: number[])
+    : Observable<HttpResponse<Employee>> {
     const url = `${this.schedulerUrl}/employee/specialties`;
     const data: EmployeeSpecialtiesUpdate = {
       employee: empid,
@@ -165,6 +166,146 @@ export class EmployeeService extends CacheService {
       specialties: specialties
     };
     return this.http.put<Employee>(url, data, { observe: 'response' }).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addLeave(empid: string, day: Date, code: string, hours: number, status: string)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/leave`;
+    let leaveStatus: LeaveStatus = LeaveStatus.Draft;
+    switch (status.toLowerCase()) {
+      case "requested":
+        leaveStatus = LeaveStatus.Requested;
+        break;
+      case "approved":
+        leaveStatus = LeaveStatus.Approved;
+        break;
+      case "actual":
+        leaveStatus = LeaveStatus.Actual;
+        break;
+    }
+    const data: NewLeaveRequest = {
+      employee: empid,
+      leavedate: new Date(day),
+      code: code,
+      hours: hours,
+      status: leaveStatus,
+    }
+    return this.http.post<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+  
+  updateLeave(empid: string, leaveid: number, field: string, value: string)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/leave`;
+    const data: UpdateLeave = {
+      employee: empid,
+      leaveid: leaveid,
+      field: field,
+      value: value
+    }
+    return this.http.put<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteLeave(empid: string, leaveid: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/leave/${empid}/${leaveid}`;
+    return this.http.delete<Employee>(url, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addBalance(empid: string, year: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/balance`;
+    const data: NewLeaveBalance = {
+      employee: empid,
+      year: year
+    }
+    return this.http.post<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateBalance(empid: string, year: number, field: string, value: number)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/balance`;
+    const data: UpdateLeaveBalance = {
+      employee: empid,
+      year: year,
+      field: field,
+      value: value
+    }
+    return this.http.put<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteBalance(empid: string, year: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/balance/${empid}/${year}`;
+    return this.http.delete<Employee>(url, {observe: 'response'}).pipe(
       map(res => {
         const iEmployee = (res.body as IEmployee );
         if (iEmployee) {

@@ -77,7 +77,7 @@ router.put('/employee/leave', auth, async(req: Request, res: Response) => {
  * 5) Update the employee in the database.
  * 6) Respond with the employee object.
  */
-router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Response) => {
+router.delete('/employee/leave/:id/:leave', auth, async(req: Request, res: Response) => {
   try {
     const empID = req.params.id as string;
     const leaveID = req.params.leave as string;
@@ -95,6 +95,6 @@ router.delete('employee/leave/:id/:leave', auth, async(req: Request, res: Respon
     await postLogEntry('employee', `employeeLeave: Delete: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
-})
+});
 
 export default router;

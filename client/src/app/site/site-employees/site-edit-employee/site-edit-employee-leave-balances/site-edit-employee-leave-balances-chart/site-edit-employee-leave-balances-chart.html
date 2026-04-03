@@ -1,0 +1,16 @@
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft">
+    <div class="flexlayout column center year">Year</div>
+    <div class="flexlayout column center value">Annual Leave</div>
+    <div class="flexlayout column center value">Carried Over</div>
+    <div class="flexlayout column center delete">&nbsp;</div>
+  </div>
+  @for (annual of balances(); track annual.year) {
+    <app-site-edit-employee-leave-balances-year [balance]="annual" 
+      (changed)="onChange($event)">
+    </app-site-edit-employee-leave-balances-year>
+  }
+  <div class="flexlayout row center add">
+    <button matButton="filled" class="add-button" (click)="onAdd()">Add Next Year</button>
+  </div>
+</div>

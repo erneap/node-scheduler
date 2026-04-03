@@ -1,0 +1,39 @@
+<form [formGroup]="workdayForm" class="flexlayout row center">
+  <div class="flexlayout column center weekday">{{getDayDate()}}</div>
+  <div class="flexlayout column center day">{{workday.id}}</div>
+  <div class="flexlayout column center code">
+    <select matNativeControl formControlName="code" class="input"
+      [style]="getDayStyle()" (change)="onChange('code')">
+      <option value=""></option>
+      @for (wc of workcodes(); track wc.id) {
+        <option [value]="wc.id">{{wc.title}}</option>
+      }
+    </select>
+  </div>
+  <div class="flexlayout column center code">
+    <select matNativeControl formControlName="workcenter" class="input"
+      [style]="getDayStyle()" (change)="onChange('workcenter')">
+      <option value=""></option>
+      @for (wc of workcenters(); track wc.id) {
+        <option [value]="wc.id">{{wc.name}}</option>
+      }
+    </select>
+  </div>
+  <div class="flexlayout column center hours">
+    <select matNativeControl formControlName="hours" class="input"
+      [style]="getDayStyle()" (change)="onChange('hours')">
+      <option value=""></option>
+      @for (wc of hours(); track wc) {
+        <option [value]="wc">{{wc}}</option>
+      }
+    </select>
+  </div>
+  <div class="flexlayout column center copy">
+    @if (showCopy()) {
+      <mat-icon class="icon" (click)="onChange('copy')">copy</mat-icon>
+    }
+    @else {
+      <mat-icon class="icon" (click)="onChange('clear')">cancel</mat-icon>
+    }
+  </div>
+</form>

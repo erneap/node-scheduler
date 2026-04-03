@@ -1,4 +1,4 @@
-import { Component, Input, output } from '@angular/core';
+import { Component, input, Input, output } from '@angular/core';
 import { ILeave, Leave } from 'scheduler-models/scheduler/employees';
 import { Workcode } from 'scheduler-models/scheduler/labor';
 import { TeamService } from '../../../../services/team-service';
@@ -8,6 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Holiday } from 'scheduler-models/scheduler/teams/company';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-employee-leave-request-editor-day',
@@ -15,7 +17,9 @@ import { Holiday } from 'scheduler-models/scheduler/teams/company';
     ReactiveFormsModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatTooltip
   ],
   templateUrl: './employee-leave-request-editor-day.html',
   styleUrl: './employee-leave-request-editor-day.scss',
@@ -24,6 +28,7 @@ export class EmployeeLeaveRequestEditorDay {
   private _employee: string = '';
   private _request: string = '';
   private _leave: Leave = new Leave();
+  showDelete = input<boolean>(false)
   @Input()
   get employee(): string {
     return this._employee;
@@ -67,6 +72,7 @@ export class EmployeeLeaveRequestEditorDay {
     this.dayForm = this.builder.group({
       code: '',
       hours: '0',
+      status: 'Requested',
       tagday: '',
     });
   }
@@ -114,6 +120,7 @@ export class EmployeeLeaveRequestEditorDay {
     this.dayForm.get('code')?.setValue(this.leave.code);
     this.dayForm.get('hours')?.setValue(this.leave.hours.toFixed(0));
     this.dayForm.get('tagday')?.setValue(this.leave.tagday);
+    this.dayForm.get('status')?.setValue(this.leave.status.toUpperCase());
     if (this.holidays.length <= 0 || this.leave.code.toLowerCase() !== 'h') {
       this.dayForm.get('tagday')?.disable();
     } else {
@@ -148,13 +155,32 @@ export class EmployeeLeaveRequestEditorDay {
   }
 
   onChange(field: string) {
-    let chgString = `${this.employee}|${this.request}|day|`
-      + `${this.leave.leavedate.getTime()}|`
-      + `${this.dayForm.get('code')?.value}|`
-      + `${this.dayForm.get('hours')?.value}|`;
-    if (this.dayForm.get('tagday') && this.dayForm.get('tagday')?.value) {
-      chgString += `${this.dayForm.get('tagday')?.value}`;
+    if (!this.showDelete()) {
+      let chgString = `${this.employee}|${this.request}|day|`
+        + `${this.leave.leavedate.getTime()}|`
+        + `${this.dayForm.get('code')?.value}|`
+        + `${this.dayForm.get('hours')?.value}|`;
+      if (this.dayForm.get('tagday') && this.dayForm.get('tagday')?.value) {
+        chgString += `${this.dayForm.get('tagday')?.value}`;
+      }
+      this.changed.emit(chgString);
+    } else {
+      let chgString = `${this.employee}|${this.request}|day|${field}`;
+      switch (field.toLowerCase()) {
+        case "code":
+          chgString += `|${this.dayForm.get('code')?.value}`;
+          break;
+        case "hours":
+          chgString += `|${this.dayForm.get('hours')?.value}`;
+          break;
+        case "status":
+          chgString += `|${this.dayForm.get('status')?.value}`;
+          break;
+        case "tagday":
+          chgString += `|${this.dayForm.get('tagday')?.value}`;
+          break;
+      }
+      this.changed.emit(chgString);
     }
-    this.changed.emit(chgString);
   }
 }

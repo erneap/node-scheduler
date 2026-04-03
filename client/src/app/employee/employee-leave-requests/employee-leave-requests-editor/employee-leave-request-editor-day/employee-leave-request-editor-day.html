@@ -19,6 +19,17 @@
       }
     </select>
   </div>
+  @if (showDelete()) {
+    <div class="flexlayout column center code">
+      <select matNativeControl formControlName="status" class="input"
+      [style]="getDayStyle()" (change)="onChange('status')">
+      <option value=""></option>
+      <option value="REQUESTED">Requested</option>
+      <option value="APPROVED">Approved</option>
+      <option value="ACTUAL">Actual</option>
+    </select>
+    </div>
+  }
   <div class="flexlayout column center tagday">
     <select matNativeControl formControlName="tagday" class="input"
       [style]="getDayStyle()" (change)="onChange('tagday')">
@@ -28,4 +39,10 @@
       }
     </select>
   </div>
+  @if (showDelete()) {
+    <div class="flexlayout column center hours">
+      <mat-icon class="icon" matTooltip="Delete this leave"
+        (click)="onChange('delete')">delete</mat-icon>
+    </div>
+  }
 </form>

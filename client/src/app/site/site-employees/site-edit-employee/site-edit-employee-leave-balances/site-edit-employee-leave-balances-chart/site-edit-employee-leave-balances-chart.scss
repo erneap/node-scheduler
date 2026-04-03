@@ -1,0 +1,40 @@
+@use '@angular/material' as mat;
+
+.year {
+  width: 75px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.value {
+  width: 200px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.delete {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.add {
+  width: 531px;
+  border: solid 1px white;
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
+}
