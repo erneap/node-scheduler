@@ -399,12 +399,10 @@ export class SiteEditEmployeeAssignmentEditor {
         });
         break;
       case "day":
-        if (parts[3].toLowerCase() !== 'clear') {
-          workday = Number(parts[2]);
-          field = `workday-${parts[3]}`;
-          if (parts.length > 4) {
-            value = parts[4];
-          }
+        workday = Number(parts[2]);
+        field = `workday-${parts[3]}`;
+        if (parts.length > 4) {
+          value = parts[4];
         }
         break;
     }
