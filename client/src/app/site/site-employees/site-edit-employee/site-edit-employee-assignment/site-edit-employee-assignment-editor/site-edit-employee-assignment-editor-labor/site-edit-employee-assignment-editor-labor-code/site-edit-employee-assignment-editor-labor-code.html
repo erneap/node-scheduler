@@ -1,0 +1,6 @@
+<div class="flexlayout row center" style="width: 100%;">
+  <mat-checkbox [formField]="laborcodeForm.checked" (change)="onChecked()"
+    class="checkbox">
+    {{`${chargenumber()} - ${extension()}`}}
+  </mat-checkbox>
+</div>

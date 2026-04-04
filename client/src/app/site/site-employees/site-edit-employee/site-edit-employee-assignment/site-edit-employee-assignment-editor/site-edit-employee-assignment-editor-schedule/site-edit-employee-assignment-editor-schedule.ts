@@ -6,10 +6,11 @@ import { Schedule } from 'scheduler-models/scheduler/employees';
 import { Workcode } from 'scheduler-models/scheduler/labor';
 import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters/workcenter';
 import { SiteEditEmployeeAssignmentEditorWorkday } from './site-edit-employee-assignment-editor-workday/site-edit-employee-assignment-editor-workday';
+import { MatTooltip } from '@angular/material/tooltip';
 
 interface ScheduleData {
-  scheduleid: number;
-  scheduleDays: number;
+  scheduleid: string;
+  scheduleDays: string;
 }
 
 @Component({
@@ -18,6 +19,7 @@ interface ScheduleData {
     FormField,
     MatIconModule,
     MatInputModule,
+    MatTooltip,
     SiteEditEmployeeAssignmentEditorWorkday
   ],
   templateUrl: './site-edit-employee-assignment-editor-schedule.html',
@@ -31,21 +33,22 @@ export class SiteEditEmployeeAssignmentEditorSchedule {
   }
   set schedule(sch: Schedule) {
     this._schedule = new Schedule(sch);
-    this.scheduleForm.scheduleDays().value.set(this.schedule.workdays.length)
-    this.scheduleForm.scheduleid().value.set(this.schedule.id)
+    this.scheduleForm.scheduleDays().value.set(`${this.schedule.workdays.length}`)
+    this.scheduleForm.scheduleid().value.set(`${this.schedule.id}`)
   }
 
   workcodes = input<Workcode[]>([]);
   workcenters = input<Workcenter[]>([]);
-  schedules = input<number>(1);
+  schedules = input<string[]>([]);
   height = input<number>(250);
-  width = input<number>(580);
+  width = input<number>(582);
   changed = output<string>();
   scheduleModel = signal<ScheduleData>({
-    scheduleid: 0,
-    scheduleDays: 7,
+    scheduleid: '0',
+    scheduleDays: '7',
   });
   scheduleForm = form(this.scheduleModel);
+  days = [ '7', '14', '21', '28', '56'];
 
   /**
    * This method is used to update the schedule, either to change schedule or
@@ -59,6 +62,10 @@ export class SiteEditEmployeeAssignmentEditorSchedule {
     } else if (field.toLowerCase() === 'days') {
       chgString = `${this.scheduleModel().scheduleid}|chgdays|`
         + `${this.scheduleModel().scheduleDays}`;
+    } else if (field.toLowerCase() === 'delete') {
+      chgString = `${this.scheduleModel().scheduleid}|delsch`;
+    } else if (field.toLowerCase() === 'add') {
+      chgString = `-1|addsch`;
     }
     if (chgString !== '') {
       this.changed.emit(chgString);
@@ -73,5 +80,19 @@ export class SiteEditEmployeeAssignmentEditorSchedule {
   onChanged(chg: string) {
     let chgString = `${this.scheduleModel().scheduleid}|day|${chg}`;
     this.changed.emit(chgString);
+  }
+
+  /**
+   * This method will provide the style information for the schedule as a string.
+   */
+  displayStyle(): string {
+    let winheight = window.innerHeight - 300;
+    if (this.height() < winheight) {
+      return `width: ${this.width()}px;height: ${this.height()}px;`
+        + `max-height: ${this.height()}px;overflow-y: auto;`
+    } else {
+      return `width: ${this.width()}px;height: ${winheight}px;`
+        + `max-height: ${winheight}px;overflow-y: auto;`
+    }
   }
 }

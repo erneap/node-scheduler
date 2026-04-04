@@ -1,9 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, computed } from '@angular/core';
+import { SiteEditEmployeeAssignmentEditor } from './site-edit-employee-assignment-editor/site-edit-employee-assignment-editor';
+import { SiteService } from '../../../../services/site-service';
 
 @Component({
   selector: 'app-site-edit-employee-assignment',
-  imports: [],
+  imports: [
+    SiteEditEmployeeAssignmentEditor
+  ],
   templateUrl: './site-edit-employee-assignment.html',
   styleUrl: './site-edit-employee-assignment.scss',
 })
-export class SiteEditEmployeeAssignment {}
+export class SiteEditEmployeeAssignment {
+  employee = computed(() => this.siteService.selectedEmployee());
+
+  constructor(
+    private siteService: SiteService
+  ) {}
+}

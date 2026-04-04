@@ -1,6 +1,6 @@
 <form [formGroup]="workdayForm" class="flexlayout row center">
   <div class="flexlayout column center weekday">{{getDayDate()}}</div>
-  <div class="flexlayout column center day">{{workday.id}}</div>
+  <div class="flexlayout column center weekday">{{workday.id}}</div>
   <div class="flexlayout column center code">
     <select matNativeControl formControlName="code" class="input"
       [style]="getDayStyle()" (change)="onChange('code')">
@@ -28,12 +28,14 @@
       }
     </select>
   </div>
-  <div class="flexlayout column center copy">
+  <div class="flexlayout column left copy">
     @if (showCopy()) {
-      <mat-icon class="icon" (click)="onChange('copy')">copy</mat-icon>
+      <mat-icon class="icon" (click)="onChange('copy')"
+        matTooltip="Copy last workday">copy</mat-icon>
     }
     @else {
-      <mat-icon class="icon" (click)="onChange('clear')">cancel</mat-icon>
+      <mat-icon class="icon" (click)="onChange('clear')"
+        matTooltip="Clear this workday">cancel</mat-icon>
     }
   </div>
 </form>

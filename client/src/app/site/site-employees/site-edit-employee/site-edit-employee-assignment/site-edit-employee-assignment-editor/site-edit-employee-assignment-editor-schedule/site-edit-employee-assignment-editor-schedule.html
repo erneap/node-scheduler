@@ -1,20 +1,32 @@
 <div class="flexlayout column topleft">
   <div class="flexlayout row topleft schedule">
     <div class="flexlayout column center scheduleField">
-      <mat-icon class="icon">plus</mat-icon>
-      @if (schedules() > 1) {
-        <mat-icon class="icon">minus</mat-icon>
+      <mat-icon class="icon" matTooltip="Add a new schedule"
+        style="background-color: darkblue;" (click)="changeSchedule('add')">
+        add</mat-icon>
+      @if (schedules().length > 1) {
+        <mat-icon class="icon" matTooltip="Remove this schedule"
+          style="background-color: red;" (click)="changeSchedule('delete')">
+          cancel</mat-icon>
       }
     </div>
     <div class="flex-spacer"></div>
     <div class="flexlayout row center scheduleField">
-      SCHEDULE: <input type="number"  class="input" 
+      SCHEDULE: <select type="number"  class="input" style="width: 50px;"
       [formField]="scheduleForm.scheduleid" (change)="changeSchedule('id')">
+      @for (sch of schedules(); track sch) {
+        <option [value]="sch">{{sch}}</option>
+      }
+      </select>
     </div>
     <div class="flex-spacer"></div>
     <div class="flexlayout row center">
-      Days: <input type="number" class="input" 
+      Days: <select type="number" class="input"  style="width: 60px;" step="7"
       [formField]="scheduleForm.scheduleDays" (change)="changeSchedule('days')">
+      @for (day of days; track day) {
+        <option [value]="day">{{day}}</option>
+      }
+      </select>
     </div>
   </div>
   <div class="flexlayout row topleft">
@@ -25,10 +37,12 @@
     <div class="flexlayout column center hours">Hours</div>
     <div class="flexlayout column center copy">&nbsp;</div>
   </div>
-  @for (workday of schedule.workdays; track workday.id) {
-    <app-site-edit-employee-assignment-editor-workday [workday]="workday"
-      [workcodes]="workcodes()" [workcenters]="workcenters()"
-      (changed)="onChanged($event)">
-    </app-site-edit-employee-assignment-editor-workday>
-  }
+  <div class="flexlayout column topleft" [style]="displayStyle()">
+    @for (workday of schedule.workdays; track workday.id) {
+      <app-site-edit-employee-assignment-editor-workday [workday]="workday"
+        [workcodes]="workcodes()" [workcenters]="workcenters()"
+        (changed)="onChanged($event)">
+      </app-site-edit-employee-assignment-editor-workday>
+    }
+  </div>
 </div>

@@ -51,7 +51,7 @@ export class Assignment {
   public laborcodes: EmployeeLaborCode[];
 
   constructor(asgmt?: IAssignment) {
-    this.id = (asgmt) ? asgmt.id : 0;
+    this.id = (asgmt) ? asgmt.id : -1;
     this.site = (asgmt) ? asgmt.site : '';
     this.workcenter = (asgmt) ? asgmt.workcenter : '';
     this.startDate = (asgmt) ? new Date(asgmt.startDate) : new Date(0);
@@ -194,7 +194,11 @@ export class Assignment {
     }
     const newSchedule = new Schedule();
     this.schedules.sort((a,b) => a.compareTo(b));
-    newSchedule.id = this.schedules[this.schedules.length - 1].id + 1;
+    if (this.schedules.length > 0) {
+      newSchedule.id = this.schedules[this.schedules.length - 1].id + 1;
+    } else {
+      newSchedule.id = 0;
+    }
     newSchedule.setScheduleDays(days);
     this.schedules.push(newSchedule);
   }

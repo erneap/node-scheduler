@@ -1,0 +1,11 @@
+<div class="flexlayout column topleft">
+  <div class="flexlayout row center header">Assignable Labor Codes</div>
+  <div class="flexlayout column topcenter view" [style]="displayStyle()">
+    @for (item of list(); track `${item.chargenumber}-${item.extension}`) {
+      <app-site-edit-employee-assignment-editor-labor-code 
+        [chargenumber]="item.chargenumber" [extension]="item.extension" 
+        [checked]="item.checked" (changed)="onChanged($event)">
+      </app-site-edit-employee-assignment-editor-labor-code>
+    }
+  </div>
+</div>

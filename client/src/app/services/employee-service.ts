@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
-import { Employee, EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, IEmployee, LeaveStatus, NewEmployeeLeaveRequest, NewLeaveBalance, NewLeaveRequest, UpdateLeave, UpdateLeaveBalance } from 'scheduler-models/scheduler/employees';
+import { ChangeAssignment, Employee, EmployeeContactSpecialtyUpdate, EmployeeSpecialtiesUpdate, IEmployee, LeaveStatus, NewEmployeeAssignment, NewEmployeeLeaveRequest, NewLeaveBalance, NewLeaveRequest, UpdateLeave, UpdateLeaveBalance } from 'scheduler-models/scheduler/employees';
 import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -305,6 +305,74 @@ export class EmployeeService extends CacheService {
 
   deleteBalance(empid: string, year: number): Observable<HttpResponse<Employee>> {
     const url = `${this.schedulerUrl}/employee/balance/${empid}/${year}`;
+    return this.http.delete<Employee>(url, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addAssignment(empid: string, site: string, workcenter: string, start: Date)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/assignment`;
+    const data: NewEmployeeAssignment = {
+      employee: empid,
+      site: site,
+      workcenter: workcenter,
+      start: start,
+      scheduledays: 7
+    };
+    return this.http.post<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateAssignment(empid: string, asgmtid: number, field: string, value: string, 
+    scheduleid?: number, workday?: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/assignment`;
+    const data: ChangeAssignment = {
+      employee: empid,
+      asgmt: asgmtid,
+      field: field,
+      value: value,
+      schedule: scheduleid,
+      workday: workday
+    };
+    return this.http.put<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteAssignment(empid: string, asgmtid: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/assignment/${empid}/${asgmtid}`;
     return this.http.delete<Employee>(url, {observe: 'response'}).pipe(
       map(res => {
         const iEmployee = (res.body as IEmployee );

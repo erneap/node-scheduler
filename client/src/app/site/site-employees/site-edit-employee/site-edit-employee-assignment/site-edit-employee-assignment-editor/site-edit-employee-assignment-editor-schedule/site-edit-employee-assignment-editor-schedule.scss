@@ -10,7 +10,10 @@
 .input {
   width: 100%;
   font-size: 1.4rem;
+  background-color: darkred;
+  color: white;
   text-align: center;
+  border: none;
 }
 
 .code {
@@ -57,6 +60,12 @@
 }
 
 .icon {
+  margin: 0;
+  padding: 0;
+  height: 15px;
+  width: 15px;
   font-size: 1rem;
+  color: white;
+  border: solid 1px white;
   cursor: pointer;
 }

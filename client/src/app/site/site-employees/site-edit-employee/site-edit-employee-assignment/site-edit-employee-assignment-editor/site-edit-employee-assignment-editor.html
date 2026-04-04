@@ -1,1 +1,69 @@
-<p>site-edit-employee-assignment-editor works!</p>
+<div class="flexlayout column topleft">
+  <form class="flexlayout row topleft flexgap">
+    <mat-form-field style="width: 350px;" [floatLabel]="'always'">
+      <mat-label>Assignment Selection</mat-label>
+      <mat-select [formField]="assignmentForm.assignmentID"
+        matTooltip="Select Assignment to view" (selectionChange)="selectAssignment()">
+        <mat-option [value]="-1">Add New Assignment</mat-option>
+        @for (asgmt of assignments(); track asgmt.id) {
+          <mat-option [value]="asgmt.id">{{getAssignmentLabel(asgmt)}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+      <mat-label>Assignment Workcenter</mat-label>
+      <mat-select [formField]="assignmentForm.workcenter" 
+        (selectionChange)="changeAssignment('workcenter')">
+        <mat-option value=""></mat-option>
+        @for (wc of workcenters(); track wc.id) {
+          <mat-option [value]="wc.id">{{wc.name}}</mat-option>
+        }
+      </mat-select>
+      @for (error of assignmentForm.workcenter().errors(); track error) {
+        <mat-error class="error">{{error.message || error.kind}}</mat-error>
+      }
+    </mat-form-field>
+    <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+      <mat-label>Assignment Start Date</mat-label>
+      <input matInput [matDatepicker]="startpicker" [formField]="assignmentForm.start"
+        (dateChange)="changeAssignment('start')">
+      <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+      <mat-datepicker #startpicker></mat-datepicker>
+      @for (error of assignmentForm.start().errors(); track error) {
+        <mat-error class="error">{{error.message || error.kind}}</mat-error>
+      }
+    </mat-form-field>
+    @if (assignmentForm.assignmentID().value() >= 0) {
+      <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+        <mat-label>Assignment End Date</mat-label>
+        <input matInput [matDatepicker]="endpicker" [formField]="assignmentForm.end"
+          (dateChange)="changeAssignment('end')">
+        <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>
+        <mat-datepicker #endpicker></mat-datepicker>
+        @for (error of assignmentForm.end().errors(); track error) {
+          <mat-error class="error">{{error.message || error.kind}}</mat-error>
+        }
+      </mat-form-field>
+    }
+  </form>
+  <div class="flexlayout row center flexgap" style="width: 100%;margin-top: 5px;">
+    @if (assignmentForm.assignmentID().value() < 0) {
+      <button matButton="filled" class="add-button"
+        (click)="changeAssignment('add')">Add</button>
+    }
+    @if (assignmentForm.assignmentID().value() >= 0 && assignments().length > 1) {
+      <button matButton="filled" class="delete-button">Delete</button>
+    }
+  </div>
+  @if (assignmentForm.assignmentID().value() >= 0) {
+    <div class="flexlayout row topcenter flexgap" style="margin-top: 10px;">
+      <app-site-edit-employee-assignment-editor-schedule [schedule]="schedule()"
+        [height]="400" [workcenters]="workcenters()" [workcodes]="workcodes()"
+        (changed)="onChanged($event)" [schedules]="schedules()">
+      </app-site-edit-employee-assignment-editor-schedule>
+      <app-site-edit-employee-assignment-editor-labor [laborcodes]="laborcodes()"
+        [assignment]="selectedAssignment()" [height]="400" (changed)="onChanged($event)">
+      </app-site-edit-employee-assignment-editor-labor>
+    </div>
+  }
+</div>

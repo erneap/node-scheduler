@@ -1,0 +1,12 @@
+@use '@angular/material' as mat;
+
+.checkbox {
+  @include mat.checkbox-overrides((
+    label-text-color: black,
+    selected-checkmark-color: blue,
+    selected-icon-color: black,
+    selected-focus-icon-color: black,
+    unselected-icon-color: black,
+    unselected-focus-icon-color: black,
+  ));
+}

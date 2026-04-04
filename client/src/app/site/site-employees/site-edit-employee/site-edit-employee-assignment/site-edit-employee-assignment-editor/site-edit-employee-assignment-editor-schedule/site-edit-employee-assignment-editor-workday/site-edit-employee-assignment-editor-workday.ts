@@ -5,14 +5,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { Workday } from 'scheduler-models/scheduler/employees';
 import { Workcode } from 'scheduler-models/scheduler/labor';
 import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters/workcenter';
+import { MatTooltip } from "@angular/material/tooltip";
 
 @Component({
   selector: 'app-site-edit-employee-assignment-editor-workday',
   imports: [
     ReactiveFormsModule,
     MatSelectModule,
-    MatIconModule
-  ],
+    MatIconModule,
+    MatTooltip
+],
   templateUrl: './site-edit-employee-assignment-editor-workday.html',
   styleUrl: './site-edit-employee-assignment-editor-workday.scss',
 })

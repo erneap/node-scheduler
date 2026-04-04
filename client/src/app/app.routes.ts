@@ -26,6 +26,7 @@ import { SiteEditEmployeeContacts } from './site/site-employees/site-edit-employ
 import { SiteEditEmployeeSpecialties } from './site/site-employees/site-edit-employee/site-edit-employee-specialties/site-edit-employee-specialties';
 import { SiteEditEmployeeLeaves } from './site/site-employees/site-edit-employee/site-edit-employee-leaves/site-edit-employee-leaves';
 import { SiteEditEmployeeLeaveBalances } from './site/site-employees/site-edit-employee/site-edit-employee-leave-balances/site-edit-employee-leave-balances';
+import { SiteEditEmployeeAssignment } from './site/site-employees/site-edit-employee/site-edit-employee-assignment/site-edit-employee-assignment';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -72,6 +73,7 @@ export const routes: Routes = [
               { path: 'company', component: SiteEditEmployeeCompany },
               { path: 'contacts', component: SiteEditEmployeeContacts },
               { path: 'specialties', component: SiteEditEmployeeSpecialties },
+              { path: 'assignment', component: SiteEditEmployeeAssignment },
               { path: '**', component: SiteEditEmployeePTO }
             ]
           }

@@ -30,6 +30,7 @@ router.post('/employee/assignment', auth, async(req: Request, res: Response) => 
       throw new Error('No new employee assignment request data');
     }
   } catch (err) {
+    console.log(err);
     const error = err as Error;
     await postLogEntry('employee', `employeeAssignment: Post: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
@@ -58,6 +59,7 @@ router.put('/employee/assignment', auth, async(req: Request, res: Response) => {
       res.status(200).json(employee);
     }
   } catch (err) {
+    console.log(err);
     const error = err as Error;
     await postLogEntry('employee', `employeeAssignment: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});

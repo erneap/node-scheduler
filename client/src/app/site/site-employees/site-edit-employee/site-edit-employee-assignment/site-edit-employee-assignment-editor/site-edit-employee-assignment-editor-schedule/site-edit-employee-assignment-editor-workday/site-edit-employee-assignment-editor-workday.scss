@@ -26,10 +26,14 @@
 
 .copy {
   width: 50px;
-  border: solid 1px white;
+  height: 100%;
+  border: none;
 }
 
 .icon {
   font-size: 1rem;
+  height: 15px;
+  width: 15px;
+  color: white;
   cursor: pointer;
 }

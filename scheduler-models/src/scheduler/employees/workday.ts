@@ -70,7 +70,7 @@ export class Schedule implements ISchedule {
   public showdates: boolean;
 
   constructor(sch?: ISchedule) {
-    this.id = (sch) ? sch.id : 0;
+    this.id = (sch) ? sch.id : -1;
     this.workdays = [];
     if (sch && sch.workdays.length > 0) {
       sch.workdays.forEach(wd => {
