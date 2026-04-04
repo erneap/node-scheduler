@@ -188,6 +188,11 @@ export class Schedule implements ISchedule {
               wd.hours = oldWkd.hours;
             }
             break;
+          case 'clear':
+            wd.workcenter = '';
+            wd.code = '';
+            wd.hours = 0;
+            break;
         }
         this.workdays[w] = wd;
       }

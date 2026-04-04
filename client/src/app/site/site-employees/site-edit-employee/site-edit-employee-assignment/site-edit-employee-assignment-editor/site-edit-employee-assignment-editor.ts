@@ -398,9 +398,17 @@ export class SiteEditEmployeeAssignmentEditor {
           }
         });
         break;
+      case "day":
+        if (parts[3].toLowerCase() !== 'clear') {
+          workday = Number(parts[2]);
+          field = `workday-${parts[3]}`;
+          if (parts.length > 4) {
+            value = parts[4];
+          }
+        }
+        break;
     }
     if (field !== '') {
-      console.log(schid)
       this.empService.updateAssignment(this.employee, this.selectedAssignment().id, field, 
         value, schid, workday).subscribe({
         next: (res) => {

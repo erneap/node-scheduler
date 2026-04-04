@@ -675,6 +675,7 @@ export class Employee implements IEmployee {
           case "workday-workcenter":
           case "workday-hours":
           case "workday-copy":
+          case "workday-clear":
             const wparts = field.split('-');
             if (schedule && workday) {
               asgmt.updateWorkday(schedule, workday, wparts[1], value);
