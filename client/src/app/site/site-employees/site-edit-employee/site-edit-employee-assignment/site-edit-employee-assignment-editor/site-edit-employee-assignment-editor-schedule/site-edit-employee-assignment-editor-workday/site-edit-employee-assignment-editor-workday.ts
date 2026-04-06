@@ -33,6 +33,7 @@ export class SiteEditEmployeeAssignmentEditorWorkday {
   hours = signal<string[]>([]);
   showCopy = signal<boolean>(false);
   changed = output<string>();
+  disabled = signal<boolean>(false);
   workdayForm: FormGroup;
 
   constructor(
@@ -54,8 +55,17 @@ export class SiteEditEmployeeAssignmentEditorWorkday {
     } else {
       this.workdayForm.get('hours')?.setValue('');
     }
-    const bCopy: boolean = (this.workday.code === '' || this.workday.workcenter === ''
-      || this.workday.hours === 0);
+    if (this.disabled()) {
+      this.workdayForm.get('code')?.disable();
+      this.workdayForm.get('workcenter')?.disable();
+      this.workdayForm.get('hours')?.disable();
+    } else {
+      this.workdayForm.get('code')?.enable();
+      this.workdayForm.get('workcenter')?.enable();
+      this.workdayForm.get('hours')?.enable();
+    }
+    const bCopy: boolean = ((this.workday.code === '' || this.workday.workcenter === ''
+      || this.workday.hours === 0)) && !this.disabled();
     this.showCopy.set(bCopy);
   }
 
@@ -73,7 +83,10 @@ export class SiteEditEmployeeAssignmentEditorWorkday {
         bkColor = wc.backcolor;
         txColor = wc.textcolor;
       }
-    })
+    });
+    if (this.disabled()) {
+      bkColor = '000000';
+    }
     return `background-color: #${bkColor};color: #${txColor};`;
   }
 

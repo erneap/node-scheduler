@@ -35,7 +35,7 @@ export class SiteEditEmployeeAssignmentEditorLaborCode {
   laborcodeForm = form(this.laborcodeModel)
 
   onChecked() {
-    const chgString = `labor|${this.chargenumber()}|${this.extension()}|`
+    const chgString = `0|labor|${this.chargenumber()}|${this.extension()}|`
       + `${this.laborcodeForm.checked().value()}`;
     this.changed.emit(chgString);
   }

@@ -36,7 +36,7 @@ export class Variation implements IVariation {
   public schedule: Schedule;
 
   constructor(vari?: IVariation) {
-    this.id = (vari) ? vari.id : 0;
+    this.id = (vari) ? vari.id : -1;
     this.site = (vari) ? vari.site : '';
     this.mids = (vari) ? vari.mids : false;
     this.mod = (vari) ? vari.mod : false;

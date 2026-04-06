@@ -2,6 +2,8 @@
  * Workday interface and class descriptions
  */
 
+import { Work } from "./work";
+
 /**
  * This interface describes the data members to describe a workday object.
  */
@@ -206,12 +208,30 @@ export class Schedule implements ISchedule {
    * @param days A numeric value, greater than zero (0) and a multiple of 7.
    * @throws An error indicating the provided parameter is zero or not a multiple of 7.
    */
-  setScheduleDays(days: number): void {
-    if (days <= 0 || days % 7 !== 0) {
+  setScheduleDays(days: number, startdate?: Date, enddate?: Date): void {
+    if (days <= 0 || days % 7 !== 0 && !this.showdates) {
       throw new Error('New days value must be greater than zero and a multiple of seven');
     }
     this.workdays.sort((a,b) => a.compareTo(b));
-    if (days > this.workdays.length) {
+    if (this.showdates) {
+      let start = new Date(startdate);
+      while (start.getDay() !== 0) {
+        start = new Date(start.getTime() - (24 * 3600000));
+      }
+      startdate = new Date(start);
+      let end = new Date(enddate);
+      while (end.getDay() !== 6) {
+        end = new Date(end.getTime() + (24 * 3600000));
+      }
+      this.workdays = [];
+      while (start.getTime() <= end.getTime()) {
+        const wd = new Workday();
+        wd.id = Math.floor((start.getTime() - startdate.getTime()) 
+          / (24 * 3600000));
+        this.workdays.push(wd);
+        start = new Date(start.getTime() + (24 * 3600000));
+      }
+    } else if (days > this.workdays.length) {
       for (let w = this.workdays.length; w < days; w++) {
         const wd = new Workday();
         wd.id = w;

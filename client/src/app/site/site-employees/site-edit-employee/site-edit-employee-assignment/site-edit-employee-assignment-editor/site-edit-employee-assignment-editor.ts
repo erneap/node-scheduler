@@ -405,6 +405,14 @@ export class SiteEditEmployeeAssignmentEditor {
           value = parts[4];
         }
         break;
+      case "labor":
+        value = `${parts[2]}|${parts[3]}`;
+        if (parts[4].toLowerCase() === 'true') {
+          field = 'addlaborcode';
+        } else {
+          field = 'removelaborcode';
+        }
+        break;
     }
     if (field !== '') {
       this.empService.updateAssignment(this.employee, this.selectedAssignment().id, field, 
