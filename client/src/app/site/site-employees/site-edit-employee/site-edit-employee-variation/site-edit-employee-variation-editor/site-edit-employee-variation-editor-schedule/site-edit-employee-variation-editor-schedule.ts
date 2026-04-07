@@ -30,6 +30,8 @@ interface ScheduleData {
 })
 export class SiteEditEmployeeVariationEditorSchedule {
   private _schedule: Schedule = new Schedule();
+  private _start: Date = new Date();
+  private _end: Date = new Date();
   @Input()
   get schedule(): Schedule {
     return this._schedule;
@@ -46,8 +48,20 @@ export class SiteEditEmployeeVariationEditorSchedule {
   workcenters = input<Workcenter[]>([]);
   height = input<number>(250);
   width = input<number>(582);
-  start = input<Date>(new Date());
-  end = input<Date>(new Date());
+  @Input()
+  get start(): Date {
+    return this._start;
+  }
+  set start(date: Date) {
+    this._start = new Date(date);
+  }
+  @Input()
+  get end(): Date {
+    return this._end;
+  }
+  set end(date: Date) {
+    this._end = new Date(date);
+  }
   changed = output<string>();
   scheduleModel = signal<ScheduleData>({
     scheduleid: '0',
@@ -101,9 +115,9 @@ export class SiteEditEmployeeVariationEditorSchedule {
   }
 
   disableDate(date?: Date): boolean {
-    if (this.schedule.showdates && date) {
-      return (date.getTime() < this.start().getTime() 
-        || date.getTime() > this.end().getTime());
+    if (this.scheduleForm.showDates().value() && date) {
+      return (date.getTime() < this.start.getTime() 
+        || date.getTime() > this.end.getTime());
     }
     return false;
   }

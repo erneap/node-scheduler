@@ -803,7 +803,7 @@ export class Employee implements IEmployee {
           case "workday-copy":
           case "workday-clear":
             const wparts = field.split('-');
-            if (workday) {
+            if (workday >= 0) {
               vari.updateWorkday(workday, wparts[1], value);
             }
             break;

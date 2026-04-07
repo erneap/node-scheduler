@@ -15,10 +15,14 @@ import { MatFormField } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
+import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } 
+  from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { SiteEditEmployeeVariationEditorSchedule } from './site-edit-employee-variation-editor-schedule/site-edit-employee-variation-editor-schedule';
+import { SiteEditEmployeeVariationEditorSchedule } 
+  from './site-edit-employee-variation-editor-schedule/site-edit-employee-variation-editor-schedule';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../../../../../general/confirmation-dialog/confirmation-dialog';
 
 interface VariationData {
   variationid: number;
@@ -60,6 +64,9 @@ export class SiteEditEmployeeVariationEditor {
   }
   set employee(id: string) {
     this._employee = id;
+    this.selectedID.set('-1');
+    this.selectedVariation.set(new Variation());
+    this.schedule.set(new Schedule());
     this.setEmployeeList();
   }
   variationList = signal<Variation[]>([]);
@@ -85,7 +92,8 @@ export class SiteEditEmployeeVariationEditor {
     private authService: AuthService,
     private empService: EmployeeService,
     private siteService: SiteService,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private dialog: MatDialog
   ) {
     // workcodes are derived from the employee's team, while the workcenters and labor
     // codes are derived from the employee's site.  So get the team and pull in the work
@@ -278,6 +286,42 @@ export class SiteEditEmployeeVariationEditor {
       }
     });
   }
+
+  onDelete() {
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        title: 'Assignment Delete Confirmation',
+        message: 'Are you sure you want to delete this Assignment?',
+        negativeButtonTitle: 'No',
+        affirmativeButtonTitle: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.toLowerCase() === 'yes') {
+        this.empService.deleteVariation(this.employee, this.selectedVariation().id)
+          .subscribe({
+          next: (res) => {
+            const iEmp = res.body as IEmployee;
+            if (iEmp) {
+              const employee = this.useEmployeeResponse(iEmp);
+              this.setEmployeeList()
+              const variList = this.variationList();
+              if (variList.length > 0) {
+                this.selectVariation(`${variList[0].id}`);
+              }
+            }
+          },
+          error: (err) => {
+            if (err instanceof HttpErrorResponse) {
+              if (err.status >= 400 && err.status < 500) {
+                this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+              }
+            }
+          }
+        });
+      }
+    });
+  }
   
   convertDateToString(date: Date): string {
     let answer = `${date.getUTCFullYear()}-`;
@@ -341,9 +385,17 @@ export class SiteEditEmployeeVariationEditor {
           field = 'dates';
           value = sparts[2];
           break;
+        case "chgdays":
+          field = 'scheduledays';
+          value = sparts[2];
+          break;
+        case "day":
+          field = `workday-${sparts[3]}`;
+          workday = Number(sparts[2]);
+          value = sparts[4];
+          break;
       }
       if (field !== '') {
-        console.log(field);
         this.empService.updateVariation(this.employee, this.selectedVariation().id, field, 
           value, schid, workday).subscribe({
           next: (res) => {

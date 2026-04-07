@@ -34,6 +34,7 @@ export class SiteMidsListing {
   }
 
   setYear() {
+    this.list.set([]);
     if (this.userid() !== '') {
       this.siteService.getSiteMids(this.userid(), this.year()).subscribe({
         next: (res) => {

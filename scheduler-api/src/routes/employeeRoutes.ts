@@ -237,7 +237,9 @@ async function modifyUser(id: string, field: string, value: string,
       if (opt) {
         const qID = Number(opt);
         const question = user.questions[qID];
-        question.answer = value;
+        const salt = genSaltSync(12)
+        const hash = hashSync(value, salt);
+        question.answer = hash;
         user.questions[qID] = question;
       }
       break;

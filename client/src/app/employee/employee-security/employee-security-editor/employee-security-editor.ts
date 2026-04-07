@@ -191,19 +191,17 @@ export class EmployeeSecurityEditor {
     let value = '';
     if (field.substring(0,1).toLowerCase() === 'q') {
       field = `question${id}`;
-      console.log(JSON.stringify(this.profileForm.get(field)?.value));
-      value = this.profileForm.get(field)?.value;
+      value = this.questionForm.get(field)?.value;
       field = 'securityquestion';
     } else {
       field = `answer${id}`;
-      value = this.profileForm.controls[field].value;
+      value = this.questionForm.controls[field].value;
       field = 'securityanswer';
     }
-    this.updateEmployee(field, value, (id-1).toString());
+    this.updateEmployee(field, value, `${id-1}`);
   }
 
   updateEmployee(field: string, value: string, optional?: string) {
-    console.log(`${field}-${optional}-${value}`);
     this.empService.updateEmployee(this.employee, field, value, optional).subscribe({
       next: res => {
         const iEmp = (res.body as IEmployee);
