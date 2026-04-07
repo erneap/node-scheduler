@@ -52,7 +52,7 @@
         (click)="changeAssignment('add')">Add</button>
     }
     @if (assignmentForm.assignmentID().value() >= 0 && assignments().length > 1) {
-      <button matButton="filled" class="delete-button">Delete</button>
+      <button matButton="filled" class="delete-button" (click)="onDelete()">Delete</button>
     }
   </div>
   @if (assignmentForm.assignmentID().value() >= 0) {

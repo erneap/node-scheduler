@@ -1,1 +1,57 @@
-<p>site-edit-employee-variation-editor works!</p>
+<div class="flexlayout row topleft flexgap">
+  <div class="flexlayout column center flexgap">
+    <div class="flexlayout row center">Variation Listing</div>
+    <app-list [width]="listwidth()" [height]="listHeight()" [list]="list()"
+      [selectedItem]="selectedID()" (itemSelected)="selectVariation($event)"></app-list>
+    <div class="flexlayout row center">
+      <mat-checkbox [formField]="variationForm.showAll" (change)="showAll()"
+        class="checkbox">Show All Variation</mat-checkbox>
+    </div>
+  </div>
+  <div class="flexlayout column center flexgap">
+    <div class="flexlayout column topleft">
+      <form class="flexlayout row topleft flexgap">
+        <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+          <mat-label>Assignment Start Date</mat-label>
+          <input matInput [matDatepicker]="startpicker" [formField]="variationForm.start"
+            (dateChange)="onChangeVariation('start')">
+          <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+          <mat-datepicker #startpicker></mat-datepicker>
+          @for (error of variationForm.start().errors(); track error) {
+            <mat-error class="error">{{error.message || error.kind}}</mat-error>
+          }
+        </mat-form-field>
+        @if (selectedVariation().id >= 0) {
+          <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+            <mat-label>Assignment End Date</mat-label>
+            <input matInput [matDatepicker]="endpicker" [formField]="variationForm.end"
+              (dateChange)="onChangeVariation('end')">
+            <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>
+            <mat-datepicker #endpicker></mat-datepicker>
+            @for (error of variationForm.end().errors(); track error) {
+              <mat-error class="error">{{error.message || error.kind}}</mat-error>
+            }
+          </mat-form-field>
+          <mat-checkbox [formField]="variationForm.mids" (change)="onChangeVariation('mids')"
+            class="checkbox">Is MIDS Shift Variation</mat-checkbox>
+        }
+      </form>
+      <div class="flexlayout row center" style="width: 100%;margin: 20px 0;">
+        @if (selectedVariation().id < 0) {
+          <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+        }
+        @else {
+          <button matButton="filled" class="delete-button">Delete</button>
+        }
+      </div>
+      @if (selectedVariation().id >= 0) {
+        <app-site-edit-employee-variation-editor-schedule 
+          [schedule]="schedule()" [workcenters]="workcenters()"
+          [workcodes]="workcodes()" (changed)="onChanged($event)"
+          [start]="variationForm.start().value()"
+          [end]="variationForm.end().value()">
+        </app-site-edit-employee-variation-editor-schedule>
+      }
+    </div>
+  </div>
+</div>

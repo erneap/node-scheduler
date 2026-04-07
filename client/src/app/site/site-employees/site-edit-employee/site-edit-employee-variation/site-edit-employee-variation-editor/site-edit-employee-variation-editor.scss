@@ -1,0 +1,30 @@
+@use '@angular/material' as mat;
+
+.checkbox {
+  @include mat.checkbox-overrides((
+    label-text-color: white,
+    selected-checkmark-color: blue,
+    selected-icon-color: white,
+    selected-focus-icon-color: white,
+    unselected-icon-color: white,
+    unselected-focus-icon-color: white,
+  ));
+}
+
+.error {
+  color: white;
+}
+
+.delete-button {
+  @include mat.button-overrides((
+    filled-container-color: darkred,
+    filled-label-text-color: white,
+  ));
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
+}

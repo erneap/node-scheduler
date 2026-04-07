@@ -226,6 +226,7 @@ export class Schedule implements ISchedule {
       this.workdays = [];
       while (start.getTime() <= end.getTime()) {
         const wd = new Workday();
+        wd.date = new Date(start);
         wd.id = Math.floor((start.getTime() - startdate.getTime()) 
           / (24 * 3600000));
         this.workdays.push(wd);
@@ -237,10 +238,16 @@ export class Schedule implements ISchedule {
         wd.id = w;
         this.workdays.push(wd);
       }
+      this.workdays.forEach(wd => {
+        wd.date = undefined;
+      });
     } else if (days < this.workdays.length) {
       while (this.workdays.length > days) {
         this.workdays.pop();
       }
+      this.workdays.forEach(wd => {
+        wd.date = undefined;
+      });
     }
     for (let w=0; w < this.workdays.length; w++) {
       this.workdays[w].id = w;

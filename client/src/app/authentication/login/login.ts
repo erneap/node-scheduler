@@ -128,6 +128,7 @@ export class Login {
               this.authService.statusMessage.set('Security Questions/Answer must be set');
               this.router.navigate(['/employee/security']);
             } else {
+              this.authService.showMenu.set(true);
               this.router.navigate(['/employee/schedule']);
             }
           } else {

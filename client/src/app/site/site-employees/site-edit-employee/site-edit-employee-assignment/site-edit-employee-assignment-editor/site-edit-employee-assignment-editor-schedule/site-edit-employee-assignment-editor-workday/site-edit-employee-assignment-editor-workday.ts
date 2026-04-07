@@ -33,7 +33,7 @@ export class SiteEditEmployeeAssignmentEditorWorkday {
   hours = signal<string[]>([]);
   showCopy = signal<boolean>(false);
   changed = output<string>();
-  disabled = signal<boolean>(false);
+  disabled = input<boolean>(false);
   workdayForm: FormGroup;
 
   constructor(

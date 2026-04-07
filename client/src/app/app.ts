@@ -59,6 +59,7 @@ export class App {
     this.siteService.removeSite();
     this.teamService.removeTeam();
     this.msgService.stopNotices();
+    this.showMenu.set(true);
     this.router.navigate(['/login'])
   }
 

@@ -1,0 +1,84 @@
+@use '@angular/material' as mat;
+
+.checkbox {
+  @include mat.checkbox-overrides((
+    label-text-color: white,
+    selected-checkmark-color: blue,
+    selected-icon-color: white,
+    selected-focus-icon-color: white,
+    unselected-icon-color: white,
+    unselected-focus-icon-color: white,
+  ));
+}
+
+.weekday {
+  width: 35px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.input {
+  width: 100%;
+  font-size: 1.4rem;
+  background-color: darkred;
+  color: white;
+  text-align: center;
+  border: none;
+}
+
+.code {
+  width: 200px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.hours {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.copy {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.schedule {
+  width: 580px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.scheduleField {
+  height: 100%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+}
+
+.icon {
+  margin: 0;
+  padding: 0;
+  height: 15px;
+  width: 15px;
+  font-size: 1rem;
+  color: white;
+  border: solid 1px white;
+  cursor: pointer;
+}

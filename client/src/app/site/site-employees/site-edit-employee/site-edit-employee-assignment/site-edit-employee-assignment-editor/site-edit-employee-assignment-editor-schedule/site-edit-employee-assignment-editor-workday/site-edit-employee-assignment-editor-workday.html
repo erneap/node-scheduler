@@ -1,6 +1,13 @@
 <form [formGroup]="workdayForm" class="flexlayout row center">
   <div class="flexlayout column center weekday">{{getDayDate()}}</div>
-  <div class="flexlayout column center weekday">{{workday.id}}</div>
+  <div class="flexlayout column center weekday">
+    @if (workday.date) {  
+      {{workday.date.getUTCDate()}}
+    }
+    @else {
+      {{workday.id}}
+    }
+  </div>
   <div class="flexlayout column center code">
     <select matNativeControl formControlName="code" class="input"
       [style]="getDayStyle()" (change)="onChange('code')">

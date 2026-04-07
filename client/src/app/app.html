@@ -1,7 +1,7 @@
 <div>
   <mat-toolbar>
     @if (authService.isAuthenticated) {
-      <button matIconButton (click)="sidenav.toggle()">
+      <button matIconButton (click)="onToggle(sidenav.opened)">
         <mat-icon>menu</mat-icon>
       </button>
     }

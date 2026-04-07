@@ -12,7 +12,7 @@ import { SiteEditEmployeeVariationEditor } from './site-edit-employee-variation-
   styleUrl: './site-edit-employee-variation.scss',
 })
 export class SiteEditEmployeeVariation {
-  employee = computed(() => this.siteService.selectedEmployee);
+  employee = computed(() => this.siteService.selectedEmployee());
 
   constructor(
     private siteService: SiteService

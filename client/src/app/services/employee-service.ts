@@ -387,4 +387,72 @@ export class EmployeeService extends CacheService {
       })
     );
   }
+
+  addVariation(empid: string, site: string, start: Date)
+    : Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/variation`;
+    const data: NewEmployeeAssignment = {
+      employee: empid,
+      site: site,
+      workcenter: '',
+      start: start,
+      scheduledays: 7
+    };
+    return this.http.post<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateVariation(empid: string, variationid: number, field: string, value: string, 
+    scheduleid?: number, workday?: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/variation`;
+    const data: ChangeAssignment = {
+      employee: empid,
+      asgmt: variationid,
+      field: field,
+      value: value,
+      schedule: scheduleid,
+      workday: workday
+    };
+    return this.http.put<Employee>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteVariation(empid: string, variationid: number): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee/variation/${empid}/${variationid}`;
+    return this.http.delete<Employee>(url, {observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
 }

@@ -440,4 +440,41 @@ export class SiteEditEmployeeAssignmentEditor {
       });
     }
   }
+
+  onDelete() {
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        title: 'Assignment Delete Confirmation',
+        message: 'Are you sure you want to delete this Assignment?',
+        negativeButtonTitle: 'No',
+        affirmativeButtonTitle: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.toLowerCase() === 'yes') {
+        this.empService.deleteAssignment(this.employee, this.selectedAssignment().id)
+          .subscribe({
+          next: (res) => {
+            const iEmp = res.body as IEmployee;
+            if (iEmp) {
+              const employee = this.useEmployeeResponse(iEmp);
+              this.setAssignments()
+              const asgmtList = this.assignments();
+              if (asgmtList.length > 0) {
+                this.selectedAssignment.set(asgmtList[0]);
+                this.setAssignment();
+              }
+            }
+          },
+          error: (err) => {
+            if (err instanceof HttpErrorResponse) {
+              if (err.status >= 400 && err.status < 500) {
+                this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+              }
+            }
+          }
+        });
+      }
+    });
+  }
 }

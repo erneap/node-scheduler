@@ -153,9 +153,7 @@ export class EmployeeService {
       employee.user = undefined;
       employee.work = undefined;
       const result = await collections.employees.replaceOne(query, employee);
-      if (result.modifiedCount === 0 && result.upsertedCount === 0) {
-        throw new Error('Employee not replaced');
-      }
+      
     } else {
       throw new Error('No employee collection');
     }

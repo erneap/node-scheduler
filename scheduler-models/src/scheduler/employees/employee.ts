@@ -677,7 +677,7 @@ export class Employee implements IEmployee {
           case "workday-copy":
           case "workday-clear":
             const wparts = field.split('-');
-            if (schedule && workday) {
+            if (schedule >= 0 && workday >= 0) {
               asgmt.updateWorkday(schedule, workday, wparts[1], value);
             } else {
               throw new Error('Assignment schedule and/or workday id not provided')
@@ -751,6 +751,8 @@ export class Employee implements IEmployee {
     newVari.site = site;
     newVari.startdate = new Date(start);
     newVari.enddate = new Date(start);
+    newVari.schedule = new Schedule();
+    newVari.schedule.setScheduleDays(7);
     this.variations.push(newVari);
     this.variations.sort((a,b) => a.compareTo(b));
   }
@@ -777,10 +779,12 @@ export class Employee implements IEmployee {
             break;
           case "mids":
           case "ismids":
-            vari.mids = Boolean(value);
+            vari.mids = (value.toLowerCase() === 'true');
             break;
           case "dates":
-            vari.schedule.showdates = Boolean(value);
+            vari.schedule.showdates = (value.toLowerCase() === 'true');
+            vari.schedule.setScheduleDays(7, new Date(vari.startdate), 
+              new Date(vari.enddate));
             break;
           case "start":
           case "startdate":
@@ -797,6 +801,7 @@ export class Employee implements IEmployee {
           case "workday-workcenter":
           case "workday-hours":
           case "workday-copy":
+          case "workday-clear":
             const wparts = field.split('-');
             if (workday) {
               vari.updateWorkday(workday, wparts[1], value);

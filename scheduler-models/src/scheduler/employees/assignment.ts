@@ -329,12 +329,13 @@ export class Assignment {
    */
   removeLaborCode(chgno: string, ext: string) {
     let found = -1;
-    for (let l=0; l < this.laborcodes.length && !found; l++) {
+    for (let l=0; l < this.laborcodes.length && found < 0; l++) {
       if (this.laborcodes[l].chargenumber.toLowerCase() === chgno.toLowerCase()
         && this.laborcodes[l].extension.toLowerCase() === ext.toLowerCase()) {
         found = l;
       }
     }
+    console.log(found);
     if (found >= 0) {
       this.laborcodes.splice(found, 1);
       this.laborcodes.sort((a,b) => a.compareTo(b));

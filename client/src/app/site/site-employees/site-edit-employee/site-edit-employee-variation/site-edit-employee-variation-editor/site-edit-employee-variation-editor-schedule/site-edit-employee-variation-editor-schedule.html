@@ -1,1 +1,42 @@
-<p>site-edit-employee-variation-editor-schedule works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout row center schedule">
+    <div class="flexlayout column center scheduleField" style="width: 150px;">
+      <mat-checkbox [formField]="scheduleForm.showDates" (change)="changeSchedule('dates')"
+        class="checkbox">Show By Date</mat-checkbox>
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="flexlayout row center scheduleField">
+      SCHEDULE
+    </div>
+    <div class="flex-spacer"></div>
+    <div class="flexlayout row center" style="height: 100%;width: 150px;">
+      @if (!scheduleForm.showDates().value()) {
+        Days: <select type="number" class="input"  style="width: 60px;" step="7"
+        [formField]="scheduleForm.scheduleDays" (change)="changeSchedule('days')">
+        @for (day of days; track day) {
+          <option [value]="day">{{day}}</option>
+        }
+        </select>
+      }
+      @else {
+        &nbsp;
+      }
+    </div>
+  </div>
+  <div class="flexlayout row topleft">
+    <div class="flexlayout column center weekday">Day</div>
+    <div class="flexlayout column center weekday">ID</div>
+    <div class="flexlayout column center code">Work Code</div>
+    <div class="flexlayout column center code">Workcenter</div>
+    <div class="flexlayout column center hours">Hours</div>
+    <div class="flexlayout column center copy">&nbsp;</div>
+  </div>
+  <div class="flexlayout column topleft" [style]="displayStyle()">
+    @for (workday of schedule.workdays; track workday.id) {
+      <app-site-edit-employee-assignment-editor-workday [workday]="workday"
+        [workcodes]="workcodes()" [workcenters]="workcenters()"
+        (changed)="onChanged($event)" [disabled]="disableDate(workday.date)">
+      </app-site-edit-employee-assignment-editor-workday>
+    }
+  </div>
+</div>
