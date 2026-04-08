@@ -20,8 +20,10 @@ router.post('/authenticate', async (req: Request, res: Response) => {
   try {
     const userService = new UserService();
     const data = req.body as AuthenticationRequest;
+    console.log(JSON.stringify(data));
     if (data.emailAddress !== '' && data.password !== '') {
       const user = await userService.getByEmail(data.emailAddress);
+      console.log(JSON.stringify(user));
       let msg = '';
       if (user.password && await compareSync(data.password, user.password)) {
         if (user.badAttempts > 2) {
@@ -61,6 +63,7 @@ router.post('/authenticate', async (req: Request, res: Response) => {
       throw new Error('Required data missing');
     }
   } catch (err) {
+    console.log(err);
     const error = err as Error;
     postLogEntry('Authentication', `Post: Authenticate: ${error.message}`);
     res.status(400).json(

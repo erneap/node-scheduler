@@ -44,7 +44,6 @@ export interface IUser {
  * password change, plus token expiration date/time the reset token expires)
  */
 export class User implements IUser {
-  public _id?: any;
   public id: string;
   public emailAddress: string;
   public password?: string;
@@ -61,7 +60,6 @@ export class User implements IUser {
   public permissions: Permission[];
 
   constructor(user?: IUser) {
-    this._id = user._id;
     this.id = (user && user.id ) ? user.id : '';
     if (this.id === '') {
       this.id = (user && user._id) ? user._id.toString() : '';
