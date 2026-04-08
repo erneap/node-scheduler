@@ -30,8 +30,10 @@ export class NavigationMenu {
   }
 
   goToLink(url: string, toggle?: boolean) {
-    if (toggle) {
+    if (toggle !== undefined) {
       this.toggle.emit(toggle);
+    } else {
+      this.toggle.emit(false);
     }
     this.router.navigateByUrl(url);
   }

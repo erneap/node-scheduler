@@ -29,8 +29,8 @@
     "mongodb": "^7.1.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "scheduler-models": "^1.3.84",
-    "scheduler-services": "^1.3.55",
+    "scheduler-models": "^1.3.85",
+    "scheduler-services": "^1.3.56",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"

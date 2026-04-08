@@ -1,1 +1,150 @@
-<p>site-new-employee works!</p>
+<div class="flexlayout row topleft">
+  <mat-accordion>
+    <mat-expansion-panel [expanded]="sectionExpanded() === 'basic'">
+      <mat-expansion-panel-header style="background-color: darkred !important;">
+        <mat-panel-title>Basic Information (Name/Password)</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flexlayout column topcenter">
+        <div class="flexlayout row center" style="width: 100%;">
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Employee's Email Address</mat-label>
+            <input matInput type="email" [formField]="newEmployeeForm.email" 
+              (change)="checkErrors()">
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>First Name</mat-label>
+            <input matInput [formField]="newEmployeeForm.first" 
+              (change)="checkErrors()">
+          </mat-form-field>
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Middle Name</mat-label>
+            <input matInput [formField]="newEmployeeForm.middle" 
+              (change)="checkErrors()">
+          </mat-form-field>
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Last Name</mat-label>
+            <input matInput [formField]="newEmployeeForm.last" 
+              (change)="checkErrors()">
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Initial Password</mat-label>
+            <input matInput type="password" [formField]="newEmployeeForm.password1" 
+              (change)="checkErrors()">
+          </mat-form-field>
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" [formField]="newEmployeeForm.password2" 
+              (change)="checkErrors()">
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="sectionExpanded() === 'company'">
+      <mat-expansion-panel-header style="background-color: darkred !important;">
+        <mat-panel-title>Company Information</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flexlayout row center flexgap" style="width: 100%;">
+        <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+          <mat-label>Company</mat-label>
+          <mat-select [formField]="newEmployeeForm.company" 
+            (selectionChange)="checkErrors()">
+            <mat-option value=""></mat-option>
+            @for (co of companies(); track co.id) {
+              <mat-option [value]="co.id">{{co.name}}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Employee ID</mat-label>
+            <input matInput [formField]="newEmployeeForm.employeeid" 
+              (change)="checkErrors()">
+          </mat-form-field>
+          <mat-form-field [floatLabel]="'always'" style="width: 350px;">
+            <mat-label>Job Title</mat-label>
+            <input matInput [formField]="newEmployeeForm.jobtitle" 
+              (change)="checkErrors()">
+          </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="sectionExpanded() === 'labor'">
+      <mat-expansion-panel-header style="background-color: darkred !important;">
+        <mat-panel-title>Initial Labor Code</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flexlayout row center flexwrap flexgap" style="margin-top: 5px;">
+        @for (labor of laborcodes(); track `${labor.chargeNumber}|${labor.extension}`) {
+          <input type="radio" [value]="`${labor.chargeNumber}|${labor.extension}`"
+            [formField]="newEmployeeForm.laborcode" (click)="checkErrors()"/>
+            {{labor.chargeNumber}}-{{labor.extension}}
+        }
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="sectionExpanded() === 'assignment'">
+      <mat-expansion-panel-header style="background-color: darkred !important;">
+        <mat-panel-title>Initial Assignment</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flexlayout column center" style="width: 100%;">
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+            <mat-label>Initial Workcenter</mat-label>
+            <mat-select [formField]="newEmployeeForm.workcenter" 
+              (selectionChange)="changeWorkcenter()">
+              <mat-option value=""></mat-option>
+              @for (wc of workcenters(); track wc.id) {
+                <mat-option [value]="wc.id">{{wc.name}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field style="width: 250px;" [floatLabel]="'always'">
+            <mat-label>Assignment Start Date</mat-label>
+            <input matInput [matDatepicker]="startpicker" [formField]="newEmployeeForm.start"
+              (dateChange)="checkErrors()">
+            <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+            <mat-datepicker #startpicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row topleft">
+          <div class="flexlayout column center weekday">Day</div>
+          <div class="flexlayout column center weekday">ID</div>
+          <div class="flexlayout column center code">Work Code</div>
+          <div class="flexlayout column center code">Workcenter</div>
+          <div class="flexlayout column center hours">Hours</div>
+          <div class="flexlayout column center copy">&nbsp;</div>
+        </div>
+        <div class="flexlayout column topleft" >
+          @for (workday of newEmployeeForm.workdays().value(); track workday.id) {
+            <app-site-edit-employee-assignment-editor-workday [workday]="workday"
+              [workcodes]="workcodes()" [workcenters]="workcenters()"
+              (changed)="onChangeWorkday($event)">
+            </app-site-edit-employee-assignment-editor-workday>
+          }
+  </div>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="newEmployeeForm().valid()">
+      <mat-expansion-panel-header style="background-color: darkred !important;">
+        <mat-panel-title>Action Buttons</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flexlayout row center flexgap">
+        @if (newEmployeeForm().valid()) {
+          <button matButton="filled" class="add-button">
+            Add
+          </button>
+        }
+        <button matButton="filled" class="clear-button">
+          Clear
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <div class="flexlayout column center" style="width: 250px;">
+    <div class="flexlayout row center">New Employee Errors</div>
+    <ul class="error">
+      @for (err of errors(); track err) {
+        <li class="error">{{err.field}}: {{err.message}}</li>
+      }
+    </ul>
+  </div>

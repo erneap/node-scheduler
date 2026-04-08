@@ -12,7 +12,7 @@
     <div class="flexlayout column topleft">
       <form class="flexlayout row topleft flexgap">
         <mat-form-field style="width: 250px;" [floatLabel]="'always'">
-          <mat-label>Assignment Start Date</mat-label>
+          <mat-label>Variation Start Date</mat-label>
           <input matInput [matDatepicker]="startpicker" [formField]="variationForm.start"
             (dateChange)="onChangeVariation('start')">
           <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
@@ -23,7 +23,7 @@
         </mat-form-field>
         @if (selectedVariation().id >= 0) {
           <mat-form-field style="width: 250px;" [floatLabel]="'always'">
-            <mat-label>Assignment End Date</mat-label>
+            <mat-label>Variation End Date</mat-label>
             <input matInput [matDatepicker]="endpicker" [formField]="variationForm.end"
               (dateChange)="onChangeVariation('end')">
             <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>

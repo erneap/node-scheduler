@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { Employee, IEmployee } from "scheduler-models/scheduler/employees";
-import { IUser, User } from "scheduler-models/users";
+import { IUser, Permission, User } from "scheduler-models/users";
 import { ObjectId } from "mongodb";
 import { UpdateRequest } from "scheduler-models/general";
 import { SecurityQuestion } from "scheduler-models/users/question";
@@ -53,10 +53,31 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as IEmployee;
     if (data) {
+      let employee = new Employee(data);
+      employee._id = undefined;
+      employee.id = '';
+
       const empService = new EmployeeService();
-      const employee = await empService.insert(data);
-      const user = new User(employee.user);
-      user.workgroups.push('scheduler-employee');
+      const userService = new UserService();
+      const iUser = await userService.getByEmail(employee.email);
+      let bReplace = false;
+      let user: User | undefined;
+      if (iUser) {
+        user = new User(iUser);
+        if (!user.hasPermission('scheduler', 'employee')) {
+          user.permissions.push(new Permission({
+            application: 'scheduler',
+            job: 'employee'
+          }));
+        }
+        bReplace = true;
+      } else {
+        user = new User(data.user);
+        user.permissions.push(new Permission({
+          application: 'scheduler',
+          job: 'employee'
+        }));
+      }
   
       const salt = genSaltSync(12)
       const hash = hashSync((data.user && data.user.password) 
@@ -65,8 +86,18 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
       user.passwordExpires = new Date();
       user.badAttempts = 0;
 
-      const userService = new UserService();
-      userService.replace(user);
+      data.user = undefined;
+
+      if (bReplace) {
+        await userService.replace(user);
+      } else {
+        user = await userService.insert(user);
+        user = new User(user);
+      }
+      employee._id = user._id;
+      employee.id = user.id;
+      employee = await empService.insert(employee);
+      employee.user = user;
       res.status(200).json(employee);
     } else {
       throw new Error(`No employee identifier`);

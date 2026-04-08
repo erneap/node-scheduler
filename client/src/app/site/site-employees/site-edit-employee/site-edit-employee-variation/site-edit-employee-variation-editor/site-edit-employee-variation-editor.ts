@@ -372,7 +372,6 @@ export class SiteEditEmployeeVariationEditor {
   }
 
   onChanged(chg: string) {
-    console.log(chg);
     const sparts = chg.split('|');
     if (sparts.length > 1) {
       const action = sparts[1];

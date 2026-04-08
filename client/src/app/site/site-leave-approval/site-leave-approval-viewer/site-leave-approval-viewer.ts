@@ -1,37 +1,37 @@
 import { Component, Input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { List } from '../../../general/list/list';
-import { EmployeeLeaveRequestsEditor } from '../employee-leave-requests-editor/employee-leave-requests-editor';
-import { Item } from '../../../general/list/list.model';
+import { EmployeeLeaveRequestsEditor } from '../../../employee/employee-leave-requests/employee-leave-requests-editor/employee-leave-requests-editor';
 import { AuthService } from '../../../services/auth-service';
 import { EmployeeService } from '../../../services/employee-service';
 import { SiteService } from '../../../services/site-service';
 import { TeamService } from '../../../services/team-service';
 import { MatDialog } from '@angular/material/dialog';
+import { Item } from '../../../general/list/list.model';
 import { Employee, IEmployee, LeaveRequest } from 'scheduler-models/scheduler/employees';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ConfirmationDialog, DialogData } from '../../../general/confirmation-dialog/confirmation-dialog';
 import { MessageDialog } from '../../../general/message-dialog/message-dialog';
 
 @Component({
-  selector: 'app-employee-leave-requests-viewer',
+  selector: 'app-site-leave-approval-viewer',
   imports: [
     MatButtonModule,
     List,
     EmployeeLeaveRequestsEditor
   ],
-  templateUrl: './employee-leave-requests-viewer.html',
-  styleUrl: './employee-leave-requests-viewer.scss',
+  templateUrl: './site-leave-approval-viewer.html',
+  styleUrl: './site-leave-approval-viewer.scss',
 })
-export class EmployeeLeaveRequestsViewer {
-  private _employee: string = '';
+export class SiteLeaveApprovalViewer {
+  private _site: string = '';
   @Input()
-  get employee(): string {
-    return this._employee;
+  get site(): string {
+    return this._site;
   }
-  set employee(id: string) {
-    this._employee = id;
-    this.setEmployee();
+  set site(id: string) {
+    this._site = id;
+    this.setRequests();
   }
   requests = signal<Item[]>([]);
   selectedItem = signal<string>('');
@@ -44,7 +44,9 @@ export class EmployeeLeaveRequestsViewer {
   holidayHours  = signal<string>('');
   showSubmit = signal<boolean>(true);
   showApprover = signal<boolean>(false);
-  siteid = signal<string>('');
+  requestList = new Map<string, LeaveRequest>();
+  employee = signal<string>('');
+  request = signal<string>('');
 
   constructor(
     private authService: AuthService,
@@ -53,52 +55,51 @@ export class EmployeeLeaveRequestsViewer {
     private teamService: TeamService,
     private dialog: MatDialog
   ) {
-    if (this.employee === '') {
-      const iEmp = this.empService.getEmployee();
-      if (iEmp) {
-        const emp = new Employee(iEmp);
-        this.employee = emp.id;
+    if (this.site === '') {
+      const iSite = this.siteService.getSite();
+      if (iSite) {
+        this.site = iSite.id;
+        this.setRequests();
       }
     }
   }
 
-  setEmployee() {
+  setRequests() {
     const list: Item[] = [];
-    list.push({
-      id: '',
-      value: 'Add New Request'
-    });
+    const now = new Date();
+    this.requestList = new Map<string, LeaveRequest>();
     const formatter = new Intl.DateTimeFormat('en-US',
       { year: 'numeric',
         month: '2-digit',
         day: '2-digit'
       }
     );
-    if (this.employee !== '') {
+    if (this.site !== '') {
       const team = this.teamService.getTeam();
       if (team) {
         let found = false;
         team.sites.forEach(site => {
-          if (!found && site.employees) {
-            site.employees.forEach(emp => {
-              if (!found && emp.id === this.employee) {
-                found = true;
-                this.siteid.set(emp.site);
-                const now = new Date();
-                emp.requests.sort((a,b) => b.compareTo(a));
+          if (site.id === this.site) {
+            if (site.employees) {
+              site.employees.forEach(iEmp => {
+                const emp = new Employee(iEmp);
                 emp.requests.forEach(request => {
-                  if (request.startdate.getTime() > now.getTime()
-                    || request.enddate.getTime() > now.getTime()) {
-                    const label = `${formatter.format(request.startdate)}-`
-                      + `${formatter.format(request.enddate)}`;
+                  if (request.status.toLowerCase() === 'requested'
+                    && (request.startdate.getTime() > now.getTime()
+                    || request.enddate.getTime() > now.getTime())) {
+                    const title = `${emp.name.lastname} `
+                      + `(${formatter.format(request.startdate)} `
+                      + `- ${formatter.format(request.enddate)})`;
+                    const id = `${emp.id}|${request.id}`;
                     list.push({
-                      id: request.id,
-                      value: label
+                      id: id,
+                      value: title
                     });
+                    this.requestList.set(id, request);
                   }
                 });
-              }
-            });
+              });
+            }
           }
         });
       }
@@ -106,23 +107,19 @@ export class EmployeeLeaveRequestsViewer {
     this.requests.set(list);
   }
 
-  showApproval(): boolean {
-    if (this.employee !== '') {
-      let approver = false;
-      let siteid = '';
-      const iEmp = this.empService.getEmployee();
-      if (iEmp) {
-        const emp = new Employee(iEmp);
-        siteid = emp.site;
-        if (emp.user) {
-          approver = ((emp.user.hasPermission('scheduler', 'scheduler')
-            || emp.user.hasPermission('scheduler', 'siteleader'))
-            && emp.id !== this.employee && this.siteid() === siteid);
-        }
+  showApproval(empid: string): boolean {
+    let approver = false;
+    let siteid = '';
+    const iEmp = this.empService.getEmployee();
+    if (iEmp) {
+      const emp = new Employee(iEmp);
+      siteid = emp.site;
+      if (emp.user) {
+        approver = (emp.user.hasPermission('scheduler', 'scheduler')
+          || emp.user.hasPermission('scheduler', 'siteleader'));
       }
-      return approver;
     }
-    return false;
+    return approver;
   }
 
   onSelect(id: string) {
@@ -139,46 +136,47 @@ export class EmployeeLeaveRequestsViewer {
     this.approvedOn.set('');
     this.ptoHours.set('');
     this.holidayHours.set('');
-    if (this.employee !== '') {
+    if (this.site !== '') {
       let approver = false;
       let siteid = '';
-      const iEmp = this.empService.getEmployee();
-      if (iEmp) {
-        const emp = new Employee(iEmp);
-        siteid = emp.site;
-        if (emp.user) {
-          approver = (emp.user.hasPermission('scheduler', 'scheduler')
-            || emp.user.hasPermission('scheduler', 'siteleader'));
-        }
-      }
+      const parts = id.split('|');
       const team = this.teamService.getTeam();
       if (team) {
         let found = false;
         team.sites.forEach(site => {
-          if (!found && site.employees) {
-            site.employees.forEach(emp => {
-              if (!found && emp.id === this.employee) {
-                found = true;
-                emp.requests.forEach(request => {
-                  if (request.id === id) {
-                    this.setRequest(request);
+          if (!found && site.id === this.site) {
+            if (site.employees) {
+              site.employees.forEach(iEmp => {
+                if (!found) {
+                  const emp = new Employee(iEmp);
+                  if (emp.id === parts[0]) {
+                    emp.requests.forEach(request => {
+                      if (!found) {
+                        if (request.id === parts[1]) {
+                          found = true;
+                          this.setRequest(emp.id, request);
+                        }
+                      }
+                    })
                   }
-                })
-              }
-            });
+                }
+              })
+            }
           }
         });
       }
     }
   }
 
-  setRequest(request: LeaveRequest) {
+  setRequest(empid: string, request: LeaveRequest) {
     const formatter = new Intl.DateTimeFormat('en-US',
       { year: 'numeric',
         month: '2-digit',
         day: '2-digit'
       }
     );
+    this.employee.set(empid);
+    this.request.set(request.id);
     this.showSubmit.set(request.status.toLowerCase() === 'draft');
     this.createdOn.set(formatter.format(request.requestDate));
     this.requestStatus.set(request.status.toUpperCase());
@@ -214,7 +212,7 @@ export class EmployeeLeaveRequestsViewer {
       this.showSubmit.set(true);
     }
     if (request.status.toLowerCase() === 'requested'
-      && this.showApproval()) {
+      && this.showApproval(empid)) {
       this.showApprover.set(true);
     }
   }
@@ -237,6 +235,7 @@ export class EmployeeLeaveRequestsViewer {
   }
 
   onChanged(evt: string) {
+    console.log(evt);
     const parts = evt.split('|');
     let employeeid = '';
     let requestid = '';
@@ -287,14 +286,7 @@ export class EmployeeLeaveRequestsViewer {
                     }
                   });
                 }
-                this.setEmployee();
-                employee.requests.forEach(request => {
-                  if (request.startdate.getTime() === start.getTime()) {
-                    this.selectedItem.set(request.id);
-                    this.showSubmit.set(true);
-                    this.setRequest(request);
-                  }
-                })
+                this.setRequests();
               }
             },
             error: (err) => {
@@ -353,7 +345,7 @@ export class EmployeeLeaveRequestsViewer {
                       }
                     });
                   }
-                  this.setEmployee();
+                  this.setRequests();
                 }
               },
               error: (err) => {
@@ -439,12 +431,12 @@ export class EmployeeLeaveRequestsViewer {
               }
             });
           }
-          this.setEmployee();
-          employee.requests.forEach(request => {
-            if (request.id === requestid) {
-              this.setRequest(request);
-            }
-          })
+          this.setRequests();
+          const id = `${empid}|${requestid}`;
+          const request = this.requestList.get(id);
+          if (request) {
+            this.setRequest(empid, request);
+          }
           this.refreshEditor.set(true);
         }
       },
@@ -460,7 +452,8 @@ export class EmployeeLeaveRequestsViewer {
 
   onSubmitForApproval() {
     this.showSubmit.set(false);
-    this.updateLeaveRequest(this.employee, this.selectedItem(), 'requested', '');
+    const parts = this.selectedItem().split('|');
+    this.updateLeaveRequest(parts[0], parts[1], 'requested', '');
   }
 
   onApprove() {
@@ -468,7 +461,8 @@ export class EmployeeLeaveRequestsViewer {
     if (iEmp) {
       const emp = new Employee(iEmp);
       this.showApprover.set(false);
-      this.updateLeaveRequest(this.employee, this.selectedItem(), 'approve', emp.id);
+      const parts = this.selectedItem().split('|');
+      this.updateLeaveRequest(parts[0], parts[1], 'approve', emp.id);
     }
   }
 
@@ -483,7 +477,8 @@ export class EmployeeLeaveRequestsViewer {
     const dialogRef = this.dialog.open(MessageDialog, {data: data});
     dialogRef.afterClosed().subscribe(result => {
       if (result && result !== '') {
-        this.updateLeaveRequest(this.employee, this.selectedItem(), 'unapprove', result);
+        const parts = this.selectedItem().split('|');
+        this.updateLeaveRequest(parts[0], parts[1], 'unapprove', result);
       } else {
         this.authService.statusMessage.set('No unapprove reason given');
       }

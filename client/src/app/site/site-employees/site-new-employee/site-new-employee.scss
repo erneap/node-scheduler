@@ -1,0 +1,103 @@
+@use '@angular/material' as mat;
+
+.expansion {
+  @include mat.expansion-overrides((
+    container-background-color: darkblue,
+    header-description-color: white,
+    header-indicator-color: white,
+    header-disabled-state-text-color: yellow,
+    header-focus-state-layer-color: green,
+    header-hover-state-layer-color: blue,
+    actions-divider-color: darkred,
+  ));
+}
+
+.error {
+  font-size: .8rem;
+  background-color: darkmagenta;
+  color: white;
+}.weekday {
+  width: 35px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.input {
+  width: 100%;
+  font-size: 1.4rem;
+  background-color: darkred;
+  color: white;
+  text-align: center;
+  border: none;
+}
+
+.code {
+  width: 200px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px black;
+}
+
+.hours {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px black;
+}
+
+.copy {
+  width: 50px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.schedule {
+  width: 580px;
+  font-size: 1rem;
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.scheduleField {
+  height: 100%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+}
+
+.icon {
+  margin: 0;
+  padding: 0;
+  height: 15px;
+  width: 15px;
+  font-size: 1rem;
+  color: white;
+  border: solid 1px white;
+  cursor: pointer;
+}
+
+.clear-button {
+  @include mat.button-overrides((
+    filled-container-color: white,
+    filled-label-text-color: black,
+  ));
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
+}

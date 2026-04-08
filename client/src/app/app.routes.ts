@@ -28,6 +28,7 @@ import { SiteEditEmployeeLeaves } from './site/site-employees/site-edit-employee
 import { SiteEditEmployeeLeaveBalances } from './site/site-employees/site-edit-employee/site-edit-employee-leave-balances/site-edit-employee-leave-balances';
 import { SiteEditEmployeeAssignment } from './site/site-employees/site-edit-employee/site-edit-employee-assignment/site-edit-employee-assignment';
 import { SiteEditEmployeeVariation } from './site/site-employees/site-edit-employee/site-edit-employee-variation/site-edit-employee-variation';
+import { SiteLeaveApproval } from './site/site-leave-approval/site-leave-approval';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -80,7 +81,8 @@ export const routes: Routes = [
             ]
           }
         ]
-       },
+      },
+      { path: 'leaveapproval', component: SiteLeaveApproval },
       { path: '**', component: SiteSchedule },
     ]
   },
