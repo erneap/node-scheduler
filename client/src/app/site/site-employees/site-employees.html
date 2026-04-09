@@ -1,13 +1,22 @@
 <div class="flexlayout column topleft view">
   <div class="flexlayout row center" style="width: 100%;">
     <h2 style="color: white;">Site Employees Editor</h2>
+    <span class="flex-spacer"></span>
+    <div class="flexlayout column center">
+      @if (this.siteService.selectedEmployee() !== 'new') {
+        <button matIconButton matTooltip="Delete selected employee" 
+          (click)="deleteEmployee()">
+          <mat-icon class="delete">delete</mat-icon>
+        </button>
+      }
+    </div>
   </div>
   <div class="flexlayout row topleft" style="width: 100%;">
     <div class="flexlayout column center" style="margin-left: 10px;">
       <h3 style="color: white;">List of Employees</h3>
       <app-list [height]="getEmployeeListHeight()" [width]="250"
-        [list]="employeeList()" (itemSelected)="onSelect($event)"
-        [selectedItem]="selectedEmployeeID()">
+        [list]="siteService.siteEmployeeList()" (itemSelected)="onSelect($event)"
+        [selectedItem]="siteService.selectedEmployee()">
       </app-list>
       <div class="flexlayout row center" style="width: 100%;">
         <mat-checkbox style="color: white;"

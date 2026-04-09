@@ -59,24 +59,36 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
 
       const empService = new EmployeeService();
       const userService = new UserService();
-      const iUser = await userService.getByEmail(employee.email);
       let bReplace = false;
       let user: User | undefined;
-      if (iUser) {
-        user = new User(iUser);
-        if (!user.hasPermission('scheduler', 'employee')) {
+      try {
+        const iUser = await userService.getByEmail(employee.email);
+        if (iUser) {
+          user = new User(iUser);
+          if (!user.hasPermission('scheduler', 'employee')) {
+            user.permissions.push(new Permission({
+              application: 'scheduler',
+              job: 'employee'
+            }));
+          }
+          bReplace = true;
+        } else {
+          user = new User(data.user);
           user.permissions.push(new Permission({
             application: 'scheduler',
             job: 'employee'
           }));
         }
-        bReplace = true;
-      } else {
-        user = new User(data.user);
-        user.permissions.push(new Permission({
-          application: 'scheduler',
-          job: 'employee'
-        }));
+      } catch (err: any) {
+        if (err.message && err.message.toLowerCase() === 'user not found') {
+          user = new User(data.user);
+          user.permissions.push(new Permission({
+            application: 'scheduler',
+            job: 'employee'
+          }));
+        } else {
+          throw err;
+        }
       }
   
       const salt = genSaltSync(12)
@@ -94,7 +106,7 @@ router.post('/employee', auth, async(req: Request, res: Response) => {
         user = await userService.insert(user);
         user = new User(user);
       }
-      employee._id = user._id;
+      employee._id = new ObjectId(user.id);
       employee.id = user.id;
       employee = await empService.insert(employee);
       employee.user = user;

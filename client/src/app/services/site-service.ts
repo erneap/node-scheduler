@@ -5,6 +5,7 @@ import { ISite, Site } from 'scheduler-models/scheduler/sites';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
+import { Item } from '../general/list/list.model';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,8 @@ import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/site
 export class SiteService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
   public selectedEmployee = signal<string>('new');
+  public siteEmployeeList = signal<Item[]>([]);
+  public showAllEmployees = signal<boolean>(false);
 
   constructor(
     private http: HttpClient

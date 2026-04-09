@@ -82,7 +82,9 @@ export class BuildInitial {
             this.initialData.team = new Team(iTeam);
             // compile list of employees active during period
             const employeeIDList: string[] = []
-            const empTeamQuery = { team: new ObjectId(this.initialData.employee.team)};
+            const empTeamQuery = { $or: [ 
+              { team: new ObjectId(this.initialData.team._id)},
+              { team: this.initialData.team._id.toString() } ] };
             if (collections.employees) {
               const empCursor = collections.employees.find<IEmployee>(empTeamQuery);
               const empArray = await empCursor.toArray();

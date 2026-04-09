@@ -5,8 +5,9 @@ import { InitialResponse } from 'scheduler-models/scheduler/web';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { UpdateRequest } from 'scheduler-models/general';
+import { Message, UpdateRequest } from 'scheduler-models/general';
 import { EmployeeContactInformationItem } from '../employee/employee-contact-information/employee-contact-information-item/employee-contact-information-item';
+import { Site } from 'scheduler-models/scheduler/sites';
 
 @Injectable({
   providedIn: 'root',
@@ -65,6 +66,28 @@ export class EmployeeService extends CacheService {
         return res;
       })
     );
+  }
+
+  addEmployee(emp: IEmployee): Observable<HttpResponse<Employee>> {
+    const url = `${this.schedulerUrl}/employee`;
+    return this.http.post<Employee>(url, emp, { observe: 'response'}).pipe(
+      map(res => {
+        const iEmployee = (res.body as IEmployee );
+        if (iEmployee) {
+          const employee = new Employee(iEmployee);
+          const tEmp = this.getEmployee();
+          if (tEmp && tEmp.id === employee.id) {
+            this.setEmployee(employee);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteEmployee(empid: string, byid: string): Observable<HttpResponse<Message>> {
+    const url = `${this.schedulerUrl}/employee/${empid}/${byid}`;
+    return this.http.delete<Message>(url, { observe: 'response'})
   }
 
   addLeaveRequest(empID: string, start: Date, end: Date, primary: string, 

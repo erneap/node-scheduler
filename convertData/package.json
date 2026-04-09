@@ -21,7 +21,7 @@
     "dotenv": "^17.3.1",
     "mariadb": "^3.5.2",
     "mongodb": "^7.1.0",
-    "scheduler-models": "^1.3.16",
-    "scheduler-services": "^1.3.21"
+    "scheduler-models": "^1.3.86",
+    "scheduler-services": "^1.3.58"
   }
 }

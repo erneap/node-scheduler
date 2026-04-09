@@ -1,4 +1,4 @@
-import { Component, Input, input, signal } from '@angular/core';
+import { Component, computed, Input, input, signal } from '@angular/core';
 import { List } from '../../general/list/list';
 import { Item } from '../../general/list/list.model';
 import { ISite, Site } from 'scheduler-models/scheduler/sites';
@@ -8,13 +8,24 @@ import { SiteService } from '../../services/site-service';
 import { Employee } from 'scheduler-models/scheduler/employees';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Router, RouterOutlet } from '@angular/router';
+import { MatTooltip } from "@angular/material/tooltip";
+import { MatIcon } from "@angular/material/icon";
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../../general/confirmation-dialog/confirmation-dialog';
+import { Message } from 'scheduler-models/general';
+import { TeamService } from '../../services/team-service';
+import { Team } from 'scheduler-models/scheduler/teams';
 
 @Component({
   selector: 'app-site-employees',
   imports: [
     List,
     MatCheckboxModule,
-    RouterOutlet
+    RouterOutlet,
+    MatTooltip,
+    MatIcon,
+    MatButtonModule
 ],
   templateUrl: './site-employees.html',
   styleUrl: './site-employees.scss',
@@ -22,8 +33,7 @@ import { Router, RouterOutlet } from '@angular/router';
 export class SiteEmployees {
   site = signal<Site>(new Site());
   employeeList = signal<Item[]>([]);
-  showAllEmployees = signal<boolean>(false);
-  selectedEmployeeID = signal<string>('new');
+  selectedEmployeeID = computed(() => this.siteService.selectedEmployee());
   @Input()
   get siteselect(): Site {
     return this.site();
@@ -36,14 +46,15 @@ export class SiteEmployees {
   constructor(
     private authService: AuthService,
     private empService: EmployeeService,
-    private siteService: SiteService,
-    private router: Router
+    public siteService: SiteService,
+    private teamService: TeamService,
+    private router: Router,
+    private dialog: MatDialog
   ) {
     const iSite = this.siteService.getSite();
     if (iSite) {
       this.site.set(new Site(iSite));
       this.setEmployees();
-      this.selectedEmployeeID.set(this.siteService.selectedEmployee());
       if (this.siteService.selectedEmployee() === 'new') {
         this.router.navigate(['/site/employees/new']);
       } else {
@@ -67,7 +78,7 @@ export class SiteEmployees {
     if (this.site().employees) {
       this.site().employees?.forEach(iEmp => {
         const emp = new Employee(iEmp);
-        if (this.showAllEmployees()) {
+        if (this.siteService.showAllEmployees()) {
           list.push({
             id: emp.id,
             value: emp.name.getLastFirst()
@@ -82,12 +93,11 @@ export class SiteEmployees {
         }
       });
     }
-    this.employeeList.set(list);
+    this.siteService.siteEmployeeList.set(list);
   }
 
   onSelect(id: string) {
     const oldid = this.siteService.selectedEmployee().toLowerCase();
-    this.selectedEmployeeID.set(id);
     this.siteService.selectedEmployee.set(id);
     if (oldid !== 'new' && id.toLowerCase() === 'new') {
       this.router.navigate(['/site/employees/new']);
@@ -97,7 +107,7 @@ export class SiteEmployees {
   }
 
   onShowAll(show: boolean) {
-    this.showAllEmployees.set(show);
+    this.siteService.showAllEmployees.set(show);
     this.setEmployees();
   }
 
@@ -106,5 +116,69 @@ export class SiteEmployees {
     const height = window.innerHeight - 140;
     return `margin-left: 20px; height: ${height}px;width: ${width}px;`
       + 'border: solid 1px white;';
+  }
+
+  deleteEmployee() {
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        title: 'Employee Delete Confirmation',
+        message: 'Are you sure you want to delete this Employee?',
+        negativeButtonTitle: 'No',
+        affirmativeButtonTitle: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.toLowerCase() === 'yes') {
+        const iEmp = this.empService.getEmployee();
+        if (iEmp) {
+          const emp = new Employee(iEmp);
+          this.empService.deleteEmployee(this.siteService.selectedEmployee(), emp.id).subscribe({
+            next: (res) => {
+              const msg = res.body as Message;
+              if (msg.message.toLowerCase() === 'employee deleted') {
+                const iSite = this.siteService.getSite();
+                if (iSite) {
+                  const site = new Site(iSite);
+                  if (site.employees) {
+                    let found = -1;
+                    site.employees.forEach((emp, e) => {
+                      if (emp.id === this.siteService.selectedEmployee()) {
+                        found = e;
+                      }
+                    });
+                    if (found >= 0) {
+                      site.employees.splice(found, 1);
+                    }
+                  }
+                  this.siteService.setSite(site);
+                  this.site.set(site);
+                }
+                const iTeam = this.teamService.getTeam();
+                if (iTeam) {
+                  const team = new Team(iTeam);
+                  let found = -1;
+                  team.sites.forEach(site => {
+                    if (found < 0 && site.employees) {
+                      site.employees.forEach((emp, e) => {
+                        if (emp.id === this.siteService.selectedEmployee()) {
+                          found = e;
+                        }
+                      });
+                      if (found >= 0) {
+                        site.employees.splice(found, 1);
+                      }
+                    }
+                  });
+                  this.teamService.setTeam(team);
+                }
+              }
+            }
+          });
+        }
+        this.setEmployees();
+        this.siteService.selectedEmployee.set('new');
+        this.router.navigate(['/site/employees/new']);
+      }
+    });
   }
 }

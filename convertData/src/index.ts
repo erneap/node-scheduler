@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { connectToDB, createPool, BuildInitial } from 'scheduler-services';
 import { SqlWork } from './sqlscripts/work';
+import { EmployeeConvert } from './sqlscripts/employees';
 /**
  * This project portion will convert the original data from mongodb to mariadb.
  * 
@@ -26,6 +27,12 @@ async function build() {
   }
 }
 
+async function convertEmployees() {
+  console.log('Converting employees to string team');
+  const convert = new EmployeeConvert();
+  Promise.allSettled([await convert.convert()]);
+}
+
 (async() => {
   await dotenv.config();
   await connectToDB();
@@ -38,6 +45,9 @@ async function build() {
         break;
       case "build":
         await build();
+        break;
+      case "employees":
+        await convertEmployees();
         break;
       default:
         console.log(`Unknown Argument: ${arg}`);

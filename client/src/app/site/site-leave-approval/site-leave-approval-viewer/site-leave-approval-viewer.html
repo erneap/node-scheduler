@@ -1,6 +1,6 @@
 <div class="flexlayout row topcenter flexgap">
   <div class="flexlayout column topcenter flexgap">
-    <app-list [width]="200" [height]="300" [list]="requests()"
+    <app-list [width]="300" [height]="300" [list]="requests()"
       (itemSelected)="onSelect($event)" [selectedItem]="selectedItem()"></app-list>
     @if (this.selectedItem() !== '') {
       <div class="flexlayout column topcenter" style="width: 100%;">

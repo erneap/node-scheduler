@@ -17,8 +17,12 @@ import { Site } from 'scheduler-models/scheduler/sites';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { Schedule, Workday } from 'scheduler-models/scheduler/employees';
+import { Assignment, Employee, IEmployee, Schedule, Workday } from 'scheduler-models/scheduler/employees';
 import { SiteEditEmployeeAssignmentEditorWorkday } from '../site-edit-employee/site-edit-employee-assignment/site-edit-employee-assignment-editor/site-edit-employee-assignment-editor-schedule/site-edit-employee-assignment-editor-workday/site-edit-employee-assignment-editor-workday';
+import { User } from 'scheduler-models/users';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Item } from '../../../general/list/list.model';
 
 interface NewEmployeData {
   email: string;
@@ -66,6 +70,7 @@ interface ErrorMessage {
 })
 export class SiteNewEmployee {
   site = signal<string>('');
+  team = signal<string>('');
   newEmployeeModel = signal<NewEmployeData>({
     email: '',
     first: '',
@@ -196,12 +201,14 @@ export class SiteNewEmployee {
     private authService: AuthService,
     private empService: EmployeeService,
     private siteService: SiteService,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private router: Router
   ) {
     if (this.companies().length === 0) {
       const iTeam = this.teamService.getTeam();
       if (iTeam) {
         const team = new Team(iTeam);
+        this.team.set(team.id);
         const cList: Company[] = [];
         team.companies.forEach(co => {
           cList.push(new Company(co));
@@ -218,6 +225,7 @@ export class SiteNewEmployee {
       const iSite = this.siteService.getSite();
       if (iSite) {
         const site = new Site(iSite);
+        this.site.set(site.id);
         const wlist: Workcenter[] = [];
         site.workcenters.forEach(wc => {
           wlist.push(new Workcenter(wc));
@@ -258,7 +266,8 @@ export class SiteNewEmployee {
     } else if (!(this.newEmployeeForm.laborcode().valid())) {
       answer = 'labor';
     } else if (!(this.newEmployeeForm.workcenter().valid()
-      && this.newEmployeeForm.start().valid())) {
+      && this.newEmployeeForm.start().valid()
+      && this.newEmployeeForm.workdays().valid())) {
       answer = 'assignment'
     }
     return answer;
@@ -415,4 +424,160 @@ export class SiteNewEmployee {
     this.newEmployeeForm.workdays().value.set(wlist);
     this.checkErrors()
   }
- }
+
+  onClear() {
+    console.log('clear');
+    this.newEmployeeForm().reset({
+      email: '',
+      first: '',
+      middle: '',
+      last: '',
+      password1: '',
+      password2: '',
+      company: '',
+      employeeid: '',
+      jobtitle: '',
+      laborcode: '',
+      workcenter: '',
+      start: new Date(),
+      workdays: [],
+    });
+    const sch = new Schedule();
+    sch.setScheduleDays(7);
+    this.newEmployeeForm.workdays().value.set(sch.workdays);
+    this.checkErrors()
+  }
+
+  onAdd() {
+    if (this.newEmployeeForm().valid()) {
+      const employee = new Employee();
+      employee.user = new User();
+      employee.email = this.newEmployeeForm.email().value();
+      employee.team = this.team();
+      employee.site = this.site();
+      employee.user.emailAddress = employee.email;
+      employee.user.firstName = this.newEmployeeForm.first().value();
+      employee.name.firstname = this.newEmployeeForm.first().value();
+      employee.user.middleName = this.newEmployeeForm.middle().value();
+      employee.name.middlename = this.newEmployeeForm.middle().value();
+      employee.user.lastName = this.newEmployeeForm.last().value();
+      employee.name.lastname = this.newEmployeeForm.last().value();
+      employee.user.password = this.newEmployeeForm.password1().value();
+      employee.companyinfo.company = this.newEmployeeForm.company().value();
+      employee.companyinfo.employeeid = this.newEmployeeForm.employeeid().value();
+      employee.companyinfo.jobtitle = this.newEmployeeForm.jobtitle().value();
+      const asgmt = new Assignment();
+      const lcParts = this.newEmployeeForm.laborcode().value().split('|');
+      asgmt.addLaborCode(lcParts[0], lcParts[1]);
+      asgmt.site = this.site();
+      asgmt.startDate = new Date(this.newEmployeeForm.start().value());
+      asgmt.endDate = new Date(Date.UTC(9999, 11, 30));
+      asgmt.workcenter = this.newEmployeeForm.workcenter().value();
+      const schedule = new Schedule();
+      schedule.id = 0;
+      this.newEmployeeForm.workdays().value().forEach(wd => {
+        schedule.workdays.push(new Workday(wd));
+      });
+      asgmt.schedules.push(schedule);
+      employee.assignments.push(asgmt);
+      this.empService.addEmployee(employee).subscribe({
+        next: (res) => {
+          const iEmp = res.body as IEmployee;
+          if (iEmp) {
+            const employee = this.useEmployeeResponse(iEmp);
+            this.setEmployeeList();
+            this.siteService.selectedEmployee.set(employee.id);
+            this.router.navigate(['/site/employees/edit/']);
+          }
+        },
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      })
+    }
+  }
+  
+  useEmployeeResponse(iEmp: IEmployee): Employee {
+    const employee = new Employee(iEmp);
+    const tEmp = this.empService.getEmployee();
+    if (tEmp && tEmp.id === employee.id) {
+      this.empService.setEmployee(employee);
+    }
+    const tSite = this.siteService.getSite();
+    let found = false;
+    if (tSite && tSite.employees) {
+      tSite.employees.forEach((emp, e) => {
+        if (!found && emp.id === employee.id && tSite.employees) {
+          tSite.employees[e] = new Employee(employee);
+          found = true;
+          this.siteService.setSite(tSite);
+        }
+      });
+      if (!found) {
+        tSite.employees.push(new Employee(employee));
+        tSite.employees.sort((a,b) => a.compareTo(b));
+        this.siteService.setSite(tSite);
+      }
+    }
+    found = false;
+    const tTeam = this.teamService.getTeam();
+    if (tTeam) {
+      tTeam.sites.forEach((site, s) => {
+        if (!found && site.employees) {
+          site.employees.forEach((emp, e) => {
+            if (!found && emp.id === employee.id && site.employees) {
+              site.employees[e] = new Employee(employee);
+              found = true;
+              this.teamService.setTeam(tTeam);
+            }
+          });
+        }
+      if (site.id.toLowerCase() === employee.site.toLowerCase() && !found) {
+        if (site.employees) {
+          site.employees.push(new Employee(employee));
+          found = true;
+          site.employees.sort((a,b) => a.compareTo(b));
+          this.teamService.setTeam(tTeam);
+        }
+      }
+      });
+    }
+    return employee;
+  }
+
+  setEmployeeList() {
+    const iSite = this.siteService.getSite();
+    if (iSite) {
+      const site = new Site(iSite);
+      const now = new Date();
+      if (site.employees) {
+        const eList: Item[] = [];
+        eList.push({
+          id: 'new',
+          value: 'Add New Employee'
+        });
+        site.employees.forEach(iEmp => {
+          const emp = new Employee(iEmp);
+          if (this.siteService.showAllEmployees()) {
+            eList.push({
+              id: emp.id,
+              value: emp.name.getLastFirst()
+            });
+          } else {
+            if (emp.isActive(now)) {
+              eList.push({
+                id: emp.id,
+                value: emp.name.getLastFirst()
+              });
+            }
+          }
+        });
+        this.siteService.siteEmployeeList.set(eList);
+      }
+    }
+  }
+}

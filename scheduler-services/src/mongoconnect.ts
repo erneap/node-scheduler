@@ -3,6 +3,7 @@ import { MongoClient, Db, Collection } from 'mongodb';
 export const collections: { 
   users?: Collection, 
   employees?: Collection,
+  employees2?: Collection,
   work?: Collection,
   notifications?: Collection,
   teams?: Collection,
@@ -32,6 +33,11 @@ export async function connectToDB() {
         employees = await db.createCollection("employees");
       }
       collections.employees = employees;
+      let emp2: Collection = db.collection('employees2');
+      if (!emp2) {
+        emp2 = await db.createCollection('employees2');
+      }
+      collections.employees2 = emp2;
       let work: Collection = db.collection('employeework');
       if (!work) {
         work = await db.createCollection("employeework");
