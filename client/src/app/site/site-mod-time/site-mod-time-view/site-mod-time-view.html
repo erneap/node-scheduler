@@ -1,0 +1,30 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row topleft">
+      <div class="flexlayout column center nameLabel">NAME</div>
+      <div class="flexlayout column center">
+        <div class="flexlayout center expand" 
+          matTooltip="Expand/Contract All" (click)="setExpandAll()">
+          {{expandAllText()}}
+        </div>
+        <div class="flexlayout center balanceLabel">BAL</div>
+      </div>
+    </div>
+    @for (emp of employees(); track emp; let i = $index) {
+      <div class="flexlayout row center">
+        <div [class]="getDataClass('name', i)" [style]="dataStyle('name')">
+          {{emp.name.getLastFirst()}}
+        </div>
+        <div [class]="getDataClass('bal', i)" [style]="dataStyle('bal')">
+          {{getTotalValue(emp)}}
+        </div>
+      </div>
+    }
+  </div>
+  <div class="monthsSection">
+    @for (month of months(); track month) {
+      <app-site-mod-time-month [month]="month" [employees]="employees()" 
+        (changed)="onChange($event)"></app-site-mod-time-month>
+    }
+  </div>
+</div>

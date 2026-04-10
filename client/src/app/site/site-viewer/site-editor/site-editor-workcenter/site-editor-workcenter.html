@@ -1,0 +1,59 @@
+<div class="flexlayout row topleft flexgap" style="margin-top: 10px;">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row center label">Workcenter List</div>
+    <app-list [width]="250" [height]="250" [list]="siteService.siteWorkcenterList()"
+      (itemSelected)="selectWorkcenter($event)" 
+      [selectedItem]="siteService.selectedWorkcenter()">
+    </app-list>
+    @if (siteService.selectedWorkcenter() !== 'new') {
+      <div class="flexlayout row center" style="width: 100%;">
+        @if (workcenterPos() > 0) {
+          <mat-icon matTooltip="move workcenter up list">arrow_upward</mat-icon>
+        }
+        @else {
+          <mat-icon></mat-icon>
+        }
+        <span class="flex-spacer"></span>
+        @if (workcenterPos() >= 0) {
+          <mat-icon matTooltip="delete workcenter">delete</mat-icon>
+        }
+        @else {
+          <mat-icon></mat-icon>
+        }
+        <span class="flex-spacer"></span>
+        @if (workcenterPos() < workcentersLength() - 1) {
+          <mat-icon matTooltip="move workcenter down list">arrow_downward</mat-icon>
+        }
+        @else {
+          <mat-icon></mat-icon>
+        }
+      </div>
+    }
+    <div class="flexlayout column center flexgap" style="width: 100%;margin-top: 5px;">
+      @if (siteService.selectedWorkcenter() === 'new') {
+        <mat-form-field [floatLabel]="'always'" style="width: 100%;">
+          <mat-label>Workcenter Identifier</mat-label>
+          <input matInput [formField]="wkctrForm.id">
+          @if (wkctrForm.id().invalid()) {
+            <mat-error>required</mat-error>
+          }
+        </mat-form-field>
+      }
+      <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+        <mat-label>Workcenter Name/Title</mat-label>
+        <input matInput [formField]="wkctrForm.name">
+        @if (wkctrForm.name().invalid()) {
+          <mat-error>required</mat-error>
+        }
+      </mat-form-field>
+      @if (siteService.selectedWorkcenter() === 'new') {
+        <div class="flexlayout row center" style="width: 100%;">
+          @if (wkctrForm().valid()) {
+            <button matButton="filled" class="add-button">Add</button>
+          }
+          <button matButton="filled" class="clear-button">Clear</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

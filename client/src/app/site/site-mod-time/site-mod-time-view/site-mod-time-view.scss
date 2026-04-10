@@ -1,0 +1,87 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.nameLabel {
+  width: 200px;
+  height: 42px;
+  font-size: 1em;
+  font-weight: bold;
+  border: solid 1px white;
+  background-color: black;
+  color: white;
+}
+
+.expand {
+  width: 50px;
+  height: 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border: solid 1px white;
+  background-color: goldenrod;
+  color: black;
+  cursor: pointer;
+}
+
+.balanceLabel {
+  width: 50px;
+  height: 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border: solid 1px white;
+  background-color: black;
+  color: white;
+}
+
+.namesSection {
+  width: 254px;
+}
+
+.monthsSection {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.name {
+  height: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border: solid 1px black;
+}
+
+.odd {
+  background-color: white;
+  color: black;
+}
+
+.even {
+  background-color: #cccccc;
+  color: black;
+}
+
+.oddtotal {
+  background-color: #d9d9d9;
+  color: black;
+}
+
+.eventotal {
+  background-color: #666666;
+  color: white;
+}
+
+.oddbal {
+  background-color: #cce8ff;
+  color: black;
+}
+
+.evenbal {
+  background-color: #0066cc;
+  color: white;
+}

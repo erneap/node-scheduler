@@ -29,6 +29,12 @@ import { SiteEditEmployeeLeaveBalances } from './site/site-employees/site-edit-e
 import { SiteEditEmployeeAssignment } from './site/site-employees/site-edit-employee/site-edit-employee-assignment/site-edit-employee-assignment';
 import { SiteEditEmployeeVariation } from './site/site-employees/site-edit-employee/site-edit-employee-variation/site-edit-employee-variation';
 import { SiteLeaveApproval } from './site/site-leave-approval/site-leave-approval';
+import { SiteModTime } from './site/site-mod-time/site-mod-time';
+import { SiteViewer } from './site/site-viewer/site-viewer';
+import { Component } from '@angular/core';
+import { NewSite } from './site/site-viewer/new-site/new-site';
+import { SiteEditor } from './site/site-viewer/site-editor/site-editor';
+import { SiteEditorWorkcenter } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -83,6 +89,21 @@ export const routes: Routes = [
         ]
       },
       { path: 'leaveapproval', component: SiteLeaveApproval },
+      { path: 'modtime', component: SiteModTime },
+      { path: 'edit', component: SiteViewer,
+        children: [
+          { path: '', redirectTo: '/site/edit/new', pathMatch: 'full' },
+          { path: 'new', component: NewSite },
+          { path: 'edit', component: SiteEditor,
+            children: [
+              { path: '', redirectTo: '/site/edit/edit/workcenter', pathMatch: 'full' },
+              { path: 'workcenter', component: SiteEditorWorkcenter },
+              { path: '**', component: SiteEditorWorkcenter }
+            ]
+          },
+          { path: '**', component: SiteEditor }
+        ]
+      },
       { path: '**', component: SiteSchedule },
     ]
   },

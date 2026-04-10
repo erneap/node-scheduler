@@ -1,0 +1,75 @@
+.odd {
+  background-color: white;
+  color: black;
+}
+
+.even {
+  background-color: #cccccc;
+  color: black;
+}
+
+.oddtotal {
+  background-color: #d9d9d9;
+  color: black;
+}
+
+.eventotal {
+  background-color: #666666;
+  color: white;
+}
+
+.oddbal {
+  background-color: #cce8ff;
+  color: black;
+}
+
+.evenbal {
+  background-color: #0066cc;
+  color: white;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border: solid 1px white;
+}
+
+.month {
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+.week {
+  background-color: #cccccc;
+  color: black;
+}
+
+.cell {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  width: 50px;
+  height: 20px;
+  border: solid 1px black;
+}

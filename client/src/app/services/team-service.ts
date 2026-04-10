@@ -13,6 +13,7 @@ import { Employee } from 'scheduler-models/scheduler/employees';
 export class TeamService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
   questions: SecurityQuestion[] = [];
+  selectedSite = signal<string>('');
 
   constructor(
     private http: HttpClient

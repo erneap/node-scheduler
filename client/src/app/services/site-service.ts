@@ -6,6 +6,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 import { Item } from '../general/list/list.model';
+import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +16,9 @@ export class SiteService extends CacheService {
   public selectedEmployee = signal<string>('new');
   public siteEmployeeList = signal<Item[]>([]);
   public showAllEmployees = signal<boolean>(false);
+  public siteWorkcenterList = signal<Item[]>([]);
+  public selectedWorkcenter = signal<string>('new');
+  public selectedSite = signal<Site>(new Site());
 
   constructor(
     private http: HttpClient

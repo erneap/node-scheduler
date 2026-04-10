@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+
+.error {
+  color: white;
+}
+
+.clear-button {
+  @include mat.button-overrides((
+    filled-container-color: white,
+    filled-label-text-color: black,
+  ));
+}
+
+.add-button {
+  @include mat.button-overrides((
+    filled-container-color: darkblue,
+    filled-label-text-color: white,
+  ));
+}
+
+.label {
+  width: 100%;
+  background-color: darkred;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+}

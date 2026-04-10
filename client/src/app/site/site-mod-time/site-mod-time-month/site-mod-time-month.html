@@ -1,0 +1,30 @@
+<div class="column" style="background-color: transparent;">
+  <div class="row label month" [style]="getUTCMonthStyle()" (click)="expandMonth()">
+    {{formatter.format(this.month().month)}}
+  </div>
+  <div class="row">
+    <div class="label month" style="width: 50px">Total</div>
+    @if (month().expand) {
+      @for (week of month().weeks; track week) {
+        <div class="label week"
+          style="width: 50px;">
+          {{formatter2.format(week.end)}}
+        </div>
+      }
+    }
+  </div>
+  @for (emp of employees(); track emp; let e = $index) {
+    <div class="row">
+      <div [class]="getStyle('total', e)">
+        {{getTotalValue(emp)}}
+      </div>
+      @if (month().expand) {
+        @for (week of month().weeks; track week) {
+          <div [class]="getStyle('week', e)">
+            {{getValue(emp, week)}}
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
