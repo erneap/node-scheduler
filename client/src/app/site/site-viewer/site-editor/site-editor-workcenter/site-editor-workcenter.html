@@ -56,4 +56,13 @@
       }
     </div>
   </div>
+  @if (siteService.selectedWorkcenter() !== 'new') {
+    <div class="flexlayout column topleft" style="width: 700px;">
+      <mat-toolbar class="toolbar" style="width: 100%;">
+        <button matButton>Workcenter Positions</button>
+        <button matButton>Workcenter Shifts</button>
+      </mat-toolbar>
+      <router-outlet></router-outlet>
+    </div>
+  }
 </div>

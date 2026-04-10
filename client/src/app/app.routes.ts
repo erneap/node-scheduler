@@ -35,6 +35,8 @@ import { Component } from '@angular/core';
 import { NewSite } from './site/site-viewer/new-site/new-site';
 import { SiteEditor } from './site/site-viewer/site-editor/site-editor';
 import { SiteEditorWorkcenter } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter';
+import { SiteEditorWorkcenterPositions } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter-positions/site-editor-workcenter-positions';
+import { SiteEditorWorkcenterShifts } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter-shifts/site-editor-workcenter-shifts';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -97,7 +99,15 @@ export const routes: Routes = [
           { path: 'edit', component: SiteEditor,
             children: [
               { path: '', redirectTo: '/site/edit/edit/workcenter', pathMatch: 'full' },
-              { path: 'workcenter', component: SiteEditorWorkcenter },
+              { path: 'workcenter', component: SiteEditorWorkcenter,
+                children: [
+                  { path: '', redirectTo: '/site/edit/edit/workcenter/positions', 
+                    pathMatch: 'full'},
+                  { path: 'positions', component: SiteEditorWorkcenterPositions },
+                  { path: 'shifts', component: SiteEditorWorkcenterShifts },
+                  { path: '**', component: SiteEditorWorkcenterShifts }
+                ]
+              },
               { path: '**', component: SiteEditorWorkcenter }
             ]
           },

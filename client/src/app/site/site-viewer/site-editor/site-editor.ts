@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { form, FormField, required } from '@angular/forms/signals';
+import { form, FormField, max, min, required } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -34,6 +34,8 @@ export class SiteEditor {
   siteEditForm = form(this.siteEditModel, schema => {
     required(schema.name);
     required(schema.offset);
+    min(schema.offset, -12, { message: 'must be above -12'});
+    max(schema.offset, 12, { message: 'must be below 12'});
   })
 
   constructor(

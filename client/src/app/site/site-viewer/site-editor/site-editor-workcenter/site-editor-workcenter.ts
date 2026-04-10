@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { List } from '../../../../general/list/list';
 import { Item } from '../../../../general/list/list.model';
 import { SiteService } from '../../../../services/site-service';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { form, FormField, required } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -26,8 +26,9 @@ interface SiteWorkcenterData {
     MatButtonModule,
     MatIconModule,
     MatTooltip,
-    MatToolbarModule
-  ],
+    MatToolbarModule,
+    RouterOutlet
+],
   templateUrl: './site-editor-workcenter.html',
   styleUrl: './site-editor-workcenter.scss',
 })
@@ -75,6 +76,11 @@ export class SiteEditorWorkcenter {
           this.wkctrForm.id().value.set(wc.id);
           this.wkctrForm.name().value.set(wc.name);
           this.workcenterPos.set(w);
+          if (wc.positions && wc.positions.length > 0) {
+            this.router.navigate(['/site/edit/edit/workcenter/positions'])
+          } else {
+            this.router.navigate(['/site/edit/edit/workcenter/shifts'])
+          }
         }
       });
     } else {
