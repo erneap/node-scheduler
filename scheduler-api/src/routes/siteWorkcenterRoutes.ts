@@ -5,6 +5,8 @@ import { Site } from "scheduler-models/scheduler/sites";
 import { Team } from "scheduler-models/scheduler/teams";
 import { Workcenter } from "scheduler-models/scheduler/sites/workcenters/workcenter";
 import { postLogEntry, TeamService } from "scheduler-services";
+import { Shift } from "scheduler-models/scheduler/sites/workcenters/shift";
+import { Position } from "scheduler-models/scheduler/sites/workcenters/position";
 
 const router = Router();
 export default router;
@@ -109,7 +111,7 @@ router.put('/site/workcenter', auth, async(req: Request, res: Response) => {
                           case "associated":
                           case "associatedcodes":
                           case "codes":
-                            shift.associatedCodes = data.value.split(',');
+                            shift.associatedCodes = data.value.split('|');
                             break;
                           case "paycode":
                           case "premimum":
@@ -158,6 +160,10 @@ router.put('/site/workcenter', auth, async(req: Request, res: Response) => {
                             break;
                           case "name":
                             posit.name = data.value;
+                            break;
+                          case "assigned":
+                            const assigned = data.value.split('|');
+                            posit.assigned = assigned;
                             break;
                           case "addassigned":
                             if (posit.assigned) {
@@ -236,6 +242,41 @@ router.put('/site/workcenter', auth, async(req: Request, res: Response) => {
                         }
                       }
                     }
+                    break;
+                  case "addshift":
+                    let shftMax = -1;
+                    if (!wc.shifts) {
+                      wc.shifts = [];
+                    }
+                    wc.shifts.forEach(shft => {
+                      if (shft.sort > shftMax) {
+                        shftMax = shft.sort
+                      }
+                    });
+                    const parts = data.value.split('|');
+                    const newShift = new Shift();
+                    newShift.id = parts[0].toLowerCase();
+                    newShift.name = parts[1];
+                    newShift.sort = shftMax + 1;
+                    wc.shifts.push(newShift);
+                    break;
+                  case "addposition":
+                    let posMax = -1;
+                    if (!wc.positions) {
+                      wc.positions = [];
+                    }
+                    wc.positions.forEach(pos => {
+                      if (pos.sort > posMax) {
+                        posMax = pos.sort;
+                      }
+                    });
+                    const pparts = data.value.split('|');
+                    const newPos = new Position();
+                    newPos.id = pparts[0].toLowerCase();
+                    newPos.name = pparts[1];
+                    newPos.sort = posMax + 1;
+                    wc.positions.push(newPos);
+                    break;
                 }
               }
             }

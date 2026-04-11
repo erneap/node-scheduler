@@ -1,0 +1,67 @@
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft">
+    <app-list [height]="250" [width]="250" [list]="list()" 
+      (itemSelected)="selectPosition($event)" 
+      [selectedItem]="siteService.selectedWkctrPosition()"></app-list>
+      @if (siteService.selectedWkctrShift()) {
+        <div class="flexlayout column center" style="height: 250px;">
+          @if (positionPos() > 0) {
+            <mat-icon matTooltip="move workcenter up list" (click)="onUpdate('up')">
+              arrow_upward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (positionPos() >= 0) {
+            <mat-icon matTooltip="delete workcenter" (click)="onDelete()">delete</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (positionPos() >= 0 && positionPos() < positionsLength() - 1) {
+            <mat-icon matTooltip="move workcenter down list" (click)="onUpdate('down')">
+              arrow_downward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+        </div>
+      }
+  </div>
+  @if (siteService.selectedWkctrPosition().toLowerCase() === 'new') {
+    <mat-form-field floatLabel="always" style="width: 100%;">
+      <mat-label>New Position Identifier</mat-label>
+      <input matInput [formField]="positionForm.id">
+      @if (positionForm.id().invalid()) {
+        <mat-error>required</mat-error>
+      }
+    </mat-form-field>
+  }
+  <mat-form-field floatLabel="always" style="width: 100%;">
+    <mat-label>Position Name/Title</mat-label>
+    <input matInput [formField]="positionForm.name" (change)="onUpdate('name')">
+    @if (positionForm.name().invalid()) {
+      <mat-error>required</mat-error>
+    }
+  </mat-form-field>
+  @if (siteService.selectedWkctrPosition().toLowerCase() !== 'new') {
+    <mat-form-field floatLabel="always" style="width: 100%;">
+      <mat-label>Assigned Employee(s)</mat-label>
+      <mat-select [formField]="positionForm.assigned" multiple 
+        (selectionChange)="onUpdate('assigned')">
+        @for (emp of employeesList(); track emp.id) {
+          <mat-option [value]="emp.id">{{emp.name.getLastFirst()}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+
+  @if (positionForm.id().valid() && positionForm.name().valid() 
+    && siteService.selectedWkctrPosition().toLowerCase() === 'new') {
+    <div class="flexlayout row center" style="width: 100%;">
+      <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+    </div>
+  }
+</div>
