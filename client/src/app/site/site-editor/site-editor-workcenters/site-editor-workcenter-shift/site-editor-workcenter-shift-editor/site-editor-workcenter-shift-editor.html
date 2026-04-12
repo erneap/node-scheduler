@@ -1,0 +1,85 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row topleft" style="margin-bottom: 5px;">
+      <app-list [height]="250" [width]="250" [list]="list()" 
+        (itemSelected)="selectShift($event)" 
+        [selectedItem]="selectedShift()">
+      </app-list>
+      @if (selectedShift() !== 'new') {
+        <div class="flexlayout column center" style="height: 250px;">
+          @if (shiftPos() > 0) {
+            <mat-icon matTooltip="move workcenter up list" (click)="onUpdate('up')">
+              arrow_upward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (shiftPos() >= 0) {
+            <mat-icon matTooltip="delete workcenter" (click)="onDelete()">
+              delete</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (shiftPos() >= 0 && shiftPos() < shiftsLength() - 1) {
+            <mat-icon matTooltip="move workcenter down list" (click)="onUpdate('down')">
+              arrow_downward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+        </div>
+      }
+    </div>
+    @if (this.selectedShift().toLowerCase() === 'new') {
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>New Workcenter Identifier</mat-label>
+        <input matInput [formField]="shiftForm.id">
+        @if (shiftForm.id().invalid()) {
+          <mat-error>required</mat-error>
+        }
+      </mat-form-field>
+    }
+    <mat-form-field floatLabel="always" style="width: 250px;">
+      <mat-label>Shift Name/Title</mat-label>
+      <input matInput [formField]="shiftForm.name" (change)="onUpdate('name')">
+      @if (shiftForm.name().invalid()) {
+        <mat-error>required</mat-error>
+      }
+    </mat-form-field>
+    @if (shiftForm.id().valid() && shiftForm.name().valid() 
+      && selectedShift().toLowerCase() === 'new') {
+      <div class="flexlayout row center" style="width: 100%;">
+        <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+      </div>
+    }
+  </div>
+  @if (selectedShift().toLowerCase() !== 'new') {
+    <div class="flexlayout column center flexgap" style="margin-left: 10px;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Associated Work Code(s)</mat-label>
+        <mat-select [formField]="shiftForm.associated" multiple 
+          (selectionChange)="onUpdate('associated')">
+          @for (code of workcodes(); track code.id) {
+            <mat-option [value]="code.id">{{code.title}}</mat-option>
+          }
+        </mat-select>
+        @if (shiftForm.associated().invalid()) {
+          <mat-error>Minimum 1</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Associated Pay Code</mat-label>
+        <input matInput type="number" [formField]="shiftForm.paycode" 
+          (change)="onUpdate('paycode')">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Minimum Working Shift</mat-label>
+        <input matInput type="number" [formField]="shiftForm.minimums"
+          (change)="onUpdate('minimums')">
+      </mat-form-field>
+    </div>
+  }
+</div>

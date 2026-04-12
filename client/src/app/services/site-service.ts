@@ -17,11 +17,9 @@ export class SiteService extends CacheService {
   public selectedEmployee = signal<string>('new');
   public siteEmployeeList = signal<Item[]>([]);
   public showAllEmployees = signal<boolean>(false);
-  public siteWorkcenterList = signal<Item[]>([]);
-  public selectedWorkcenter = signal<string>('new');
-  public selectedWkctrShift = signal<string>('new');
-  public selectedWkctrPosition = signal<string>('new');
   public selectedSite = signal<Site>(new Site());
+  public selectedWorkcenter = signal<string>('new')
+  public selectedForecast = signal<string>('new');
 
   constructor(
     private http: HttpClient

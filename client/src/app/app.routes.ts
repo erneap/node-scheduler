@@ -30,13 +30,13 @@ import { SiteEditEmployeeAssignment } from './site/site-employees/site-edit-empl
 import { SiteEditEmployeeVariation } from './site/site-employees/site-edit-employee/site-edit-employee-variation/site-edit-employee-variation';
 import { SiteLeaveApproval } from './site/site-leave-approval/site-leave-approval';
 import { SiteModTime } from './site/site-mod-time/site-mod-time';
-import { SiteViewer } from './site/site-viewer/site-viewer';
-import { Component } from '@angular/core';
-import { NewSite } from './site/site-viewer/new-site/new-site';
-import { SiteEditor } from './site/site-viewer/site-editor/site-editor';
-import { SiteEditorWorkcenter } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter';
-import { SiteEditorWorkcenterPositions } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter-positions/site-editor-workcenter-positions';
-import { SiteEditorWorkcenterShifts } from './site/site-viewer/site-editor/site-editor-workcenter/site-editor-workcenter-shifts/site-editor-workcenter-shifts';
+import { PathNotFound } from './general/path-not-found/path-not-found';
+import { SiteEditor } from './site/site-editor/site-editor';
+import { SiteEditorWorkcenters } from './site/site-editor/site-editor-workcenters/site-editor-workcenters';
+import { SiteEditorForecasts } from './site/site-editor/site-editor-forecasts/site-editor-forecasts';
+import { SiteEditorCofs } from './site/site-editor/site-editor-cofs/site-editor-cofs';
+import { SiteEditorWorkcenterPosition } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-position/site-editor-workcenter-position';
+import { SiteEditorWorkcenterShift } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-shift/site-editor-workcenter-shift';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -90,31 +90,23 @@ export const routes: Routes = [
           }
         ]
       },
-      { path: 'leaveapproval', component: SiteLeaveApproval },
-      { path: 'modtime', component: SiteModTime },
-      { path: 'edit', component: SiteViewer,
+      { path: 'editor', component: SiteEditor,
         children: [
-          { path: '', redirectTo: '/site/edit/new', pathMatch: 'full' },
-          { path: 'new', component: NewSite },
-          { path: 'edit', component: SiteEditor,
+          { path: '', redirectTo: '/site/editor/forecasts', pathMatch: 'full' },
+          { path: 'workcenters', component: SiteEditorWorkcenters,
             children: [
-              { path: '', redirectTo: '/site/edit/edit/workcenter', pathMatch: 'full' },
-              { path: 'workcenter', component: SiteEditorWorkcenter,
-                children: [
-                  { path: '', redirectTo: '/site/edit/edit/workcenter/positions', 
-                    pathMatch: 'full'},
-                  { path: 'positions', component: SiteEditorWorkcenterPositions },
-                  { path: 'shifts', component: SiteEditorWorkcenterShifts },
-                  { path: '**', component: SiteEditorWorkcenterShifts }
-                ]
-              },
-              { path: '**', component: SiteEditorWorkcenter }
+              {path: 'positions', component: SiteEditorWorkcenterPosition },
+              {path: 'shifts', component: SiteEditorWorkcenterShift },
             ]
-          },
-          { path: '**', component: SiteEditor }
+           },
+          { path: 'forecasts', component: SiteEditorForecasts },
+          { path: 'cofs', component: SiteEditorCofs },
+          { path: '**', component: PathNotFound }
         ]
       },
-      { path: '**', component: SiteSchedule },
+      { path: 'leaveapproval', component: SiteLeaveApproval },
+      { path: 'modtime', component: SiteModTime },
+      { path: '**', component: PathNotFound },
     ]
   },
   { path: 'query', component: TeamQuery },

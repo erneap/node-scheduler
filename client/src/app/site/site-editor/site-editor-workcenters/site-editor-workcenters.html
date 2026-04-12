@@ -1,0 +1,76 @@
+<div class="flexlayout row topleft flexgap" style="margin-top: 10px;">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row center label">Workcenter List</div>
+    <div class="flexlayout row topleft">
+      <app-list [width]="250" [height]="250" [list]="workcenterList()"
+        (itemSelected)="selectWorkcenter($event)" 
+        [selectedItem]="selectedWorkcenter()">
+      </app-list>
+      @if (selectedWorkcenter() !== 'new') {
+        <div class="flexlayout column center" style="height: 250px;">
+          @if (workcenterPos() > 0) {
+            <mat-icon matTooltip="move workcenter up list" (click)="onUpdate('up')">
+              arrow_upward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (workcenterPos() >= 0) {
+            <mat-icon matTooltip="delete workcenter" (click)="onDelete()">
+              delete</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (workcenterPos() >= 0 && workcenterPos() < workcentersLength() - 1) {
+            <mat-icon matTooltip="move workcenter down list" (click)="onUpdate('down')">
+              arrow_downward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+        </div>
+      }
+    </div>
+    <div class="flexlayout column center flexgap" style="width: 100%;margin-top: 5px;">
+      @if (selectedWorkcenter() === 'new') {
+        <mat-form-field [floatLabel]="'always'" style="width: 100%;">
+          <mat-label>Workcenter Identifier</mat-label>
+          <input matInput [formField]="wkctrForm.id">
+          @if (wkctrForm.id().invalid()) {
+            <mat-error>required</mat-error>
+          }
+        </mat-form-field>
+      }
+      <mat-form-field [floatLabel]="'always'" style="width: 100%;">
+        <mat-label>Workcenter Name/Title</mat-label>
+        <input matInput [formField]="wkctrForm.name" (change)="onUpdate('name')">
+        @if (wkctrForm.name().invalid()) {
+          <mat-error>required</mat-error>
+        }
+      </mat-form-field>
+      @if (selectedWorkcenter() === 'new') {
+        <div class="flexlayout row center" style="width: 100%;">
+          @if (wkctrForm().valid()) {
+            <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+          }
+          <button matButton="filled" class="clear-button" 
+            (click)="selectWorkcenter('new')">Clear</button>
+        </div>
+      }
+    </div>
+  </div>
+  @if (selectedWorkcenter() !== 'new') {
+    <div class="flexlayout column topleft" style="width: 700px;">
+      <mat-toolbar class="toolbar" style="width: 100%;">
+        <button matButton (click)="choose('/site/editor/workcenters/positions')">
+          Workcenter Positions</button>
+        <button matButton (click)="choose('/site/editor/workcenters/shifts')">
+          Workcenter Shifts</button>
+      </mat-toolbar>
+      <router-outlet></router-outlet>
+    </div>
+  }
+</div>

@@ -71,7 +71,7 @@
           style="height: 20px;">Site Mod Time Review</a>
         }
         @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
-          <a mat-list-item (click)="goToLink('/site/edit', true)"
+          <a mat-list-item (click)="goToLink('/site/editor', true)"
           style="height: 20px;">Site Editor</a>
         }
         @if (this.isInGroup('scheduler') || this.isInGroup('siteleader') || this.isInGroup('companylead')) {

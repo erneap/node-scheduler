@@ -1,0 +1,14 @@
+<div class="flexlayout row topleft view" [style]="style()">
+  <div class="flexlayout column topleft" style="height: 100%;width: 100%;">
+   <h2>Site Editor</h2>
+   <div class="flexlayout row topleft" style="width: 100%;">
+    
+   </div>
+    <mat-toolbar class="flexlayout row topleft toolbar" style="width: 100%;">
+      <button matButton (click)="choose('workcenters')">Workcenters</button>
+      <button matButton (click)="choose('forecasts')">Forecasts</button>
+      <button matButton (click)="choose('cofs')">Certificates of Service</button>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </div>
+</div>
