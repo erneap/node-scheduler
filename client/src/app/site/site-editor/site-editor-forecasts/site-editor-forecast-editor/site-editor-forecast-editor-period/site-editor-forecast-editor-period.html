@@ -1,1 +1,40 @@
-<p>site-editor-forecast-editor-period works!</p>
+<div class="flexlayout column topcenter">
+  <h5>Selected Report Periods</h5>
+  <div class="flexlayout row center">
+    <div class="list">
+      @for (item of periods(); track item.id) {
+        <div
+          [class]="setItemClass(item.id)"
+          (click)="selectPeriod(item.id)"
+        >{{item.value}}</div>
+      }
+    </div>
+  </div>
+  <div class="moveLabel">
+    Shift Week From Selected Month
+  </div>
+  <div class="flexlayout row center">
+    <div class="flexlayout column center movePeriod back" 
+      (click)="onMovePeriod('back')">
+      &lt; First Week
+    </div>
+    <div class="flexlayout column center movePeriod forward" 
+      (click)="onMovePeriod('forward')">
+      Last Week &gt;
+    </div>
+  </div>
+  <div class="flexlayout column center" style="width: 100%;">
+    <form class="flexlayout row center">
+      <mat-form-field floatLabel="always" style="width: 300px;">
+        <mat-label>Out-of-Cycle Period</mat-label>
+        <input matInput formControlName="newdate" [matDatepicker]="datepicker">
+        <mat-datepicker-toggle matIconSuffix [for]="datepicker">
+        </mat-datepicker-toggle>
+        <mat-datepicker #datepicker></mat-datepicker>
+      </mat-form-field>
+      <button matIconButton (click)="onAddOutOfCycle()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </form>
+  </div>
+</div>

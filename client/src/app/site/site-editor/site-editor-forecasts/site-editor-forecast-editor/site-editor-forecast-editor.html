@@ -1,8 +1,12 @@
-<div class="flexlayout column topleft" style="margin: 10px;">
+<div class="flexlayout column topleft" style="margin: 10px;overflow-y: auto;">
   <div class="flexlayout row topleft">
-    <app-list [height]="250" [width]="400" [list]="forecastList()"
-      (itemSelected)="selectForecast($event)" [selectedItem]="selectedForecast()">
-    </app-list>
+    <div class="flexlayout column center">
+      <app-list [height]="250" [width]="400" [list]="forecastList()"
+        (itemSelected)="selectForecast($event)" [selectedItem]="selectedForecast()">
+      </app-list>
+      <mat-checkbox [(ngModel)]="showAll" (change)="changeShow()">
+        Show All Forecasts</mat-checkbox>
+    </div>
     <div class="flexlayout column topleft flexgap" style="margin-left: 10px;">
       <div class="flexlayout row center flexgap">
         <mat-form-field floatLabel="always" class="forminput">

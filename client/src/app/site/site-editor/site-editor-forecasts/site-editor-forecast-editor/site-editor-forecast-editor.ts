@@ -1,4 +1,4 @@
-import { Component, Input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, model, signal } from '@angular/core';
 import { Forecast } from 'scheduler-models/scheduler/sites/reports/forecast';
 import { Item } from '../../../../general/list/list.model';
 import { AuthService } from '../../../../services/auth-service';
@@ -17,6 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { SiteEditorForecastEditorPeriod } from "./site-editor-forecast-editor-period/site-editor-forecast-editor-period";
+import { FormsModule } from '@angular/forms';
 
 interface ForecastData {
   name: string;
@@ -32,6 +33,7 @@ interface ForecastData {
   imports: [
     List,
     FormField,
+    FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -42,6 +44,7 @@ interface ForecastData {
 ],
   templateUrl: './site-editor-forecast-editor.html',
   styleUrl: './site-editor-forecast-editor.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: true } },
     {
@@ -66,7 +69,7 @@ export class SiteEditorForecastEditor {
   selectedForecast = signal<string>('new');
   forecast = signal<Forecast>(new Forecast());
   forecastList = signal<Item[]>([]);
-  showAll = model<boolean>(false);
+  readonly showAll = model(false);
   companyList = signal<Item[]>([]);
   forecastModel = signal<ForecastData>({
     name: '',
@@ -102,6 +105,10 @@ export class SiteEditorForecastEditor {
       });
       this.companyList.set(coList);
     }
+    this.setForecastList();
+  }
+
+  changeShow() {
     this.setForecastList();
   }
 
