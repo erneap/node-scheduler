@@ -1,0 +1,113 @@
+<div class="flexlayout column topleft" style="margin: 10px;">
+  <div class="flexlayout row topleft">
+    <app-list [height]="250" [width]="400" [list]="forecastList()"
+      (itemSelected)="selectForecast($event)" [selectedItem]="selectedForecast()">
+    </app-list>
+    <div class="flexlayout column topleft flexgap" style="margin-left: 10px;">
+      <div class="flexlayout row center flexgap">
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Forecast Report Name</mat-label>
+          <input matInput [formField]="forecastForm.name" 
+            (change)="onChange('name')">
+          @if (forecastForm.name().invalid()) {
+            <mat-error>* required</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Associated Company</mat-label>
+          <mat-select [formField]="forecastForm.associated" 
+            (selectionChange)="onChange('associated')">
+            @for (item of companyList(); track item) {
+              <mat-option [value]="item.id">{{item.value}}</mat-option>
+            }
+          </mat-select>
+          @if (forecastForm.associated().invalid()) {
+            <mat-error>required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row center flexgap">
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Forecast Start Date</mat-label>
+          <input matInput [formField]="forecastForm.start" class="forminput"
+            style="border: none;width: 199px;"
+            [matDatepicker]="startpicker"
+            (dateChange)="onChange('start')">
+          <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+          <mat-datepicker #startpicker style="color: white;"></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Forecast End Date</mat-label>
+          <input matInput [formField]="forecastForm.end"
+            [matDatepicker]="endpicker"
+            (dateChange)="onChange('end')">
+          <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>
+          <mat-datepicker #endpicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row center">
+        <mat-checkbox [formField]="forecastForm.sortByFirst"
+          labelPosition="before" (change)="onChange('sortfirst')">
+          Sort by First Name: </mat-checkbox>
+        <div class="flexlayout column center flexgap" style="width: 100%;">
+          <div>Select Sub-Period Ending Day:</div>
+          <div class="flexlayout row center flexwrap subperiod">
+            <label>
+              <input type="radio" value="0" (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Sunday
+            </label>
+            <label>
+              <input type="radio" value="1"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Monday
+            </label>
+            <label>
+              <input type="radio" value="2"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Tuesday
+            </label>
+            <label>
+              <input type="radio" value="3"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Wednesday
+            </label>
+            <label>
+              <input type="radio" value="4"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Thursday
+            </label>
+            <label>
+              <input type="radio" value="5"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Friday
+            </label>
+            <label>
+              <input type="radio" value="6"  (change)="onChange('period')"
+                [formField]="forecastForm.periodEnding">
+                Saturday
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flexlayout row center flexgap" style="margin-left: 10px;">
+      @if (forecastForm().valid() && this.selectedForecast() === 'new') {
+        <button matButton="filled" class="add-button"
+          (click)="onAddForecast()">Add</button>
+        <button matButton="filled" class="clear-button"
+          (click)="onClearForecast()">Clear</button>
+      }
+      @if (this.selectedForecast() !== 'new') {
+        <button matButton="filled" class="delete-button"
+          (click)="onDeleteForecast()">Delete</button>
+      }
+    </div>
+  </div>
+  @if (selectedForecast() !== 'new') {
+    <div class="flexlayout row topleft">
+      <app-site-editor-forecast-editor-period [forecast]="selectedForecast()"
+        [site]="site"></app-site-editor-forecast-editor-period>
+    </div>
+  }
+</div>

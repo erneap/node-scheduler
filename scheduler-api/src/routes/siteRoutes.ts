@@ -164,7 +164,7 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
 
         // update the database with the team
         await teamService.replaceTeam(team);
-        res.status(200).json({ message: 'site deleted'});
+        res.status(200).json(team);
       } else {
         throw new Error('Team not found')
       }

@@ -6,6 +6,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { SecurityQuestion } from 'scheduler-models/users';
 import { Observable } from 'rxjs';
 import { Employee } from 'scheduler-models/scheduler/employees';
+import { Item } from '../general/list/list.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,7 @@ export class TeamService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
   questions: SecurityQuestion[] = [];
   selectedSite = signal<string>('');
+  teamSiteList = signal<Item[]>([])
 
   constructor(
     private http: HttpClient
@@ -22,6 +24,19 @@ export class TeamService extends CacheService {
   }
 
   setTeam(iTeam: ITeam) {
+    const sList: Item[] = [];
+    sList.push({
+      id: 'new',
+      value: 'Add New Site',
+    })
+    const team = new Team(iTeam);
+    team.sites.forEach(site => {
+      sList.push({
+        id: site.id,
+        value: site.name.toUpperCase(),
+      });
+    });
+    this.teamSiteList.set(sList);
     this.setItem('team', iTeam);
   }
 

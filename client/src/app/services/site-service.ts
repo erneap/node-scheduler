@@ -7,7 +7,8 @@ import { map, Observable } from 'rxjs';
 import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 import { Item } from '../general/list/list.model';
 import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters';
-import { NewSiteWorkcenter, WorkcenterUpdate } from 'scheduler-models/scheduler/sites/web';
+import { NewSite, NewSiteWorkcenter, SiteUpdate, WorkcenterUpdate } from 'scheduler-models/scheduler/sites/web';
+import { ITeam, Team } from 'scheduler-models/scheduler/teams';
 
 @Injectable({
   providedIn: 'root',
@@ -69,6 +70,60 @@ export class SiteService extends CacheService {
       return eid;
     }
     return 'new';
+  }
+
+  addSite(team: string, siteid: string, name: string, offset: number, 
+    mids: boolean) : Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site`;
+    const data: NewSite = {
+      teamid: team,
+      id: siteid,
+      name: name,
+      utcoffset: offset,
+      showMids: mids
+    };
+    return this.http.post<Site>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateSite(team: string, siteid: string, field: string, value: string)
+    : Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site`;
+    const data: SiteUpdate = {
+      team: team,
+      site: siteid,
+      field: field,
+      value: value,
+    };
+    return this.http.put<Site>(url, data, {observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteSite(team: string, site: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/site/${team}/${site}`;
+    return this.http.delete<Team>(url, {observe: 'response'});
   }
 
   addWorkcenter(team: string, site: string, id: string, name: string) 
