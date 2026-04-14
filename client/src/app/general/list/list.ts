@@ -21,7 +21,7 @@ export class List {
 
   setItemStyle(item: string): string {
     let answer = 'item';
-    if (this.selectedItem() === item.toLowerCase()) {
+    if (this.selectedItem() && this.selectedItem()?.toLowerCase() === item.toLowerCase()) {
         answer += ' selected';
     }
     return answer;

@@ -1,5 +1,5 @@
 <div class="flexlayout column topleft" style="margin: 10px;overflow-y: auto;">
-  <div class="flexlayout row topleft">
+  <div class="flexlayout row topleft" style="border-bottom: solid 1px white;">
     <div class="flexlayout column center">
       <app-list [height]="250" [width]="400" [list]="forecastList()"
         (itemSelected)="selectForecast($event)" [selectedItem]="selectedForecast()">
@@ -109,9 +109,12 @@
     </div>
   </div>
   @if (selectedForecast() !== 'new') {
-    <div class="flexlayout row topleft">
+    <div class="flexlayout row topleft flexgap">
       <app-site-editor-forecast-editor-period [forecast]="selectedForecast()"
-        [site]="site"></app-site-editor-forecast-editor-period>
+        [periods]="periods()"
+        [site]="site" [forecast]="selectedForecast()"></app-site-editor-forecast-editor-period>
+      <app-site-editor-forecast-editor-laborcodes [forecast]="selectedForecast()">
+      </app-site-editor-forecast-editor-laborcodes>
     </div>
   }
 </div>

@@ -1,1 +1,89 @@
-<p>site-editor-forecast-editor-laborcodes works!</p>
+<div class="flexlayout column topleft" style="border-left: solid 1px white;margin-left: 10px;">
+  <div class="flexlayout row center label">Forecast's Assigned Labor Code Editor</div>
+  <div class="flexlayout row topleft">
+    <app-list [height]="370" [width]="250" [list]="laborcodes()"
+      (itemSelected)="selectLaborCode($event)" [selectedItem]="selectedLaborcode()">
+    </app-list>
+    <div class="flexlayout column topleft" style="margin-left: 5px;">
+      <div class="flexlayout row topleft flexgap">
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Charge Number</mat-label>
+          <input matInput [formField]="laborForm.chargeNumber" 
+            (change)="onUpdate('chargenumber')">
+          @if (laborForm.chargeNumber().invalid()) {
+            <mat-error>*required</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Charge Number Extension</mat-label>
+          <input matInput [formField]="laborForm.extension" 
+            (change)="onUpdate('extension')">
+          @if (laborForm.extension().invalid()) {
+            <mat-error>*required</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Location/Site</mat-label>
+          <input matInput [formField]="laborForm.location" (change)="onUpdate('location')">
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row topleft flexgap">
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>CLIN</mat-label>
+          <input matInput [formField]="laborForm.clin" (change)="onUpdate('clin')">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>SLIN</mat-label>
+          <input matInput [formField]="laborForm.slin" (change)="onUpdate('SLIN')">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>WBS</mat-label>
+          <input matInput [formField]="laborForm.wbs" (change)="onUpdate('wbs')">
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row topleft flexgap">
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Assigned Slot/Employees</mat-label>
+          <input matInput type="number" [formField]="laborForm.slots"
+            (change)="onUpdate('slots')">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Contact Hours Per Employee</mat-label>
+          <input matInput type="number" [formField]="laborForm.hoursPer" 
+            (change)="onUpdate('hours')">
+        </mat-form-field>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Slot Empty Name</mat-label>
+          <input matInput [formField]="laborForm.vacant" (change)="onUpdate('vacant')">
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row center flexgap" style="width: 100%">
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Use Start Date</mat-label>
+          <input matInput [formField]="laborForm.start"
+            [matDatepicker]="startpicker"
+            (dateChange)="onUpdate('start')">
+          <mat-datepicker-toggle matIconSuffix [for]="startpicker"></mat-datepicker-toggle>
+          <mat-datepicker #startpicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field floatLabel="always" class="forminput">
+          <mat-label>Use End Date</mat-label>
+          <input matInput [formField]="laborForm.end"
+            [matDatepicker]="endpicker"
+            (dateChange)="onUpdate('end')">
+          <mat-datepicker-toggle matIconSuffix [for]="endpicker"></mat-datepicker-toggle>
+          <mat-datepicker #endpicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div class="flexlayout row center flexgap" style="width: 100%">
+        @if (selectedLaborcode().toLowerCase() === 'new' && laborForm().valid()) {
+          <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+        }
+        @if (selectedLaborcode().toLowerCase() !== 'new') {
+          <button matButton="filled" class="delete-button" (click)="onDelete()">
+            Delete</button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import { Team } from "scheduler-models/scheduler/teams";
 import { LaborCode } from "scheduler-models/scheduler/labor";
 import { Site } from "scheduler-models/scheduler/sites";
 import { postLogEntry, TeamService } from "scheduler-services";
+import cookieParser from "cookie-parser";
 
 const router = Router();
 export default router;
@@ -37,8 +38,8 @@ router.post('/site/forecast', auth, async(req: Request, res: Response) => {
           site.forecasts.forEach(fcst => {
             if (fcst.name.toLowerCase() === data.name.toLowerCase()
               && fcst.companyid.toLowerCase() === data.company.toLowerCase()
-              && fcst.startDate.getTime() === data.start.getTime()
-              && fcst.endDate.getTime() === data.end.getTime()) {
+              && fcst.startDate.getTime() === new Date(data.start).getTime()
+              && fcst.endDate.getTime() === new Date(data.end).getTime()) {
               found = true;
             } else if (fcst.id > max) {
               max = fcst.id;
@@ -300,6 +301,7 @@ router.put('/site/forecast', auth, async(req: Request, res: Response) => {
       throw new Error('Team not found');
     }
   } catch (err) {
+    console.log(err);
     const error = err as Error;
     await postLogEntry('site', `siteForecast: Put: Error: ${error.message}`);
     res.status(400).json({'message': error.message});

@@ -18,6 +18,10 @@ import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAda
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { SiteEditorForecastEditorPeriod } from "./site-editor-forecast-editor-period/site-editor-forecast-editor-period";
 import { FormsModule } from '@angular/forms';
+import { SiteEditorForecastEditorLaborcodes } from './site-editor-forecast-editor-laborcodes/site-editor-forecast-editor-laborcodes';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ISite, Site } from 'scheduler-models/scheduler/sites';
+import { Period } from 'scheduler-models/scheduler/sites/reports';
 
 interface ForecastData {
   name: string;
@@ -40,7 +44,8 @@ interface ForecastData {
     MatCheckboxModule,
     MatDatepickerModule,
     MatButtonModule,
-    SiteEditorForecastEditorPeriod
+    SiteEditorForecastEditorPeriod,
+    SiteEditorForecastEditorLaborcodes
 ],
   templateUrl: './site-editor-forecast-editor.html',
   styleUrl: './site-editor-forecast-editor.scss',
@@ -67,7 +72,7 @@ export class SiteEditorForecastEditor {
   }
   team = signal<string>('');
   selectedForecast = signal<string>('new');
-  forecast = signal<Forecast>(new Forecast());
+  periods = signal<Period[]>([]);
   forecastList = signal<Item[]>([]);
   readonly showAll = model(false);
   companyList = signal<Item[]>([]);
@@ -163,7 +168,7 @@ export class SiteEditorForecastEditor {
       this.forecastForm.start().value.set(new Date());
       this.forecastForm.end().value.set(new Date());
       this.forecastForm.periodEnding().value.set('5');
-      this.forecast.set(new Forecast());
+      this.periods.set([]);
     } else {
       const iTeam = this.teamService.getTeam();
       const fID = Number(id);
@@ -174,7 +179,7 @@ export class SiteEditorForecastEditor {
             if (site.forecasts && site.forecasts.length > 0) {
               site.forecasts.forEach(fcst => {
                 if (fcst.id === fID) {
-                  this.forecast.set(fcst);
+                  this.periods.set(fcst.periods);
                   this.forecastForm.name().value.set(fcst.name);
                   this.forecastForm.associated().value.set(fcst.companyid);
                   this.forecastForm.sortByFirst().value.set(fcst.sortfirst);
@@ -192,11 +197,133 @@ export class SiteEditorForecastEditor {
   }
 
   onChange(field: string) {
+    if (this.selectedForecast().toLowerCase() !== 'new') {
+      let useField = field;
+      let value = '';
+      switch (field.toLowerCase()) {
+        case 'name':
+          value = this.forecastForm.name().value();
+          break;
+        case "associated":
+          value = this.forecastForm.associated().value();
+          useField = 'company';
+          break;
+        case "start":
+          value = this.dateToString(this.forecastForm.start().value());
+          break;
+        case "end":
+          value = this.dateToString(this.forecastForm.end().value());
+          break;
+        case "period":
+          value = this.forecastForm.periodEnding().value();
+          break;
+        case "sortfirst":
+          value = (this.forecastForm.sortByFirst().value()) ? 'true' : 'false';
+          break;
+      }
+      this.siteService.updateForecast(this.team(), this.site, 
+        Number(this.selectedForecast()), '', '', useField, value).subscribe({
+        next: (res) => {
+          const iSite = res.body as ISite;
+          if (iSite) {
+            const site = new Site(iSite);
+            this.siteService.selectedSite.set(site);
+            const iTeam = this.teamService.getTeam();
+            if (iTeam) {
+              let found = false;
+              const team = new Team(iTeam);
+              team.sites.forEach((tsite, s) => {
+                if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
+                  found = true;
+                  team.sites[s] = site;
+                  site.forecasts.forEach(fcst => {
+                    if (fcst.id === Number(this.selectedForecast())) {
+                      this.periods.set(fcst.periods);
+                    }
+                  })
+                }
+              });
+              if (!found) {
+                team.sites.push(site);
+              }
+              this.teamService.setTeam(team);
+              this.setForecastList();
+            }
+          }
+        },
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      });
+    }
+  }
 
+  private dateToString(date: Date): string {
+    date = new Date(date);
+    let answer = `${date.getUTCFullYear()}-`;
+    if (date.getUTCMonth() < 9) {
+      answer += '0';
+    }
+    answer += `${date.getUTCMonth() + 1}-`;
+    if (date.getUTCDate() < 10) {
+      answer += '0';
+    }
+    answer += `${date.getUTCDate()}`;
+    return answer;
   }
 
   onAddForecast() {
-
+    if (this.selectedForecast().toLowerCase() === 'new' && this.forecastForm().valid()) {
+      const name = this.forecastForm.name().value();
+      const company = this.forecastForm.associated().value();
+      this.siteService.addForecast(this.team(), this.site, name, company,
+        new Date(this.forecastForm.start().value()), 
+        new Date(this.forecastForm.end().value()), 
+        Number(this.forecastForm.periodEnding().value()),
+        this.forecastForm.sortByFirst().value()).subscribe({
+        next: (res) => {
+          const iSite = res.body as ISite;
+          if (iSite) {
+            const site = new Site(iSite);
+            this.siteService.selectedSite.set(site);
+            const iTeam = this.teamService.getTeam();
+            if (iTeam) {
+              let found = false;
+              const team = new Team(iTeam);
+              team.sites.forEach((tsite, s) => {
+                if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
+                  found = true;
+                  team.sites[s] = site;
+                  site.forecasts.forEach(fcst => {
+                    if (fcst.name.toLowerCase() === name.toLowerCase()
+                      && fcst.companyid.toLowerCase() === company.toLowerCase()) {
+                      this.selectedForecast.set(`${fcst.id}`);
+                      this.periods.set(fcst.periods);
+                    }
+                  })
+                }
+              });
+              if (!found) {
+                team.sites.push(site);
+              }
+              this.teamService.setTeam(team);
+              this.setForecastList();
+            }
+          }
+        },
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      })
+    }
   }
 
   onClearForecast() {

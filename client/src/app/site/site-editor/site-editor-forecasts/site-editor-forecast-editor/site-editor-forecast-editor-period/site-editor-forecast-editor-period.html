@@ -1,8 +1,8 @@
 <div class="flexlayout column topcenter">
-  <h5>Selected Report Periods</h5>
+  <div class="flexlayout row center label" >Forecast Periods</div>
   <div class="flexlayout row center">
     <div class="list">
-      @for (item of periods(); track item.id) {
+      @for (item of list(); track item.id) {
         <div
           [class]="setItemClass(item.id)"
           (click)="selectPeriod(item.id)"
@@ -10,31 +10,33 @@
       }
     </div>
   </div>
-  <div class="moveLabel">
+  <div class="flexlayout row center label">
     Shift Week From Selected Month
   </div>
   <div class="flexlayout row center">
     <div class="flexlayout column center movePeriod back" 
+      matTooltip="Remove first week and add to previous Month"
       (click)="onMovePeriod('back')">
       &lt; First Week
     </div>
     <div class="flexlayout column center movePeriod forward" 
+      matTooltip="Remove last week and add to next month"
       (click)="onMovePeriod('forward')">
       Last Week &gt;
     </div>
   </div>
   <div class="flexlayout column center" style="width: 100%;">
-    <form class="flexlayout row center">
-      <mat-form-field floatLabel="always" style="width: 300px;">
+    <div class="flexlayout row center">
+      <mat-form-field floatLabel="always" style="width: 220px;">
         <mat-label>Out-of-Cycle Period</mat-label>
-        <input matInput formControlName="newdate" [matDatepicker]="datepicker">
+        <input matInput [formField]="periodForm.outofcycle" [matDatepicker]="datepicker">
         <mat-datepicker-toggle matIconSuffix [for]="datepicker">
         </mat-datepicker-toggle>
         <mat-datepicker #datepicker></mat-datepicker>
       </mat-form-field>
-      <button matIconButton (click)="onAddOutOfCycle()">
-        <mat-icon>add</mat-icon>
+      <button matButton="filled" (click)="onAddOutOfCycle()" class="add-button">
+        Add
       </button>
-    </form>
+    </div>
   </div>
 </div>

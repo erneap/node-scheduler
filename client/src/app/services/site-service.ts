@@ -6,9 +6,9 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 import { Item } from '../general/list/list.model';
-import { Workcenter } from 'scheduler-models/scheduler/sites/workcenters';
 import { NewSite, NewSiteWorkcenter, SiteUpdate, WorkcenterUpdate } from 'scheduler-models/scheduler/sites/web';
-import { ITeam, Team } from 'scheduler-models/scheduler/teams';
+import { Team } from 'scheduler-models/scheduler/teams';
+import { NewSiteForecast, NewSiteForecastChargeNumber, UpdateSiteForecastChargeNumber } from 'scheduler-models/scheduler/sites/reports';
 
 @Injectable({
   providedIn: 'root',
@@ -182,6 +182,116 @@ export class SiteService extends CacheService {
     : Observable<HttpResponse<Site>> {
     const url = `${this.schedulerUrl}/site/workcenter/${team}/${site}/${wkctr}`;
     return this.http.delete<Site>(url, {observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addForecast(team: string, site: string, name: string, company: string, start: Date, 
+    end: Date, period: number, sortFirst: boolean): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/forecast`;
+    const data: NewSiteForecast = {
+      team: team,
+      site: site,
+      name: name,
+      company: company,
+      start: start,
+      end: end,
+      period: period,
+      sortFirst: sortFirst
+    };
+    return this.http.post<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addSiteForecastLaborcode(team: string, site: string, forecast: number, 
+    chargeNumber: string, extension: string, minimum: number, vacant: string, 
+    hoursPer: number, exercise: boolean, location?: string, clin?: string, slin?: string,
+    wbs?: string, start?: Date, end?: Date): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/forecast/labor`
+    const data: NewSiteForecastChargeNumber = {
+      team: team,
+      site: site,
+      forecast: forecast,
+      chargeNumber: chargeNumber,
+      extension: extension,
+      location: location,
+      minimum: minimum,
+      vacantName: vacant,
+      hoursPerEmployee: hoursPer,
+      exercise: exercise,
+      clin: clin,
+      slin: slin,
+      wbs: wbs,
+      start: start,
+      end: end,
+    };
+    return this.http.post<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateForecast(team: string, site: string, forecast: number, chargeNumber: string, 
+    extension: string, field: string, value: string): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/forecast`
+    const data: UpdateSiteForecastChargeNumber = {
+      team: team,
+      site: site,
+      forecast: forecast,
+      chargeNumber: chargeNumber,
+      extension: extension,
+      field: field,
+      value: value,
+    };
+    return this.http.put<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteForecast(team: string, site: string, forecast: number)
+    : Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/forecast/${team}/${site}/${forecast}`
+    return this.http.delete<Site>(url, { observe: 'response'}).pipe(
       map(res => {
         const iSite = (res.body as ISite );
         if (iSite) {
