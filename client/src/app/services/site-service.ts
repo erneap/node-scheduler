@@ -8,7 +8,7 @@ import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/site
 import { Item } from '../general/list/list.model';
 import { NewSite, NewSiteWorkcenter, SiteUpdate, WorkcenterUpdate } from 'scheduler-models/scheduler/sites/web';
 import { Team } from 'scheduler-models/scheduler/teams';
-import { NewSiteForecast, NewSiteForecastChargeNumber, UpdateSiteForecastChargeNumber } from 'scheduler-models/scheduler/sites/reports';
+import { NewSiteCofSReport, NewSiteCofSReportSection, NewSiteForecast, NewSiteForecastChargeNumber, UpdateSiteCofSReport, UpdateSiteForecastChargeNumber } from 'scheduler-models/scheduler/sites/reports';
 
 @Injectable({
   providedIn: 'root',
@@ -290,7 +290,105 @@ export class SiteService extends CacheService {
 
   deleteForecast(team: string, site: string, forecast: number)
     : Observable<HttpResponse<Site>> {
-    const url = `${this.schedulerUrl}/site/forecast/${team}/${site}/${forecast}`
+    const url = `${this.schedulerUrl}/site/forecast/${team}/${site}/${forecast}`;
+    return this.http.delete<Site>(url, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addCofS(team: string, site: string, name: string, filename: string, 
+    unit: string, start: Date, end: Date): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/cofs`;
+    const data: NewSiteCofSReport = {
+      team: team,
+      site: site,
+      name: name,
+      shortname: filename,
+      unit: unit,
+      start: new Date(start),
+      end: new Date(end)
+    };
+    return this.http.post<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  addCofSSection(team: string, site: string, cofs: number, label: string, 
+    company: string, signature: string, showunit: boolean)
+    : Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/cofs/section`;
+    const data: NewSiteCofSReportSection = {
+      team: team,
+      site: site,
+      reportid: cofs,
+      label: label,
+      company: company,
+      signature: signature,
+      showunit: showunit
+    };
+    return this.http.post<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  updateCofS(team: string, site: string, cofs: number, field: string, 
+    value: string, section: number): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/cofs`;
+    const data: UpdateSiteCofSReport = {
+      team: team,
+      site: site,
+      reportid: cofs,
+      sectionid: section,
+      field: field,
+      value: value
+    };
+    return this.http.put<Site>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iSite = (res.body as ISite );
+        if (iSite) {
+          const site = new Site(iSite);
+          const tSite = this.getSite();
+          if (tSite && tSite.id === site.id) {
+            this.setSite(site);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  deleteCofS(team: string, site: string, cofs: number): Observable<HttpResponse<Site>> {
+    const url = `${this.schedulerUrl}/site/cofs/${team}/${site}/${cofs}`;
     return this.http.delete<Site>(url, { observe: 'response'}).pipe(
       map(res => {
         const iSite = (res.body as ISite );

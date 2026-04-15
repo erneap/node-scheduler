@@ -37,8 +37,8 @@ router.post('/site/cofs', auth, async(req: Request, res: Response) => {
           let max = -1;
           site.cofs.forEach(cofs => {
             if (cofs.name.toLowerCase() === data.name.toLowerCase()
-              && cofs.startdate.getTime() === data.start.getTime()
-              && cofs.enddate.getTime() === data.end.getTime()) {
+              && cofs.startdate.getTime() === new Date(data.start).getTime()
+              && cofs.enddate.getTime() === new Date(data.end).getTime()) {
               found = true;
             } else if (max < cofs.id) {
               max = cofs.id;
@@ -163,7 +163,8 @@ router.put('/site/cofs', auth, async(req: Request, res: Response) => {
         if (site.id.toLowerCase() === data.site.toLowerCase()) {
           site.cofs.forEach((cofs, c) => {
             if (cofs.id === data.reportid) {
-              if (data.sectionid) {
+              if (data.sectionid && data.sectionid >= 0) {
+    console.log(data);
                 // this section allows for the updating of a CofS Section data
                 cofs.sections.forEach((section, n) => {
                   if (section.id === data.sectionid) {
@@ -179,6 +180,19 @@ router.put('/site/cofs', auth, async(req: Request, res: Response) => {
                         break;
                       case "showunit":
                         section.showunit = (data.value.toLowerCase() === 'true');
+                        break;
+                      case "laborcodes":
+                        const codes = data.value.split(',');
+                        const laborcodes: LaborCode[] = [];
+                        codes.forEach(code => {
+                          const parts = code.split('|');
+                          console.log(parts);
+                          laborcodes.push(new LaborCode({
+                            chargeNumber: parts[0], 
+                            extension: parts[1]
+                          }));
+                        });
+                        section.laborcodes = laborcodes;
                         break;
                       case "addlaborcode":
                       case "addlabor":

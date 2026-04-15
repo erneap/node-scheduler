@@ -69,7 +69,7 @@ export interface UpdateSiteCofSReport {
   team: string;
   site: string;
   reportid: number;
-  sectionid?: number;
+  sectionid: number;
   field: string;
   value: string;
 }

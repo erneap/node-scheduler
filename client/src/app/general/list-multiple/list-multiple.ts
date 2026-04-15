@@ -20,7 +20,8 @@ export class ListMultiple {
   height = input<number>(100);
   width = input<number>(200);
   selected = output<string>({alias: 'itemSelected'});
-  selectedItems = signal<string[]>([])
+  allselected = output<string[]>({alias: 'itemsSelected'});
+  selectedItems = model<string[]>([])
 
   setStyle(): string {
     return `width: ${this.width()}px;height: ${this.height()}px;`;
@@ -48,6 +49,7 @@ export class ListMultiple {
     } else {
       this.selectedItems().push(item);
     }
+    this.allselected.emit(this.selectedItems());
     this.selected.emit(item);
   }
 }

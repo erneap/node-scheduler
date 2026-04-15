@@ -1,0 +1,101 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column center">
+    <div class="flexlayout row center label">CofS Sections</div>
+    <div class="flexlayout row topleft">
+      <app-list [height]="300" [width]="250" [list]="list()" 
+        [selectedItem]="selectedSection()" (itemSelected)="selectSection($event)">
+      </app-list>
+      @if (selectedSection() !== 'new') {
+        <div class="flexlayout column center" style="height: 300px;">
+          @if (sectionPos() > 0) {
+            <mat-icon matTooltip="move workcenter up list" 
+              (click)="onChange('up')">
+              arrow_upward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (sectionPos() >= 0) {
+            <mat-icon matTooltip="delete workcenter" (click)="onDelete()">
+              delete</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          @if (sectionPos() >= 0 && sectionPos() < sectionLength() - 1) {
+            <mat-icon matTooltip="move workcenter down list" 
+              (click)="onChange('down')">
+              arrow_downward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+        </div>
+      }
+    </div>
+  </div>
+  <div class="flexlayout column topleft" style="margin-left: 10px;">
+    <div class="flexlayout row center label">CofS Section Editor</div>
+    <div class="flexlayout row topleft">
+      <div class="flexlayout column center">
+        <div class="flexlayout row center flexgap">
+          <mat-form-field floatLabel="always" style="width: 250px;">
+            <mat-label>Section Company</mat-label>
+            <mat-select [formField]="sectionForm.company" 
+              (selectionChange)="onChange('company')">
+              @for (company of companies(); track company.id) {
+                <mat-option [value]="company.id">{{company.name}}</mat-option>
+              }
+            </mat-select>
+            @if (sectionForm.company().invalid()){
+              <mat-error>*required</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field floatLabel="always" style="width: 250px;">
+            <mat-label>Section Label</mat-label>
+            <input matInput [formField]="sectionForm.label" 
+              (change)="onChange('label')">
+            @if (sectionForm.label().invalid()){
+              <mat-error>*required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center">
+          <mat-form-field floatLabel="always" style="width: 250px;">
+            <mat-label>Signature</mat-label>
+            <input matInput [formField]="sectionForm.signature" 
+              (change)="onChange('signature')">
+            @if (sectionForm.company().invalid()){
+              <mat-error>*required</mat-error>
+            }
+          </mat-form-field>
+          <div class="flexlayout row center" style="width: 250px;">
+            <mat-checkbox [formField]="sectionForm.showUnit">
+              Show Unit Information</mat-checkbox>
+          </div>
+        </div>
+        @if (this.selectedSection().toLowerCase() === 'new' ) {
+          <div class="flexlayout row center" style="width: 100%;">
+            <button matButton="filled" class="add-button" (click)="onAdd()">
+              Add</button>
+          </div>
+        }
+      </div>
+      @if (selectedSection().toLowerCase() !== 'new') {
+        <div class="flexlayout column center" style="margin-left: 5px;">
+          <mat-form-field floatLabel="always" style="width: 300px;">
+            <mat-label>Assigned Labor Codes</mat-label>
+            <mat-select [formField]="sectionForm.laborcodes" multiple
+              (selectionChange)="onChange('laborcodes')">
+              @for (code of laborcodes(); track code.id) {
+                <mat-option [value]="code.id">{{code.value}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      }
+    </div>
+  </div>
+</div>

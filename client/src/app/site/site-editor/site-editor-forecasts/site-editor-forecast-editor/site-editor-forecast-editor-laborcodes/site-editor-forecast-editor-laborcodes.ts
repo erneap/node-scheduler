@@ -103,6 +103,7 @@ export class SiteEditorForecastEditorLaborcodes {
       const team = new Team(iTeam);
       this.team.set(team.id);
       this.site.set(this.teamService.selectedSite());
+      this.selectLaborCode('new');
     }
   }
 
@@ -134,6 +135,8 @@ export class SiteEditorForecastEditorLaborcodes {
         }
       });
     }
+    const id = this.selectedLaborcode();
+    this.selectLaborCode(id);
     this.laborcodes.set(list);
   }
 

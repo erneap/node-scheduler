@@ -22,6 +22,7 @@ import { SiteEditorForecastEditorLaborcodes } from './site-editor-forecast-edito
 import { HttpErrorResponse } from '@angular/common/http';
 import { ISite, Site } from 'scheduler-models/scheduler/sites';
 import { Period } from 'scheduler-models/scheduler/sites/reports';
+import { ConfirmationDialog } from '../../../../general/confirmation-dialog/confirmation-dialog';
 
 interface ForecastData {
   name: string;
@@ -327,10 +328,55 @@ export class SiteEditorForecastEditor {
   }
 
   onClearForecast() {
-
+    this.selectForecast('new');
   }
 
   onDeleteForecast() {
-
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        title: 'Forecast Delete Confirmation',
+        message: 'Are you sure you want to delete this forecast?',
+        negativeButtonTitle: 'No',
+        affirmativeButtonTitle: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.toLowerCase() === 'yes') {
+        this.siteService.deleteForecast(this.team(), this.site, 
+          Number(this.selectedForecast())).subscribe({
+          next: (res) => {
+            const iSite = res.body as ISite;
+            if (iSite) {
+              const site = new Site(iSite);
+              this.siteService.selectedSite.set(site);
+              const iTeam = this.teamService.getTeam();
+              if (iTeam) {
+                let found = false;
+                const team = new Team(iTeam);
+                team.sites.forEach((tsite, s) => {
+                  if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
+                    found = true;
+                    team.sites[s] = site;
+                  }
+                });
+                if (!found) {
+                  team.sites.push(site);
+                }
+                this.teamService.setTeam(team);
+                this.selectForecast('new');
+                this.setForecastList();
+              }
+            }
+          },
+          error: (err) => {
+            if (err instanceof HttpErrorResponse) {
+              if (err.status >= 400 && err.status < 500) {
+                this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+              }
+            }
+          }
+        });
+      }
+    });
   }
 }
