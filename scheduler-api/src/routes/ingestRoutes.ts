@@ -42,7 +42,9 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
     const sDate = req.params.date as string;
     if (userid !== '' && teamid && siteid && companyid && sDate) {
       const date = new Date(Date.parse(sDate));
-      const employees = await getIngestEmployees(userid, teamid, siteid, companyid, date);
+      console.log(date);
+      const employees = await getIngestEmployees(userid, teamid, siteid, 
+        companyid, date);
       res.status(200).json(employees);
     } else {
       throw new Error('creation data missing');
@@ -68,57 +70,56 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
 async function getIngestEmployees(userid: string, teamid: string, siteid: string, 
   company: string, date: Date): Promise<ScheduleEmployee[]> {
   const employees: ScheduleEmployee[] = [];
-  try {
-    const start = new Date(Number(date));
-    const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
-    const build = new BuildInitial(userid);
-    const initial = await build.build();
-    const workcodes = new Map<string, Workcode>();
-    if (initial.team) {
-      const team = new Team(initial.team);
-      team.workcodes.forEach(wc => {
-        workcodes.set(wc.id, wc);
-      });
-    }
-    const employees: ScheduleEmployee[] = [];
-    let count = 0;
-    if (initial.site) {
-      const site = new Site(initial.site);
+  const start = new Date(Number(date));
+  const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
+  const build = new BuildInitial(userid);
+  const initial = await build.build();
+  const workcodes = new Map<string, Workcode>();
+  if (initial.team) {
+    const team = new Team(initial.team);
+    team.workcodes.forEach(wc => {
+      workcodes.set(wc.id, wc);
+    });
+  }
+  let count = 0;
+  if (initial.site) {
+    const site = new Site(initial.site);
 
-      if (site.employees) {
-        site.employees.sort((a,b) => a.compareTo(b));
-        site.employees.forEach(iEmp => {
-          if (iEmp.atSite(site.id, start, end)) {
-            if (iEmp.companyinfo.company.toLowerCase() === company.toLowerCase()) {
-              const employee = new ScheduleEmployee();
-              employee.id = count++;
-              employee.name = iEmp.name.getLastFirst();
-              let today = new Date(start);
-              while (today.getTime() < end.getTime()) {
-                const wd = iEmp.getWorkday(today, 'ingest');
-                const day: ScheduleDay = new ScheduleDay();
-                day.date = today;
-                day.id = today.getDate();
+    if (site.employees) {
+      site.employees.sort((a,b) => a.compareTo(b));
+      const empPromises = site.employees.map(async(iEmp) => {
+        if (iEmp.atSite(site.id, start, end)) {
+          if (iEmp.companyinfo.company.toLowerCase() === company.toLowerCase()) {
+            const employee = new ScheduleEmployee();
+            employee.id = count++;
+            employee.name = iEmp.name.getLastFirst();
+            let today = new Date(start);
+            while (today.getTime() < end.getTime()) {
+              const tomorrow = new Date(today.getTime() + (24 * 3600000));
+              const hours = iEmp.getWorkedHours(today, tomorrow);
+              const day: ScheduleDay = new ScheduleDay();
+              day.date = today;
+              day.id = today.getDate();
+              day.hours = hours;
+              day.code = '';
+              if (hours <= 0) {
+                const wd = iEmp.getWorkday(today);
                 if (wd) {
                   const wc = workcodes.get(wd.code);
                   if (wc && wc.isLeave) {
                     day.code = wd.code;
-                  } else {
-                    day.code = '';
                   }
-                  day.hours = wd.hours;
                 }
-                employee.days.push(day);
-                today = new Date(today.getTime() + (24 * 3600000));
               }
-              employees.push(employee);
+              employee.days.push(day);
+              today = new Date(today.getTime() + (24 * 3600000));
             }
+            employees.push(employee);
           }
-        });
-      }
+        }
+      });
+      await Promise.allSettled(empPromises);
     }
-  } catch (err) {
-    throw err;
   }
   return employees;
 }

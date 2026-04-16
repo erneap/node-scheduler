@@ -26,7 +26,7 @@
   color: black;
   font-size: 1rem;
   font-weight: bold;
-  width: 25px;
+  width: 29px;
   height: 29px;
   margin: 0;
   padding: 0;
@@ -34,8 +34,9 @@
 }
 
 .direction {
+  flex: 1 1 auto;
   background-color: #cc0000;
-  width: 750px;
+  width: 75px;
   color: white;
   font-weight: bold;
   border: solid 1px white;
@@ -43,7 +44,7 @@
 }
 
 .month {
-  flex: 6 1 auto; 
+  flex: 20 1 auto; 
   background-color: transparent;
   color: white;
   border: solid 1px white;

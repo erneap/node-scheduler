@@ -22,14 +22,15 @@ export class SiteIngestChartEmployeeDay {
       }
       return this.day().hours.toFixed(1);
     }
-    return '';
+    return this.day().code;
   }
 
   dayStyle(): string {
     let bkColor: string = (this.row() % 2 === 0) ? "ffffff" : "d9d9d9";
     let txColor: string = "000000";
     if (this.day().code === '') {
-      if (this.day().date.getUTCDay() === 0 || this.day().date.getUTCDay() === 6) {
+      const dayDate = new Date(this.day().date);
+      if (dayDate.getUTCDay() === 0 || dayDate.getUTCDay() === 6) {
         bkColor = (this.row() % 2 === 0) ? "99ccff" : "4da6ff";
       }
     } else {

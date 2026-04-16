@@ -1,1 +1,16 @@
-<p>site-ingest-chart works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft title">
+    Site Ingest (Work and Leave Records)
+  </div>
+  <div class="flexlayout row topleft companies">
+    @for (co of companies(); track co.id) {
+      <label class="company">
+        <input type="radio" [value]="co.id" [formField]="uploadForm.company"
+          (change)="onChangeCompany()">
+        {{co.name}}
+      </label>
+    }
+  </div>
+  <app-site-ingest-chart-month [company]="company()" [workcodes]="workcodes()">
+  </app-site-ingest-chart-month>
+</div>

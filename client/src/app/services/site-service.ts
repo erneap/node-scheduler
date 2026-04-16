@@ -416,4 +416,15 @@ export class SiteService extends CacheService {
       })
     );
   }
+
+  fileIngest(formdata: FormData): Observable<HttpResponse<ScheduleEmployee[]>> {
+    const url = `${this.schedulerUrl}/ingest`;
+    return this.http.post<ScheduleEmployee[]>(url, formdata, { observe: 'response'})
+      .pipe(map(res => {
+        const employees = res.body as ScheduleEmployee[];
+        this.ingestEmployees.set(employees);
+        return res;
+      })
+    );
+  }
 }

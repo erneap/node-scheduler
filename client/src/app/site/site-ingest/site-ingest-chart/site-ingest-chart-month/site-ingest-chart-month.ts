@@ -29,7 +29,7 @@ export class SiteIngestChartMonth {
     this._company = id;
     this.getIngestMonth();
   }
-  workcodes = signal<Map<string, Workcode>>(new Map<string, Workcode>());
+  workcodes = input<Map<string, Workcode>>(new Map<string, Workcode>());
   month = signal<Date>(new Date());
   team = signal<string>('');
   site = signal<string>('');
@@ -53,6 +53,14 @@ export class SiteIngestChartMonth {
     }
   }
 
+  getMonth(): string {
+    const formatter = Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+    return formatter.format(this.month());
+  }
+
   getIngestMonth() {
     const date = new Date(Date.UTC(this.month().getFullYear(), this.month().getMonth(), 1));
     const dates: Date[] = [];
@@ -66,7 +74,6 @@ export class SiteIngestChartMonth {
     this.siteService.getIngestMonth(this.team(), this.site(), this.company, date).subscribe({
       next: (res) => {
         const employees = res.body as ScheduleEmployee[];
-        employees.sort((a,b) => a.compareTo(b));
         this.employees.set(employees);
       },
       error: (err) => {

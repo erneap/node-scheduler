@@ -37,6 +37,7 @@ import { SiteEditorForecasts } from './site/site-editor/site-editor-forecasts/si
 import { SiteEditorCofs } from './site/site-editor/site-editor-cofs/site-editor-cofs';
 import { SiteEditorWorkcenterPosition } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-position/site-editor-workcenter-position';
 import { SiteEditorWorkcenterShift } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-shift/site-editor-workcenter-shift';
+import { SiteIngest } from './site/site-ingest/site-ingest';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -106,6 +107,7 @@ export const routes: Routes = [
       },
       { path: 'leaveapproval', component: SiteLeaveApproval },
       { path: 'modtime', component: SiteModTime },
+      { path: 'ingest', component: SiteIngest },
       { path: '**', component: PathNotFound },
     ]
   },
