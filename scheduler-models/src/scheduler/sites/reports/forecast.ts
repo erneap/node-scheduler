@@ -207,6 +207,7 @@ export class Forecast implements IForecast {
         month: periodID
       });
       prd.periods.push(new Date(dt));
+      this.periods.push(prd);
     }
   }
 

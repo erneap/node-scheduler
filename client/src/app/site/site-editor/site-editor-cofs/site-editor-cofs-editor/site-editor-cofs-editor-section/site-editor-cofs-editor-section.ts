@@ -262,6 +262,8 @@ export class SiteEditorCofsEditorSection {
                       cofs.sections.sort((a,b) => a.compareTo(b));
                       const section = cofs.sections[cofs.sections.length - 1];
                       this.selectedSection.set(`${section.id}`);
+                      this._sections = [];
+                      this.setLaborCodes();
                     }
                   })
                 }
@@ -340,6 +342,7 @@ export class SiteEditorCofsEditorSection {
                 team.sites.push(site);
               }
               this.teamService.setTeam(team);
+              this._sections = [];
               this.setSections();
               this.selectSection(this.selectedSection());
             }
@@ -388,6 +391,7 @@ export class SiteEditorCofsEditorSection {
                   team.sites.push(site);
                 }
                 this.teamService.setTeam(team);
+                this._sections = [];
                 this.setSections();
                 this.selectSection('new');
               }

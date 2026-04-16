@@ -163,8 +163,7 @@ router.put('/site/cofs', auth, async(req: Request, res: Response) => {
         if (site.id.toLowerCase() === data.site.toLowerCase()) {
           site.cofs.forEach((cofs, c) => {
             if (cofs.id === data.reportid) {
-              if (data.sectionid && data.sectionid >= 0) {
-    console.log(data);
+              if (data.sectionid >= 0) {
                 // this section allows for the updating of a CofS Section data
                 cofs.sections.forEach((section, n) => {
                   if (section.id === data.sectionid) {

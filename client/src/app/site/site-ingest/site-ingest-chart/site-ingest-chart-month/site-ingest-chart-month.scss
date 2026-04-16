@@ -1,0 +1,58 @@
+.totals {
+  background-color: black;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 50px;
+  height: 29px;
+  margin: 0;
+  padding: 0;
+  border: solid 1px black;
+}
+
+.name {
+  background-color: black;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 200px;
+  height: 29px;
+  margin: 0;
+  padding: 0;
+  border: solid 1px black;
+}
+
+.cell {
+  color: black;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 25px;
+  height: 29px;
+  margin: 0;
+  padding: 0;
+  border: solid 1px black;
+}
+
+.direction {
+  background-color: #cc0000;
+  width: 750px;
+  color: white;
+  font-weight: bold;
+  border: solid 1px white;
+  cursor: pointer;
+}
+
+.month {
+  flex: 6 1 auto; 
+  background-color: transparent;
+  color: white;
+  border: solid 1px white;
+}
+
+.input {
+  background-color: transparent;
+  color: white;
+  text-align: center;
+  border: none;
+  font-size: 1rem;
+}

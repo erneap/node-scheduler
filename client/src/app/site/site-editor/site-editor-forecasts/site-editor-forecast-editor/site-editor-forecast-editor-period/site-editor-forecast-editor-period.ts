@@ -132,7 +132,7 @@ export class SiteEditorForecastEditorPeriod {
       toDate = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth() + 1, 1));
     }
     const value = `${this.stringFromDate(fromDate)}|${this.stringFromDate(toDate)}`;
-    this.siteService.updateForecast(this.team(), this.site(), Number(this.forecast), '',
+    this.siteService.updateForecast(this.team(), this.site(), Number(this.forecast()), '',
       '', 'move', value).subscribe({
       next: (res) => {
         const iSite = res.body as ISite;
@@ -147,6 +147,16 @@ export class SiteEditorForecastEditorPeriod {
               if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
                 found = true;
                 team.sites[s] = site;
+                site.forecasts.forEach(fcst => {
+                  if (fcst.id === Number(this.forecast())) {
+                    const periods: Period[] = [];
+                    fcst.periods.forEach(prd => {
+                      periods.push(new Period(prd));
+                    });
+                    periods.sort((a,b) => a.compareTo(b));
+                    this._periods = periods;
+                  }
+                });
               }
             });
             if (!found) {
@@ -183,7 +193,7 @@ export class SiteEditorForecastEditorPeriod {
   onAddOutOfCycle() {
     const outDate = new Date(this.periodForm.outofcycle().value());
 
-    this.siteService.updateForecast(this.team(), this.site(), Number(this.forecast), '',
+    this.siteService.updateForecast(this.team(), this.site(), Number(this.forecast()), '',
       '', 'addperiod', this.stringFromDate(outDate)).subscribe({
       next: (res) => {
         const iSite = res.body as ISite;
@@ -198,6 +208,16 @@ export class SiteEditorForecastEditorPeriod {
               if (tsite.id.toLowerCase() === site.id.toLowerCase()) {
                 found = true;
                 team.sites[s] = site;
+                site.forecasts.forEach(fcst => {
+                  if (fcst.id === Number(this.forecast())) {
+                    const periods: Period[] = [];
+                    fcst.periods.forEach(prd => {
+                      periods.push(new Period(prd));
+                    });
+                    periods.sort((a,b) => a.compareTo(b));
+                    this._periods = periods;
+                  }
+                });
               }
             });
             if (!found) {

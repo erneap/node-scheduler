@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { ISite, Site } from 'scheduler-models/scheduler/sites';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { MidListItem, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
+import { MidListItem, ScheduleEmployee, ScheduleWorkcenter } from 'scheduler-models/scheduler/sites/schedule'
 import { Item } from '../general/list/list.model';
 import { NewSite, NewSiteWorkcenter, SiteUpdate, WorkcenterUpdate } from 'scheduler-models/scheduler/sites/web';
 import { Team } from 'scheduler-models/scheduler/teams';
@@ -21,6 +21,7 @@ export class SiteService extends CacheService {
   public selectedSite = signal<Site>(new Site());
   public selectedWorkcenter = signal<string>('new')
   public selectedForecast = signal<string>('new');
+  public ingestEmployees = signal<ScheduleEmployee[]>([]);
 
   constructor(
     private http: HttpClient
@@ -399,6 +400,18 @@ export class SiteService extends CacheService {
             this.setSite(site);
           }
         }
+        return res;
+      })
+    );
+  }
+
+  getIngestMonth(team: string, site: string, company: string, date: Date)
+    : Observable<HttpResponse<ScheduleEmployee[]>> {
+    const url = `${this.schedulerUrl}/ingest/${team}/${site}/${company}/${date.toString()}`;
+    return this.http.get<ScheduleEmployee[]>(url, { observe: 'response'}).pipe(
+      map(res => {
+        const employees = res.body as ScheduleEmployee[];
+        this.ingestEmployees.set(employees);
         return res;
       })
     );

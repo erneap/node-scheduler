@@ -42,8 +42,8 @@
     "mongodb": "^6.18.0",
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.5",
-    "scheduler-models": "^1.3.86",
-    "scheduler-services": "^1.3.57",
+    "scheduler-models": "^1.3.88",
+    "scheduler-services": "^1.3.61",
     "soap-models": "^1.5.19",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"

@@ -11,10 +11,117 @@ import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord }
   from "scheduler-models/scheduler/employees";
 import { PoolConnection } from "mariadb/*";
 import { BuildInitial, collections, EmployeeService, ExcelRowIngest, mdbConnection, postLogEntry, SAPIngest, TeamService, UserService } from "scheduler-services";
+import { Workcode } from "scheduler-models/scheduler/labor";
+import { Team } from "scheduler-models/scheduler/teams";
+import { ScheduleDay, ScheduleEmployee } from "scheduler-models/scheduler/sites/schedule";
 
 const router = Router();
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage });
+
+/**
+ * This function will provide a list of actual work and leaves for site/company within
+ * a team:
+ * STEPS:
+ * 1) Get the user, plus team, site, company identifiers and the date for the first of 
+ * the month.
+ * 2) Get the team and site information, with its included employee lists
+ * 3) Check list of site employees and compile for the month.  Each individual day will
+ * be if a person had recorded work, or leave only.
+ * 4) Pass the compiled list to the requestor.
+ */
+router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: Response) => {
+  try {
+    let userid = '';
+    if ((req as any).user) {
+      userid = (req as any).user;
+    }
+    const teamid = req.params.team as string;
+    const siteid = req.params.site as string;
+    const companyid = req.params.company as string;
+    const sDate = req.params.date as string;
+    if (userid !== '' && teamid && siteid && companyid && sDate) {
+      const date = new Date(Date.parse(sDate));
+      const employees = await getIngestEmployees(userid, teamid, siteid, companyid, date);
+      res.status(200).json(employees);
+    } else {
+      throw new Error('creation data missing');
+    }
+  } catch (err) {
+    const error = err as Error;
+    await postLogEntry('site', `ingest: Get: Error: ${error.message}`);
+    res.status(400).json({'message': error.message});
+  }
+});
+
+/**
+ * The asynchronous function will compile the list of employees for a site/company for
+ * a set period of time (month).
+ * @param userid The identifier for the user making the request.  This is to ensure he/she
+ * can only view their site's information
+ * @param teamid The string identifier for the team.
+ * @param siteid The string identifier for the site.
+ * @param company The string identifier for the company.
+ * @param date The date object for the beginning of the month to pull.
+ * @returns A list of ScheduleEmployee objects with the day information.
+ */
+async function getIngestEmployees(userid: string, teamid: string, siteid: string, 
+  company: string, date: Date): Promise<ScheduleEmployee[]> {
+  const employees: ScheduleEmployee[] = [];
+  try {
+    const start = new Date(Number(date));
+    const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
+    const build = new BuildInitial(userid);
+    const initial = await build.build();
+    const workcodes = new Map<string, Workcode>();
+    if (initial.team) {
+      const team = new Team(initial.team);
+      team.workcodes.forEach(wc => {
+        workcodes.set(wc.id, wc);
+      });
+    }
+    const employees: ScheduleEmployee[] = [];
+    let count = 0;
+    if (initial.site) {
+      const site = new Site(initial.site);
+
+      if (site.employees) {
+        site.employees.sort((a,b) => a.compareTo(b));
+        site.employees.forEach(iEmp => {
+          if (iEmp.atSite(site.id, start, end)) {
+            if (iEmp.companyinfo.company.toLowerCase() === company.toLowerCase()) {
+              const employee = new ScheduleEmployee();
+              employee.id = count++;
+              employee.name = iEmp.name.getLastFirst();
+              let today = new Date(start);
+              while (today.getTime() < end.getTime()) {
+                const wd = iEmp.getWorkday(today, 'ingest');
+                const day: ScheduleDay = new ScheduleDay();
+                day.date = today;
+                day.id = today.getDate();
+                if (wd) {
+                  const wc = workcodes.get(wd.code);
+                  if (wc && wc.isLeave) {
+                    day.code = wd.code;
+                  } else {
+                    day.code = '';
+                  }
+                  day.hours = wd.hours;
+                }
+                employee.days.push(day);
+                today = new Date(today.getTime() + (24 * 3600000));
+              }
+              employees.push(employee);
+            }
+          }
+        });
+      }
+    }
+  } catch (err) {
+    throw err;
+  }
+  return employees;
+}
 
 /**
  * This method will be used to download a mexcel (manual excel) file so that the on-site
@@ -27,7 +134,7 @@ const upload = multer({storage: storage });
  * 3) Create excel workbook with the report object.
  * 4) Send the workbook as a download.
  */
-router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: Response) => {
+router.get('/ingest/report/:team/:site/:company/:date', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
     const siteid = req.params.site as string;
@@ -88,6 +195,10 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     // be performed, either SAP or manual excel ingest.  This is based on team, site, and
     // company for the ingest.  The last value gives the month and year for manual excel
     // ingest, which allows the program to set the day of the month for the column data.
+    let userid = '';
+    if ((req as any).user) {
+      userid = (req as any).user;
+    }
     const teamid = req.body.teamid as string;
     const siteid = req.body.siteid as string;
     const companyid = req.body.companyid as string;
@@ -196,6 +307,9 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         await empService.replace(emp);
       });
       await Promise.allSettled(employeeWritePromises);
+
+      const answer = await getIngestEmployees(userid, teamid, siteid, companyid, start);
+      res.status(200).json(answer);
     }
   } catch (err) {
     const error = err as Error;

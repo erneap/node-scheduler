@@ -1,0 +1,28 @@
+<div class="flexlayout column topleft">
+  <div class="flexlayout row topleft" style="width: 100%;">
+    <div class="flexlayout column center direction" (click)="onChange('year', 'down')">
+      &lt;&lt;</div>
+    <div class="flexlayout column center direction" (click)="onChange('month', 'down')">
+      &lt;</div>
+    <div class="flexlayout column center month">
+      month
+    </div>
+    <div class="flexlayout column center direction" (click)="onChange('month', 'up')">
+      &gt;</div>
+    <div class="flexlayout column center direction" (click)="onChange('year', 'up')">
+      &gt;&gt;</div>
+  </div>
+  <div class="flexlayout row topleft" style="width: 100%;">
+    <div class="flexlayout column center name">Name</div>
+    @for (date of dates(); track date.getTime()) {
+      <div class="flexlayout column center cell" [style]="getStyle(date)">
+        {{date.getDate()}}
+      </div>
+    }
+    <div class="flexlayout column center totals">Totals</div>
+  </div>
+  @for (emp of siteService.ingestEmployees(); track emp.id) {
+    <app-site-ingest-chart-employee [employee]="emp" [workcodes]="workcodes()">
+    </app-site-ingest-chart-employee>
+  }
+</div>

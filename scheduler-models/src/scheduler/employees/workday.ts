@@ -213,7 +213,7 @@ export class Schedule implements ISchedule {
       throw new Error('New days value must be greater than zero and a multiple of seven');
     }
     this.workdays.sort((a,b) => a.compareTo(b));
-    if (this.showdates) {
+    if (this.showdates && startdate && enddate) {
       let start = new Date(startdate);
       while (start.getDay() !== 0) {
         start = new Date(start.getTime() - (24 * 3600000));

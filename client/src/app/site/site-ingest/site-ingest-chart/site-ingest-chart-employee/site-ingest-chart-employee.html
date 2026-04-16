@@ -1,0 +1,12 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column center name" [style]="getStyle()">
+    {{employee().name}}
+  </div>
+  @for (day of employee().days; track day.id) {
+    <app-site-ingest-chart-employee-day [day]="day" [row]="employee().id" 
+      [workcodes]="workcodes()"></app-site-ingest-chart-employee-day>
+  }
+  <div class="flexlayout column center totals" [style]="getStyle()">
+    {{getTotal()}}
+  </div>
+</div>

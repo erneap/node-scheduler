@@ -358,6 +358,9 @@ export class Employee implements IEmployee {
       case "noleaves":
         return this.getWorkdayWOLeaves(date);
         break;
+      case "ingest":
+        return this.getWorkdayIngest(date);
+        break;
       default:
         return this.getWorkdayGeneral(date);
     }
@@ -494,6 +497,67 @@ export class Employee implements IEmployee {
         }
       })
     }
+    return wday;
+  }
+
+  private getWorkdayIngest(date: Date): Workday | undefined {
+    let wday: Workday|undefined;
+    let work = 0.0;
+
+    // check work records for work hours
+    if (this.work) {
+      this.work.forEach(wk => {
+        if (wk.useWork(date) && wk.modtime) {
+          work += wk.hours;
+        }
+      });
+    }
+
+    // if work hours is greater than zero, the ingest must show these hours, so return
+    // a workday object for the date
+    if (work > 0) {
+      // now get the normal workday based on assignment
+      this.assignments.forEach(asgmt => {
+        if (asgmt.useAssignment(date)) {
+          wday = asgmt.getWorkday(date);
+        }
+      });
+
+      // next, check for variation on date
+      this.variations.forEach(vari => {
+        if (vari.useVariation(date)) {
+          wday = vari.getWorkday(date);
+        }
+      });
+      if (wday) {
+        wday.hours = work;
+      } else {
+        wday = new Workday({
+          id: date.getDate(),
+          date: new Date(date),
+          code: '',
+          workcenter: '',
+          hours: work
+        });
+      }
+      return wday
+    }
+
+    // if no work hours, check for an approved leave for this date and give that 
+    this.leaves.forEach(lv => {
+      if (lv.useLeave(date)) {
+        if (!wday || wday.hours < lv.hours) {
+          wday = new Workday({
+            id: date.getDate(),
+            workcenter: '',
+            date: new Date(date),
+            code: lv.code,
+            hours: lv.hours
+          });
+        } 
+      }
+    })
+
     return wday;
   }
 
@@ -677,7 +741,7 @@ export class Employee implements IEmployee {
           case "workday-copy":
           case "workday-clear":
             const wparts = field.split('-');
-            if (schedule >= 0 && workday >= 0) {
+            if (schedule && schedule >= 0 && workday && workday >= 0) {
               asgmt.updateWorkday(schedule, workday, wparts[1], value);
             } else {
               throw new Error('Assignment schedule and/or workday id not provided')
@@ -803,7 +867,7 @@ export class Employee implements IEmployee {
           case "workday-copy":
           case "workday-clear":
             const wparts = field.split('-');
-            if (workday >= 0) {
+            if (workday && workday >= 0) {
               vari.updateWorkday(workday, wparts[1], value);
             }
             break;
@@ -1958,7 +2022,9 @@ export class Employee implements IEmployee {
               req.requesteddays.forEach(day => {
                 if (day.code !== '') {
                   lastcode = day.code;
-                  workcenter = day.tagday;
+                  if (day.tagday) {
+                    workcenter = day.tagday;
+                  }
                 }
                 const dos = Math.floor((day.leavedate.getTime() - start.getTime()) 
                   / (24 * 3600000));
