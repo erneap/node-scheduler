@@ -12,6 +12,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../services/auth-service';
 import { SiteIngestChartMonth } from './site-ingest-chart-month/site-ingest-chart-month';
 import { Workcode } from 'scheduler-models/scheduler/labor';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 interface IngestData {
   company: string;
@@ -23,14 +25,16 @@ interface IngestData {
   imports: [
     FormField,
     FormsModule,
-    SiteIngestChartMonth
-
+    SiteIngestChartMonth,
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './site-ingest-chart.html',
   styleUrl: './site-ingest-chart.scss',
 })
 export class SiteIngestChart {
   company = signal<string>('');
+  ingestMethod = signal<string>('manual');
   companies = signal<Company[]>([]);
   uploadFiles = signal<File[]>([]);
   uploadModel = signal<IngestData>({
@@ -42,6 +46,7 @@ export class SiteIngestChart {
   team = signal<string>('');
   site = signal<string>('');
   month = signal<string>('');
+  user = signal<string>('');
   workcodes = signal<Map<string, Workcode>>(new Map<string, Workcode>());
 
   constructor(
@@ -74,8 +79,9 @@ export class SiteIngestChart {
     const iEmp = this.empService.getEmployee();
     if (iEmp) {
       const employee = new Employee(iEmp);
+      this.user.set(employee.id);
       this.uploadForm.company().value.set(employee.companyinfo.company);
-      this.company.set(employee.companyinfo.company);
+      this.onChangeCompany();
     }
     const now = new Date();
     let date = `${now.getUTCFullYear()}-`;
@@ -88,7 +94,11 @@ export class SiteIngestChart {
 
   onChangeCompany() {
     const company = this.uploadForm.company().value();
-    console.log(company);
+    this.companies().forEach(co => {
+      if (company.toLowerCase() === co.id.toLowerCase()) {
+        this.ingestMethod.set(co.ingest.toLowerCase());
+      }
+    })
     this.company.set(company);
   }
 
@@ -97,20 +107,40 @@ export class SiteIngestChart {
     for (let i=0; i < event.target.files.length; i++) {
       list.push(event.target.files[i]);
     }
+    console.log(list);
+    this.uploadFiles.set(list);
+  }
+
+  onClear() {
+    this.uploadFiles.set([]);
   }
 
   onSubmit() {
     const formData = new FormData();
+    formData.append("userid", this.user());
     formData.append("team", this.team());
     formData.append("site", this.site());
     formData.append("company", this.company());
     formData.append("start", this.month());
     this.uploadFiles().forEach(file => {
-      formData.append("file", file);
+      formData.append("files", file);
     });
 
     this.siteService.fileIngest(formData).subscribe({
       next: (res) => {
+        this.siteService.getIngestMonth(this.team(), this.site(), this.company(), 
+          new Date(Date.parse(this.month()))).subscribe({
+            next: (res) => {
+
+            },
+            error: (err) => {
+              if (err instanceof HttpErrorResponse) {
+                if (err.status >= 400 && err.status < 500) {
+                  this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+                }
+              }
+            }
+          })
       },
       error: (err) => {
         if (err instanceof HttpErrorResponse) {
@@ -120,5 +150,9 @@ export class SiteIngestChart {
         }
       }
     })
+  }
+
+  changeMonth(sDate: string) {
+    this.month.set(sDate);
   }
 }

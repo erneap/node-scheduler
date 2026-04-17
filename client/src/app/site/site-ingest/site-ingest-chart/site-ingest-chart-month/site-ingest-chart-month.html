@@ -1,15 +1,29 @@
 <div class="flexlayout column topleft">
   <div class="flexlayout row topleft" style="width: 100%;">
-    <div class="flexlayout column center direction" (click)="onChange('year', 'down')">
+    <div class="flexlayout column center direction" (click)="onChange('year', 'down')"
+      matTooltip="move one year back">
       &lt;&lt;</div>
-    <div class="flexlayout column center direction" (click)="onChange('month', 'down')">
+    <div class="flexlayout column center direction" (click)="onChange('month', 'down')"
+      matTooltip="move one month back">
       &lt;</div>
-    <div class="flexlayout column center month">
+    <div class="flexlayout row center month">
+      <div class="flexlayout row center icon">&nbsp;</div>
+      <div class="flex-spacer"></div>
       {{getMonth()}}
+      <div class="flex-spacer"></div>
+      <div class="flexlayout row center icon">
+        <mat-icon (click)="picker.open()">calendar_today</mat-icon>
+        <input [matDatepicker]="picker" style="display: none;" 
+          [formField]="monthForm.month">
+        <mat-datepicker #picker startView="multi-year"
+          (monthSelected)="setMonthAndYear($event, picker)"></mat-datepicker>
+      </div>
     </div>
-    <div class="flexlayout column center direction" (click)="onChange('month', 'up')">
+    <div class="flexlayout column center direction" (click)="onChange('month', 'up')"
+      matTooltip="move one month forward">
       &gt;</div>
-    <div class="flexlayout column center direction" (click)="onChange('year', 'up')">
+    <div class="flexlayout column center direction" (click)="onChange('year', 'up')"
+      matTooltip="move one year forward">
       &gt;&gt;</div>
   </div>
   <div class="flexlayout row topleft" style="width: 100%;">

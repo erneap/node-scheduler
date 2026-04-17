@@ -17,6 +17,9 @@ export class SiteIngestChartEmployeeDay {
 
   getDisplayValue(): string {
     if (this.day().code === '') {
+      if (this.day().hours === 0) {
+        return '';
+      }
       if (this.day().hours === Math.floor(this.day().hours)) {
         return this.day().hours.toFixed(0);
       }

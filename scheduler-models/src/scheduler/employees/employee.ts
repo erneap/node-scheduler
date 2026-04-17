@@ -1340,6 +1340,7 @@ export class Employee implements IEmployee {
         max = lv.id;
       }
     });
+    console.log(found);
     if (!found) {
       const lv = new Leave({
         id: max + 1,

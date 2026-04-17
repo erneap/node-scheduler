@@ -95,10 +95,10 @@ export class ExcelRowEmployee implements IExcelRowEmployee {
   public rows: ExcelRow[];
 
   constructor(emp?: IExcelRowEmployee) {
-    this.employeeID = (emp) ? this.employeeID : '';
+    this.employeeID = (emp) ? emp.employeeID : '';
     this.rows = [];
     if (emp) {
-      this.rows.forEach(row => {
+      emp.rows.forEach(row => {
         this.rows.push(new ExcelRow(row));
       });
       this.rows.sort((a,b) => a.compareTo(b));
@@ -149,6 +149,12 @@ export class ExcelRowPeriod implements IExcelRowPeriod {
   }
 
   addRow(row: ExcelRow) {
+    if (row.date.getTime() < this.start.getTime()) {
+      this.start = new Date(row.date);
+    }
+    if (row.date.getTime() > this.end.getTime()) {
+      this.end = new Date(row.date);
+    }
     let found = false;
     this.employees.forEach((emp, e) => {
       if (emp.employeeID === row.employee) {
@@ -162,6 +168,7 @@ export class ExcelRowPeriod implements IExcelRowPeriod {
       const newEmp = new ExcelRowEmployee();
       newEmp.employeeID = row.employee;
       newEmp.addRow(row);
+      this.employees.push(newEmp);
       this.employees.sort((a,b) => a.compareTo(b));
     }
   }

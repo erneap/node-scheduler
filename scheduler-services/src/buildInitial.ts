@@ -141,8 +141,11 @@ export class BuildInitial {
                                   emp.work = [];
                                 }
                                 if (emp.work) {
+                                  let worked = new Date(row.dateworked);
+                                  worked = new Date(Date.UTC(worked.getFullYear(), 
+                                    worked.getMonth(), worked.getDate()))
                                   emp.work.push(new Work({
-                                    dateworked: new Date(row.dateworked),
+                                    dateworked: worked,
                                     chargenumber: row.chargenumber,
                                     extension: row.extension,
                                     paycode: Number(row.paycode),

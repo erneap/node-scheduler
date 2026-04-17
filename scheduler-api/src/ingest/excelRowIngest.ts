@@ -20,6 +20,7 @@ export class ExcelRowIngest {
     this.site = (site) ? new Site(site) : new Site();
     this.company = (company) ? company : '';
     this.docDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
+    console.log(this.docDate)
   }
 
   async Process(): Promise<ExcelRowPeriod[]> {
@@ -43,17 +44,15 @@ export class ExcelRowIngest {
     const temp = (process.env.TEMP_STORAGE) ? process.env.TEMP_STORAGE 
       : '/Users/antonerne/temp';
     const filename = `${temp}/${file.originalname}`;
+    await workbook.xlsx.readFile(filename);
     const worksheet = workbook.getWorksheet('Sheet1');
+    let start = new Date(this.docDate);
+    const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1));
 
     const monthDates: Date[] = [];
-    for (let d = 0; d < 31; d++) {
-      const nDate = new Date(this.docDate.getTime() + (d * 24 * 3600000));
-      if (nDate.getTime() < result.start.getTime()) {
-        result.start = new Date(nDate);
-      }
-      if (nDate.getTime() > result.end.getTime()) {
-        result.end = new Date(nDate);
-      }
+    while (start.getTime() < end.getTime()) {
+      monthDates.push(new Date(start));
+      start = new Date(start.getTime() + (24 * 3600000));
     }
 
     if (worksheet) {
@@ -61,9 +60,13 @@ export class ExcelRowIngest {
         if (row.getCell(1) && row.getCell(1) !== null && row.getCell(1).value !== null) {
           const name = row.getCell(1).toString().trim();
           if (name.includes(',')) {
+            const nameparts = name.split(',');
+            const last = nameparts[0].trim();
+            const first = nameparts[1].trim();
             if (this.site.employees) {
               const emp = this.site.employees.find(e =>
-                e.name.getLastFirst().toLowerCase() === name.toLowerCase());
+                e.name.lastname.toLowerCase() === last.toLowerCase()
+                && e.name.firstname.toLowerCase() === first.toLowerCase());
               if (emp) {
                 const rowPromises = monthDates.map(async(day,d) => {
                   const erow = await this.readCell(row, d+3, day, emp);
@@ -142,19 +145,24 @@ export class ExcelRowIngest {
           return new ExcelRow(eRow);
         }
       } else {
+        console.log(`${emp.name.lastname} - ${sValue}`);
         // this will be a leave code, so find out which to use, then 
         // create the excel row with the employee's standard workday.
+        let found = false;
+        const eRow = new ExcelRow();
         this.team.workcodes.forEach(wc => {
-          if (wc.isLeave && wc.altcode 
+          if (!found && wc.isLeave && wc.altcode 
             && sValue.toLowerCase() === wc.altcode.toLowerCase()) {
-            const eRow = new ExcelRow();
+            found = true;
             eRow.date = new Date(colDate);
             eRow.employee = emp.companyinfo.employeeid;
             eRow.code = wc.id;
             eRow.hours = emp.getStandardWorkday(colDate);
-            return new ExcelRow(eRow);
           }
         });
+        if (found) {
+          return new ExcelRow(eRow);
+        }
       }
     }
     return null

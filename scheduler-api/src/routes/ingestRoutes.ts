@@ -10,13 +10,25 @@ import { ExcelRowPeriod }
 import { Employee, IEmployee, IWorkRecord, Leave, Work, WorkRecord } 
   from "scheduler-models/scheduler/employees";
 import { PoolConnection } from "mariadb/*";
-import { BuildInitial, collections, EmployeeService, ExcelRowIngest, mdbConnection, postLogEntry, SAPIngest, TeamService, UserService } from "scheduler-services";
+import { BuildInitial, collections, EmployeeService,  
+  mdbConnection, postLogEntry, TeamService, UserService } from "scheduler-services";
 import { Workcode } from "scheduler-models/scheduler/labor";
 import { Team } from "scheduler-models/scheduler/teams";
 import { ScheduleDay, ScheduleEmployee } from "scheduler-models/scheduler/sites/schedule";
+import { SAPIngest } from "../ingest/sapIngest";
+import { ExcelRowIngest } from "../ingest/excelRowIngest";
 
 const router = Router();
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    const temp = (process.env.TEMP_STORAGE) ? process.env.TEMP_STORAGE 
+      : '/Users/antonerne/temp';
+    cb(null, temp);
+  },
+  filename: function(req,file,cb) {
+    cb(null, file.originalname);
+  }
+});
 const upload = multer({storage: storage });
 
 /**
@@ -42,7 +54,6 @@ router.get('/ingest/:team/:site/:company/:date', auth, async(req: Request, res: 
     const sDate = req.params.date as string;
     if (userid !== '' && teamid && siteid && companyid && sDate) {
       const date = new Date(Date.parse(sDate));
-      console.log(date);
       const employees = await getIngestEmployees(userid, teamid, siteid, 
         companyid, date);
       res.status(200).json(employees);
@@ -96,7 +107,7 @@ async function getIngestEmployees(userid: string, teamid: string, siteid: string
             let today = new Date(start);
             while (today.getTime() < end.getTime()) {
               const tomorrow = new Date(today.getTime() + (24 * 3600000));
-              const hours = iEmp.getWorkedHours(today, tomorrow);
+              const hours = iEmp.getWorkedHours(today, today);
               const day: ScheduleDay = new ScheduleDay();
               day.date = today;
               day.id = today.getDate();
@@ -200,10 +211,13 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
     if ((req as any).user) {
       userid = (req as any).user;
     }
-    const teamid = req.body.teamid as string;
-    const siteid = req.body.siteid as string;
-    const companyid = req.body.companyid as string;
-    const sDate = req.body.date as string;
+    if (userid === '') {
+      userid = req.body.userid as string;
+    }
+    const teamid = req.body.team as string;
+    const siteid = req.body.site as string;
+    const companyid = req.body.company as string;
+    const sDate = req.body.start as string;
     if (!teamid || teamid === '') {
       throw new Error('No team identifier given');
     }
@@ -248,7 +262,8 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
         break;
       case "mexcel":
-        const excelIngest = new ExcelRowIngest(new Date(sDate), files, 
+        console.log(sDate);
+        const excelIngest = new ExcelRowIngest(new Date(Date.parse(sDate)), files, 
           team, site, companyid);
         const prds = await excelIngest.Process();
         prds.forEach(period => {
@@ -256,6 +271,7 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
         break;
     }
+    console.log(results.length);
     if (results.length > 0) {
       const employees: Employee[] = (site.employees) ? site.employees : [];
       const employeelist: ObjectId[] = [];
@@ -266,15 +282,20 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
       const updatePromises = results.map(async(period) => {
         const employeePromises = period.employees.map(async(eEmp) => {
           const ePromises = employees.map(async(emp, e) => {
-            if (emp.id === eEmp.employeeID) {
+            if (emp.companyinfo.employeeid === eEmp.employeeID
+              || emp.companyinfo.alternateid === eEmp.employeeID
+            ) {
               // remove leaves for employee for period.
               emp.removeLeaves(period.start, period.end);
 
               // remove work records for the employee for a period from sql database
-              let sql = "DELETE FROM employeeWork WHERE employeeID = ? AND dateworked "
-                + " >= ? and dateworked <= ?;";
-              const perVals = [ eEmp.employeeID, period.start, period.end ];
-              await conn?.query(sql, perVals)
+              let sql = `DELETE FROM employeeWork WHERE employeeID = "${emp.id}" AND `
+                + `dateworked >= "${period.start.getUTCFullYear()}-`
+                + `${period.start.getMonth()+1}-${period.start.getDate()}" and `
+                + `dateworked <= "${period.end.getUTCFullYear()}-${period.end.getUTCMonth()+1}`
+                + `-${period.end.getDate()}";`;
+              let result = await conn?.query(sql);
+              console.log(result);
 
               // now add the rows (leaves and work) to either the employee record or to the
               // sql database
@@ -283,12 +304,13 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
                   // code field of the row indicates whether or not this is a leave type.
                   // If not empty, we assume it is work.  At this point all leaves are 
                   // recorded as actual
+                  console.log(row);
                   emp.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', 
                     row.holidayID);
                 } else {
                   sql = "INSERT INTO employeeWork (employeeID, dateworked, chargenumber, "
                     + "extension, paycode, modtime, hours) VALUES (?, ?, ?, ?, ?, ?, ?);";
-                  const wkVals = [eEmp.employeeID, row.date, row.chargeNumber, 
+                  const wkVals = [emp.id, row.date, row.chargeNumber, 
                     row.extension, row.premium, row.modified, row.hours];
                   await conn?.query(sql, wkVals);
                 }
@@ -309,7 +331,8 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
       });
       await Promise.allSettled(employeeWritePromises);
 
-      const answer = await getIngestEmployees(userid, teamid, siteid, companyid, start);
+      const rtnDate = new Date(Date.parse(sDate));
+      const answer = await getIngestEmployees(userid, teamid, siteid, companyid, rtnDate);
       res.status(200).json(answer);
     }
   } catch (err) {

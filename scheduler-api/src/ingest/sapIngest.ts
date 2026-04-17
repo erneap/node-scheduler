@@ -27,20 +27,13 @@ export class SAPIngest {
 
   async processFile(file: Express.Multer.File): Promise<ExcelRowPeriod> {
     const result: ExcelRowPeriod = new ExcelRowPeriod();
-    // convert the file into a buffer to allow the exceljs library to create an excel
-    // document to read through.
-    const filereader = Readable.from(file.buffer);
-    const fileDataU8: number[] = [];
-    while (true) {
-      const {done,value} = await filereader.read();
-      if (done) break;
-
-      fileDataU8.push(...value);
-    }
-    const fileBinary = Buffer.from(fileDataU8);
 
     const workbook = new Workbook();
-    await workbook.xlsx.load(fileBinary.buffer);
+    //await workbook.xlsx.load(fileBinary.buffer);
+    const temp = (process.env.TEMP_STORAGE) ? process.env.TEMP_STORAGE 
+      : '/Users/antonerne/temp';
+    const filename = `${temp}/${file.originalname}`;
+    await workbook.xlsx.readFile(filename);
     const worksheet = workbook.getWorksheet('Data');
 
     if (worksheet) {
@@ -55,7 +48,6 @@ export class SAPIngest {
 
       const explanation = (columns.get('explanation')) ? columns.get('explanation') 
         : -1;
-      console.log(`Explanation: ${explanation}`);
       const dataCols = ['date', 'personnel no.', 'charge number', 'prem. no.', 'ext.',
         'hours', 'charge number desc', 'explanation' ];
       if (explanation && explanation >= 0) {
@@ -131,6 +123,8 @@ export class SAPIngest {
           }
         });
       }
+    } else {
+      throw new Error('No worksheet DATA');
     }
 
     return result;

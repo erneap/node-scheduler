@@ -37,6 +37,7 @@
   flex: 1 1 auto;
   background-color: #cc0000;
   width: 75px;
+  height: 29px;
   color: white;
   font-weight: bold;
   border: solid 1px white;
@@ -45,6 +46,9 @@
 
 .month {
   flex: 20 1 auto; 
+  font-size: 1.2rem;
+  font-weight: bold;
+  height: 29px;
   background-color: transparent;
   color: white;
   border: solid 1px white;
@@ -56,4 +60,8 @@
   text-align: center;
   border: none;
   font-size: 1rem;
+}
+
+.icon {
+  width: 30px;
 }

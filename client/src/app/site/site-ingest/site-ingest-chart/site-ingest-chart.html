@@ -11,6 +11,30 @@
       </label>
     }
   </div>
-  <app-site-ingest-chart-month [company]="company()" [workcodes]="workcodes()">
+  <app-site-ingest-chart-month [company]="company()" [workcodes]="workcodes()"
+    (monthChange)="changeMonth($event)">
   </app-site-ingest-chart-month>
+  @if (ingestMethod() !== 'manual') {
+    <div class="flexlayout row topleft flexgap">
+      <input type="file" #filesInput (change)="onFilesChange($event)" 
+        style="display: none;" multiple>
+      <button matButton="filled" class="upload-button" (click)="filesInput.click()">
+        <mat-icon style="color: black;">cloud_upload</mat-icon>
+        Pick file(s) to Upload
+      </button>
+      <div class="flexlayout column center" style="padding-top: 10px;">
+        @for (file of uploadFiles(); track file) {
+          <div>
+            {{file.name}}
+          </div>
+        }
+      </div>
+      @if (uploadFiles().length > 0) {
+        <button matButton="filled" class="add-button" (click)="onSubmit()">
+          Upload File(s)</button>
+        <button matButton="filled" class="clear-button" (click)="onClear()">
+          Clear File(s)</button>
+      }
+    </div>
+  }
 </div>
