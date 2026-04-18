@@ -38,6 +38,12 @@ import { SiteEditorCofs } from './site/site-editor/site-editor-cofs/site-editor-
 import { SiteEditorWorkcenterPosition } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-position/site-editor-workcenter-position';
 import { SiteEditorWorkcenterShift } from './site/site-editor/site-editor-workcenters/site-editor-workcenter-shift/site-editor-workcenter-shift';
 import { SiteIngest } from './site/site-ingest/site-ingest';
+import { TeamEditor } from './team/team-editor/team-editor';
+import { TeamEditorWorkcodes } from './team/team-editor/team-editor-workcodes/team-editor-workcodes';
+import { TeamEditorCompanies } from './team/team-editor/team-editor-companies/team-editor-companies';
+import { TeamEditorContacts } from './team/team-editor/team-editor-contacts/team-editor-contacts';
+import { TeamEditorSpecialties } from './team/team-editor/team-editor-specialties/team-editor-specialties';
+import { TeamEditorSites } from './team/team-editor/team-editor-sites/team-editor-sites';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -93,7 +99,7 @@ export const routes: Routes = [
       },
       { path: 'editor', component: SiteEditor,
         children: [
-          { path: '', redirectTo: '/site/editor/forecasts', pathMatch: 'full' },
+          { path: '', redirectTo: '/site/editor/workcenters', pathMatch: 'full' },
           { path: 'workcenters', component: SiteEditorWorkcenters,
             children: [
               {path: 'positions', component: SiteEditorWorkcenterPosition },
@@ -112,5 +118,16 @@ export const routes: Routes = [
     ]
   },
   { path: 'query', component: TeamQuery },
+  { path: 'team', component: TeamEditor,
+    children: [
+      {path: '', redirectTo: '/team/workcodes', pathMatch: 'full'},
+      {path: 'workcodes', component: TeamEditorWorkcodes },
+      {path: 'companies', component: TeamEditorCompanies },
+      {path: 'contacts', component: TeamEditorContacts },
+      {path: 'specialties', component: TeamEditorSpecialties },
+      {path: 'sites', component: TeamEditorSites },
+      {path: '**', component: TeamEditorWorkcodes }
+    ]
+   },
   { path: '**', redirectTo: '/login' }
 ];

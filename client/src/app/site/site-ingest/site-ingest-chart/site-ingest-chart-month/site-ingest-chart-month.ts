@@ -188,4 +188,8 @@ export class SiteIngestChartMonth {
     answer += `${tdate.getDate()}`;
     return answer;
   }
+
+  onRefresh() {
+    this.getIngestMonth();
+  }
 }

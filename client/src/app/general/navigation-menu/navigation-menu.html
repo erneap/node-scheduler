@@ -79,7 +79,7 @@
           style="height: 20px;">Timecard Ingest/Entry</a>
         }
         @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
-          <a mat-list-item (click)="goToLink('/team/editor')"
+          <a mat-list-item (click)="goToLink('/team', true)"
           style="height: 20px;">Team Editor</a>
         }
         @if (this.isInGroup('admin')) {

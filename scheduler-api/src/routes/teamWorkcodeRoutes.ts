@@ -84,6 +84,10 @@ router.put('/team/workcode', auth, async(req: Request, res: Response) => {
         team.workcodes.forEach((wc, w) => {
           if (wc.id.toLowerCase() === data.optid?.toLowerCase()) {
             switch (data.field.toLowerCase()) {
+              case "id":
+                wc.id = data.value;
+                break;
+              case "name":
               case "title":
                 wc.title = data.value;
                 break;

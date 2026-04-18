@@ -1,0 +1,22 @@
+<div class="flexlayout row topleft view" [style]="style()">
+  <div class="flexlayout column topleft editor" >
+    <h2>Team Editor</h2>
+    <div class="flexlayout row topleft flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Team's Name/Title</mat-label>
+        <input matInput [formField]="teamForm.name" (change)="onUpdate('name')">
+        @if (teamForm.name().invalid()) {
+          <mat-error>*required</mat-error>
+        }
+      </mat-form-field>
+    </div>
+    <mat-toolbar class="flexlayout row topleft toolbar" style="width: 100%;">
+      <button matButton (click)="choose('workcodes')">Work/Leave Code</button>
+      <button matButton (click)="choose('companies')">Companies</button>
+      <button matButton (click)="choose('contacts')">Contact Types</button>
+      <button matButton (click)="choose('specialties')">Specialty Types</button>
+      <button matButton (click)="choose('sites')">Team Sites</button>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </div>
+</div>

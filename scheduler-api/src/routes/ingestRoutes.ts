@@ -262,7 +262,6 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
         break;
       case "mexcel":
-        console.log(sDate);
         const excelIngest = new ExcelRowIngest(new Date(Date.parse(sDate)), files, 
           team, site, companyid);
         const prds = await excelIngest.Process();
@@ -271,7 +270,6 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
         break;
     }
-    console.log(results.length);
     if (results.length > 0) {
       const employees: Employee[] = (site.employees) ? site.employees : [];
       const employeelist: ObjectId[] = [];
@@ -295,7 +293,6 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
                 + `dateworked <= "${period.end.getUTCFullYear()}-${period.end.getUTCMonth()+1}`
                 + `-${period.end.getDate()}";`;
               let result = await conn?.query(sql);
-              console.log(result);
 
               // now add the rows (leaves and work) to either the employee record or to the
               // sql database
@@ -304,9 +301,9 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
                   // code field of the row indicates whether or not this is a leave type.
                   // If not empty, we assume it is work.  At this point all leaves are 
                   // recorded as actual
-                  console.log(row);
                   emp.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', 
                     row.holidayID);
+                  await empService.replace(emp);
                 } else {
                   sql = "INSERT INTO employeeWork (employeeID, dateworked, chargenumber, "
                     + "extension, paycode, modtime, hours) VALUES (?, ?, ?, ?, ?, ?, ?);";
@@ -323,13 +320,6 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });        
       });
       await Promise.allSettled(updatePromises);
-
-      // after going through all the results, write each employee and employee work record
-      // to the database.
-      const employeeWritePromises = employees.map( async(emp) => {
-        await empService.replace(emp);
-      });
-      await Promise.allSettled(employeeWritePromises);
 
       const rtnDate = new Date(Date.parse(sDate));
       const answer = await getIngestEmployees(userid, teamid, siteid, companyid, rtnDate);

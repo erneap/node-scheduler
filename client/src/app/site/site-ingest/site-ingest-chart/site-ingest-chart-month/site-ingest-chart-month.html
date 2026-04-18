@@ -7,7 +7,10 @@
       matTooltip="move one month back">
       &lt;</div>
     <div class="flexlayout row center month">
-      <div class="flexlayout row center icon">&nbsp;</div>
+      <div class="flexlayout row center icon">
+        <mat-icon matTooltip="refresh the month's data" (click)="onRefresh()">
+          refresh</mat-icon>
+      </div>
       <div class="flex-spacer"></div>
       {{getMonth()}}
       <div class="flex-spacer"></div>

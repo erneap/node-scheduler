@@ -96,7 +96,7 @@ export class EmployeeService {
       empArray.forEach(usr => {
         if (usr.name.lastname.toLowerCase() === newuser.name.lastname.toLowerCase()
           && usr.name.firstname.toLowerCase() === newuser.name.firstname.toLowerCase()
-          && usr.name.middlename.toLowerCase() === newuser.name.middlename.toLowerCase()) {
+          && usr.name.middlename?.toLowerCase() === newuser.name.middlename?.toLowerCase()) {
           employee = new Employee(usr);
           found = true;
         }
@@ -107,7 +107,7 @@ export class EmployeeService {
       userArray.forEach(usr => {
         if (usr.lastName.toLowerCase() === newuser.name.lastname.toLowerCase()
           && usr.firstName.toLowerCase() === newuser.name.firstname.toLowerCase()
-          && usr.middleName.toLowerCase() === newuser.name.middlename.toLowerCase()) {
+          && usr.middleName?.toLowerCase() === newuser.name.middlename?.toLowerCase()) {
           user = new User(usr);
           usrFound = true;
         }
@@ -153,7 +153,6 @@ export class EmployeeService {
       employee.user = undefined;
       employee.work = undefined;
       const result = await collections.employees.replaceOne(query, employee);
-      
     } else {
       throw new Error('No employee collection');
     }
@@ -236,7 +235,7 @@ export class EmployeeService {
             + "?, ?, ?, ?, ?);";
           const workVals = [ empID, work.dateworked, work.chargenumber, 
             work.extension, work.paycode, work.modtime, work.hours ];
-          await conn.query(sql, workVals);
+          await conn?.query(sql, workVals);
         });
         await Promise.allSettled(workPromises);
       }

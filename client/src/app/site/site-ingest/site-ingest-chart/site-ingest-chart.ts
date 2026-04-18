@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, signal, viewChild, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
 import { Company } from 'scheduler-models/scheduler/teams/company';
@@ -17,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 interface IngestData {
   company: string;
-  files: File[] | null;
+  files: string;
 }
 
 @Component({
@@ -33,13 +33,14 @@ interface IngestData {
   styleUrl: './site-ingest-chart.scss',
 })
 export class SiteIngestChart {
+  fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   company = signal<string>('');
   ingestMethod = signal<string>('manual');
   companies = signal<Company[]>([]);
   uploadFiles = signal<File[]>([]);
   uploadModel = signal<IngestData>({
     company: '',
-    files: null});
+    files: ''});
   uploadForm = form(this.uploadModel, s => {
     required(s.files);
   });
@@ -107,7 +108,6 @@ export class SiteIngestChart {
     for (let i=0; i < event.target.files.length; i++) {
       list.push(event.target.files[i]);
     }
-    console.log(list);
     this.uploadFiles.set(list);
   }
 
@@ -131,7 +131,8 @@ export class SiteIngestChart {
         this.siteService.getIngestMonth(this.team(), this.site(), this.company(), 
           new Date(Date.parse(this.month()))).subscribe({
             next: (res) => {
-
+              this.uploadForm.files().value.set('');
+              this.uploadFiles.set([]);
             },
             error: (err) => {
               if (err instanceof HttpErrorResponse) {

@@ -1340,7 +1340,6 @@ export class Employee implements IEmployee {
         max = lv.id;
       }
     });
-    console.log(found);
     if (!found) {
       const lv = new Leave({
         id: max + 1,
@@ -1356,13 +1355,14 @@ export class Employee implements IEmployee {
       this.leaves.sort((a,b) => a.compareTo(b));
     }
   }
-/**
- * This function will update a single field within the leave, based on leave's identifier.
- * @param id The numeric value for the leave.
- * @param field The string value for the associated data member to update
- * @param value The string value for the updated value.
- * @returns The updated leave object.
- */
+
+  /**
+   * This function will update a single field within the leave, based on leave's identifier.
+   * @param id The numeric value for the leave.
+   * @param field The string value for the associated data member to update
+   * @param value The string value for the updated value.
+   * @returns The updated leave object.
+   */
   updateLeave(id: number, field: string, value: string): Leave | undefined {
     let answer: Leave | undefined = undefined;
     this.leaves.forEach((lv, l) => {

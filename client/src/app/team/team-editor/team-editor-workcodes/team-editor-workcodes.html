@@ -1,0 +1,79 @@
+<div class="flexlayout row topleft flexgap">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row center label">Work/Leave Codes</div>
+    <app-list [height]="500" [width]="300" [list]="list()"
+      [selectedItem]="selectedWorkcode()" (itemSelected)="onSelectWorkcode($event)">
+    </app-list>
+  </div>
+  <div class="flexlayout column topcenter" style="margin-left: 10px;">
+    <div class="flexlayout row center label">Work/Leave Code Editor</div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Work/Leave Code Identifier</mat-label>
+        <input matInput [formField]="workcodeForm.id" (change)="onChange('id')">
+        @if (workcodeForm.id().invalid()) {
+          <mat-error>*required</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Work/Leave Code Title</mat-label>
+        <input matInput [formField]="workcodeForm.title" (change)="onChange('title')">
+        @if (workcodeForm.title().invalid()) {
+          <mat-error>*required</mat-error>
+        }
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-checkbox [formField]="workcodeForm.isleave" (change)="onChange('isleave')">
+        Is a Leave Code
+      </mat-checkbox>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Shift Start Hour</mat-label>
+        <input matInput type="number" [formField]="workcodeForm.start"
+           (change)="onChange('start')">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Shift/Premimum Code</mat-label>
+        <input matInput  [formField]="workcodeForm.premimumcode"
+         (change)="onChange('shiftcode')">
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Text Color</mat-label>
+        <input matInput [formField]="workcodeForm.textcolor"
+          [style]="inputColorStyle()"  (change)="onChange('textcolor')">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Background Color</mat-label>
+        <input matInput [formField]="workcodeForm.backcolor"
+          [style]="inputColorStyle()" (change)="onChange('backcolor')">
+      </mat-form-field>
+    </div>
+    @if (this.workcodeForm.isleave().value()) {
+      <div class="flexlayout row center flexgap" style="width: 100%;">
+        <mat-form-field floatLabel="always" style="width: 400px;">
+          <mat-label>Search Term(s)</mat-label>
+          <input matInput [formField]="workcodeForm.search" (change)="onChange('search')">
+        </mat-form-field>
+      </div>
+    }
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      @if (this.selectedWorkcode().toLowerCase() === 'new') {
+        @if (this.workcodeForm().valid()) {
+          <button matButton="filled" class="add-button" (click)="onAdd()">
+            Add</button>
+          }
+        <button matButton="filled" class="clear-button" (click)="onClear()">
+          Clear</button>
+      }
+      @else {
+        <button matButton="filled" class="delete-button" (click)="onDelete()">
+          Delete
+        </button>
+      }
+    </div>
+  </div>
+</div>
