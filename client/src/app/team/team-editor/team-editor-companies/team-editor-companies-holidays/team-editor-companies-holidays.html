@@ -1,1 +1,72 @@
-<p>team-editor-companies-holidays works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout row center label">Company Holiday Editor</div>
+  <div class="flexlayout row topleft">
+    <app-list [width]="250" [height]="270" [list]="list()" [selectedItem]="selectedItem()"
+      (itemSelected)="selectItem($event)">
+    </app-list>
+    @if (selectedItem() !== 'new') {
+      <div class="flexlayout column center" style="height: 270px;">
+        @if (showSortUp()) {
+          <mat-icon matTooltip="move workcenter up list" (click)="onUpdate('up')">
+            arrow_upward</mat-icon>
+        }
+        @else {
+          <mat-icon></mat-icon>
+        }
+        <span class="flex-spacer"></span>
+        <mat-icon matTooltip="delete workcenter" (click)="onDelete()">
+          delete</mat-icon>
+        <span class="flex-spacer"></span>
+        @if (showSortDown()) {
+          <mat-icon matTooltip="move workcenter down list" (click)="onUpdate('down')">
+            arrow_downward</mat-icon>
+        }
+        @else {
+          <mat-icon></mat-icon>
+        }
+      </div>
+    }
+    <div class="flexlayout column center" style="margin-left: 10px;">
+      <div class="flexlayout row center flexgap">
+        <div class="flexlayout column center label" style="width: 125px;height: 100%;">
+          Holiday Type</div>
+        <div class="flexlayout row center flexgap" >
+          <label><input type="radio" value="h" [formField]="holidayform.holidayType" />
+            Holiday</label>
+          <label><input type="radio" value="f" [formField]="holidayform.holidayType" />
+            Floating</label>
+        </div>
+        <mat-form-field floatLabel="always" style="width: 250px;">
+          <mat-label>Holiday Name</mat-label>
+          <input matInput [formField]="holidayform.name" (change)="onUpdate('name')">
+          @if (holidayform.name().invalid()) {
+            <mat-error>*required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      @if (showActuals()) {
+        <div class="flexlayout row center label">Actual Holiday Dates</div>
+        <div class="flexlayout row center actuals">
+          @for (actual of actualsList(); track actual.toString()) {
+            <a (click)="onUpdate(`actual|${actual.getTime()}`)">
+              {{actualString(actual)}}
+            </a>
+            <mat-icon class="icon-delete">cancel</mat-icon>
+          }
+        </div>
+        <div class="flexlayout row center" style="width: 100%;">
+          <mat-form-field floatLabel="always" style="width: 250px;">
+            <mat-label>Actual Date</mat-label>
+            <input matInput [formField]="holidayform.actual" [matDatepicker]="picker">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          @if (holidayform.actual().valid()) {
+            <button matButton="filled" class="add-button">
+              Add/Update</button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

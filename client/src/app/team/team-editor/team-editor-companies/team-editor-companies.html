@@ -1,1 +1,85 @@
-<p>team-editor-companies works!</p>
+<div class="flexlayout column topleft">
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row center label">
+      Company Editor
+    </div>
+    <div class="flexlayout row topleft flexgap">
+      <app-list [width]="200" [height]="250" [list]="list()" 
+        [selectedItem]="selectedItem()" (itemSelected)="selectItem($event)"></app-list>
+      <div class="flexlayout column center flexgap" style="width: 100%;">
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          @if (selectedItem().toLowerCase() === 'new') {
+            <mat-form-field floatLabel="always" style="width: 250px;">
+              <mat-label>Company Identifer</mat-label>
+              <input matInput [formField]="companyForm.id">
+              @if (companyForm.id().invalid()) {
+                <mat-error>*required</mat-error>
+              }
+            </mat-form-field>
+          }
+          <mat-form-field floatLabel="always" style="width: 250px;">
+            <mat-label>Company Name</mat-label>
+            <input matInput [formField]="companyForm.name">
+            @if (companyForm.name().invalid()) {
+              <mat-error>*required</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          <mat-form-field floatLabel="always" style="width: 250px">
+            <mat-label>Ingest Method</mat-label>
+            <mat-select [formField]="companyForm.ingest">
+              @for (method of ingestTypes; track method.id) {
+                <mat-option [value]="method.id">{{method.value}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field floatLabel="always" style="width: 200px">
+            <mat-label>Ingest Period</mat-label>
+            <mat-select [formField]="companyForm.period">
+              @for (method of ingestPeriods; track method.id) {
+                <mat-option [value]="method.id">{{method.value}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (companyForm.period().value() === '7') {
+            <mat-form-field floatLabel="always" style="width: 200px">
+              <mat-label>Time Start Day</mat-label>
+              <mat-select [formField]="companyForm.start">
+                @for (method of weekdays; track method; let i = $index) {
+                  <mat-option [value]="`${i}`">{{method}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+        </div>
+        <div class="flexlayout row center flexgap" style="width: 100%;">
+          <mat-checkbox [formField]="companyForm.holidays" >Has Holiday(s)</mat-checkbox>
+          <mat-checkbox [formField]="companyForm.modtime" >Uses ModTime</mat-checkbox>
+        </div>
+          <div class="flexlayout row center flexgap" style="width: 100%;">
+            @if (this.selectedItem().toLowerCase() === 'new') {
+              <button matButton="filled" class="add-button">
+                Add Company
+              </button>
+            }
+            @if (this.selectedItem().toLowerCase() !== 'new') {
+              <button matButton="filled" class="delete-button">
+                Delete Company
+              </button>
+            }
+          </div>
+      </div>
+    </div>
+    <div class="flexlayout row topleft flexwrap flexgap" style="margin-top: 10px;">
+      @if (companyForm.holidays().value()) {
+        <app-team-editor-companies-holidays [company]="selectedItem()">
+        </app-team-editor-companies-holidays>
+      }
+      @if (companyForm.modtime().value()) {
+        <app-team-editor-companies-modtime [company]="selectedItem()">
+        </app-team-editor-companies-modtime>
+      }
+    </div>
+  </div>
+</div>

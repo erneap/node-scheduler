@@ -17,6 +17,7 @@ import { Team } from "scheduler-models/scheduler/teams";
 import { ScheduleDay, ScheduleEmployee } from "scheduler-models/scheduler/sites/schedule";
 import { SAPIngest } from "../ingest/sapIngest";
 import { ExcelRowIngest } from "../ingest/excelRowIngest";
+import * as fs from 'fs';
 
 const router = Router();
 const storage = multer.diskStorage({
@@ -270,6 +271,9 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
         });
         break;
     }
+    files.forEach(file => {
+      fs.unlinkSync(file.path);
+    });
     if (results.length > 0) {
       const employees: Employee[] = (site.employees) ? site.employees : [];
       const employeelist: ObjectId[] = [];
