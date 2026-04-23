@@ -1,1 +1,43 @@
-<p>team-editor-contacts works!</p>
+<div class="flexlayout row topleft" style="margin-top: 5px;">
+  <div class="flexlayout column center">
+    <div class="flexlayout row center label">Contact Information Type(s)</div>
+    <div class="flexlayout row center">
+      <app-list [width]="300" [height]="400" [list]="list()" 
+        [selectedItem]="selectedItem()" (itemSelected)="selectItem($event)"></app-list>
+      @if (selectedItem() !== 'new') {
+        <div class="flexlayout column center" style="height: 400px;">
+          @if (contactPos() > 0 && contactsLength() > 1) {
+            <mat-icon matTooltip="move workcenter up list" (click)="onUpdate('up')">
+              arrow_upward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+          <span class="flex-spacer"></span>
+          <mat-icon matTooltip="delete workcenter" (click)="onDelete()">
+            delete</mat-icon>
+          <span class="flex-spacer"></span>
+          @if (contactPos() < contactsLength() - 1) {
+            <mat-icon matTooltip="move workcenter down list" (click)="onUpdate('down')">
+              arrow_downward</mat-icon>
+          }
+          @else {
+            <mat-icon></mat-icon>
+          }
+        </div>
+      }
+    </div>
+  </div>
+  <div class="flexlayout row center flexgap" style="margin-left: 10px;">
+    <mat-form-field floatLabel="always" style="width: 250px;">
+      <mat-label>Contact Information Type Name</mat-label>
+      <input matInput [formField]="contactForm.name" (change)="onUpdate('name')">
+      @if (contactForm.name().invalid()) {
+        <mat-error>*required</mat-error>
+      }
+    </mat-form-field>
+    @if (selectedItem().toLowerCase() === 'new') {
+      <button matButton="filled" class="add-button" (click)="onAdd()">Add</button>
+    }
+  </div>
+</div>

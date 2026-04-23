@@ -1,1 +1,11 @@
-<p>team-editor-sites works!</p>
+<div class="flexlayout row topleft">
+  <div class="flexlayout column center">
+    <div class="flexlayout row center label">Team Sites</div>
+    <app-list [width]="200" [height]="600" [list]="teamService.sites()"
+      (selectedItem)="teamService.selectedSite()" (itemSelected)="selectSite($event)">
+    </app-list>
+  </div>
+  <div class="flexlayout column topleft" style="margin-left: 5px;">
+    <router-outlet></router-outlet>
+  </div>
+</div>

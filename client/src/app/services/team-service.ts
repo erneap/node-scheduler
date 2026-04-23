@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
 import { environment } from '../../environments/environment';
-import { ITeam, NewCompanyHoliday, NewModPeriod, NewWorkcode, Team, UpdateTeam } from 'scheduler-models/scheduler/teams';
+import { ITeam, NewCompany, NewCompanyHoliday, NewModPeriod, NewWorkcode, Team, UpdateTeam } from 'scheduler-models/scheduler/teams';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { SecurityQuestion } from 'scheduler-models/users';
 import { map, Observable } from 'rxjs';
@@ -16,7 +16,8 @@ export class TeamService extends CacheService {
   private schedulerUrl = `${environment.schedulerUrl}`;
   questions: SecurityQuestion[] = [];
   selectedSite = signal<string>('');
-  teamSiteList = signal<Item[]>([])
+  teamSiteList = signal<Item[]>([]);
+  sites = signal<Item[]>([]);
 
   constructor(
     private http: HttpClient
@@ -115,12 +116,13 @@ export class TeamService extends CacheService {
    * @returns The updated team object for storage in a HTTP response object, which is 
    * handled by this service.
    */
-  updateTeam(team: string, field: string, value: string): Observable<HttpResponse<Team>> {
+  updateTeam(team: string, field: string, value: string, optid?: string): Observable<HttpResponse<Team>> {
     const url = `${this.schedulerUrl}/team`;
     const data: UpdateTeam = {
       team: team,
       field: field,
-      value: value
+      value: value,
+      optid: optid
     };
     return this.http.put<Team>(url, data, { observe: 'response'}).pipe(
       map(res => {
@@ -366,6 +368,173 @@ export class TeamService extends CacheService {
       sort: 0
     };
     return this.http.post<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This service method is used to make the call to the API to update a team-company's
+   * holiday, by field and with a string value that will be converted to the data type 
+   * needed by the application interface
+   * @param team The string identifier value for the team to update
+   * @param company The string identifier value for the team's company to update
+   * @param holid The string value containing the holiday type (h or f), plus the sort 
+   * identifier that together form an identifier for the holiday to update
+   * @param field The string value that identifies which data member of the holiday to 
+   * update.
+   * @param value The string value for the change.
+   * @returns The new team object for storage in a HTTP response object, which is handled
+   * by this method.
+   */
+  updateHoliday(team: string, company: string, holid: string, field: string, 
+    value: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/company/holiday`;
+    const data: UpdateTeam = {
+      team: team,
+      companyid: company,
+      optid: holid,
+      field: field,
+      value: value
+    };
+    return this.http.put<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This service method will send a remove request for a holiday, based on its holiday 
+   * type and sort identifier from the team-company's holiday list.
+   * @param team The string identifier value for the team to delete from
+   * @param company The string identifier value for the team's company
+   * @param holid The string value containing the holiday type (h or f), plus the sort 
+   * identifier that together form an identifier for the holiday to delete
+   * @returns The new team object for storage in a HTTP response object, which is handled
+   * by this method.
+   */
+  deleteHoliday(team: string, company: string, holid: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/company/holiday/${team}/${company}/${holid}`;
+    return this.http.delete<Team>(url, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This service method will be used to initiate/respond to a request for a new company 
+   * within a team.  It must contain all the required data for the team.
+   * @param team The string identifier for the team to attach the company to.
+   * @param id The string identifer for the new company.
+   * @param name The string name for the new company.
+   * @param ingest The string value for the ingest type (either SAP Timecard Ingest or a 
+   * monthly manual excel)
+   * @param period The numeric value for the number of days normally in a ingest excel 
+   * product.
+   * @param start The numeric value for the day of the week (0=Sunday, etc) that the 
+   * company's timecard system considers the beginning of the week, for weekly ingests.
+   * @returns The new team object for storage in a HTTP response object, which is handled
+   * by this method.
+   */
+  addCompany(team: string, id: string, name: string, ingest: string, period: number, 
+    start: number): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/company`;
+    const data: NewCompany = {
+      team: team,
+      id: id,
+      name: name,
+      ingest: ingest,
+      ingestPeriod: period,
+      startDay: start
+    };
+    return this.http.post<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This service method will be used to initiate an update request for a company field, 
+   * based on the field value with the value string given
+   * @param team The string identifier for the team.
+   * @param id The string identifier for the company to update
+   * @param field The string to identify which data member/field to update
+   * @param value The string value to put in the data member/field.  It will be converted
+   * by the API to the correct data type.
+   * @returns The new team object for storage in a HTTP response object, which is handled
+   * by this method.
+   */
+  updateCompany(team: string, id: string, field: string, value: string)
+    : Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/company`;
+    const data: UpdateTeam = {
+      team: team,
+      companyid: id,
+      field: field,
+      value: value
+    };
+    return this.http.put<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This service method will be used to send a delete request to delete a team's company
+   * from the team object.
+   * @param team The string identifier for the team
+   * @param company The string identifier for the company to delete
+   * @returns The new team object for storage in a HTTP response object, which is handled
+   * by this method.
+   */
+  deleteCompany(team: string, company: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/company/${team}/${company}`;
+    return this.http.delete<Team>(url, { observe: 'response'}).pipe(
       map(res => {
         const iTeam = (res.body as ITeam );
         if (iTeam) {

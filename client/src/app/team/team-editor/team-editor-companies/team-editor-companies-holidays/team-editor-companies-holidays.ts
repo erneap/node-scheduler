@@ -14,6 +14,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { dateToString } from '../../../../models/dates';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ConfirmationDialog } from '../../../../general/confirmation-dialog/confirmation-dialog';
 
 interface HolidayData {
   holidayType: string;
@@ -166,6 +168,10 @@ export class TeamEditorCompaniesHolidays {
     }
   }
 
+  // These next two method are for the complex computation for showing the sort movement
+  // arrows for the holiday list display.
+  // the sort up arrow will display if the regular holiday or float holiday is greater 
+  // than 1 in position, within it's respective list portion.
   showSortUp(): boolean {
     if (this.selectedItem().toLowerCase() !== 'new') {
       const [htype, sort] = this.selectedItem().split('|');
@@ -175,6 +181,8 @@ export class TeamEditorCompaniesHolidays {
     return false;
   }
 
+  // The sort down arrow will display if the regular holiday or float holiday is less than
+  // the number of of total respective holidays within their list portion.
   showSortDown(): boolean {
     if (this.selectedItem().toLowerCase() !== 'new') {
       const [htype, sort] = this.selectedItem().split('|');
@@ -192,11 +200,160 @@ export class TeamEditorCompaniesHolidays {
     return dateToString(actual);
   }
 
-  onUpdate(field: string) {
-
+  /**
+   * This method is used to initiate and respond to the Add button click.  First, we check
+   * if the form is complete (type and name). then we send the information to the API for
+   * inclusion to the team/company object's holiday list.  After process, a new team 
+   * object is passed back and handled by the service.  We need to update the holiday list
+   * and find the new holiday in the company's holiday list and determine the identifier
+   * used by the list, then select it to display its data for editing.
+   */
+  onAdd() {
+    if (this.holidayform().valid()) {
+      const name = this.holidayform.name().value();
+      this.teamService.addHoliday(this.team(), this.company, name,
+        this.holidayform.holidayType().value()).subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list and pick the new
+          // holiday for display
+          this.setHolidays();
+          const iTeam = this.teamService.getTeam();
+          if (iTeam) {
+            const team = new Team(iTeam);
+            team.companies.forEach(co => {
+              if (co.id.toLowerCase() === this.company.toLowerCase()) {
+                if (co.holidays && co.holidays.length > 0) {
+                  co.holidays.forEach(hol => {
+                    if (hol.name === name) {
+                      const id = `${hol.id}|${hol.sort}`;
+                      this.selectItem(id);
+                    }
+                  });
+                }
+              }
+            });
+          }
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      })
+    }
   }
 
-  onDelete() {
+  /**
+   * This method is used to initiate and respond to a request to update a holiday (name,
+   * position within its respective list portion, and actual dates).  A single field or 
+   * date member is updated by each call.  When processed, the API returns the new Team
+   * object which is handled by the service.  All we need to do is update the holiday 
+   * list.
+   * @param field The string value to signify which field is to be updated.
+   */
+  onUpdate(field: string) {
+    if (this.selectedItem().toLowerCase() !== 'new') {
+      const [holtype, sort] = this.selectedItem().split('|');
+      const hid = `${holtype.toLowerCase()}${sort}`;
+      let useField = field;
+      let value = '';
+      switch (field.toLowerCase()) {
+        case "name":
+          value = this.holidayform.name().value();
+          break;
+        case "up":
+        case "down":
+          useField = 'move';
+          value = field.toLowerCase();
+          break;
+        case "addactual":
+          value = dateToString(this.holidayform.actual().value())
+          break;
+      }
+      this.teamService.updateHoliday(this.team(), this.company, hid, useField, 
+        value).subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list, then update 
+          // the holiday display.
+          this.setHolidays();
+          this.selectItem(`${holtype}|${sort}`);
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      });
+    }
+  }
 
+  /**
+   * This method is a special case for the delete clicks for each set actual date.  It 
+   * will send an updateHoliday request with the field name of 'deleteactual' and the
+   * string date to delete.  The response is the same as the updateHoliday method.
+   * @param date The string value for the date to delete from the holiday's actual list
+   */
+  onDeleteActual(date: string) {
+      const [holtype, sort] = this.selectedItem().split('|');
+      const hid = `${holtype.toLowerCase()}${sort}`;
+      this.teamService.updateHoliday(this.team(), this.company, hid, 'deleteactual', 
+        date).subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list, then update 
+          // the holiday display.
+          this.setHolidays();
+          this.selectItem(`${holtype}|${sort}`);
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      });
+  }
+
+  /**
+   * This method will initiate and handle response for a deletion request, after 
+   * confirmation that the deletion should take place.  It uses the team service's 
+   * delete holiday method to place the request to the API and upon completions, handles
+   * the response by updating the holiday list and selecting 'new' for the selected 
+   * holiday.
+   */
+  onDelete() {
+    const dialogRef = this.dialog.open(ConfirmationDialog, {
+      data: {
+        title: 'Team Company Holiday Delete Confirmation',
+        message: 'Are you sure you want to delete this holiday?',
+        negativeButtonTitle: 'No',
+        affirmativeButtonTitle: 'Yes'
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.toLowerCase() === 'yes') {
+        const [holtype, sort] = this.selectedItem().split('|');
+        const hid = `${holtype.toLowerCase()}${sort}`;
+        this.teamService.deleteHoliday(this.team(), this.company, hid).subscribe({
+          next: (res) => {
+            // the team is already handled, so we need to update the list, then update 
+            // the holiday display.
+            this.setHolidays();
+            this.selectItem(`new`);
+          }, 
+          error: (err) => {
+            if (err instanceof HttpErrorResponse) {
+              if (err.status >= 400 && err.status < 500) {
+                this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+              }
+            }
+          }
+        })
+      }
+    });
   }
 }

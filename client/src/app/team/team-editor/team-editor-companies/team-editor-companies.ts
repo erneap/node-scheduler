@@ -14,6 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { TeamEditorCompaniesHolidays } from './team-editor-companies-holidays/team-editor-companies-holidays';
 import { TeamEditorCompaniesModtime } from './team-editor-companies-modtime/team-editor-companies-modtime';
 import { ConfirmationDialog } from '../../../general/confirmation-dialog/confirmation-dialog';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface CompanyData {
   id: string;
@@ -82,6 +83,10 @@ export class TeamEditorCompanies {
     }
   }
 
+  /**
+   * This method is the normal call point to update the list display all the companies 
+   * in the team.
+   */
   setCompanyList() {
     const list: Item[] = [];
     list.push({id: 'new', value: 'Add New Company'});
@@ -95,6 +100,12 @@ export class TeamEditorCompanies {
     this.list.set(list);
   }
 
+  /**
+   * This method is the callback function for the list to identfy which company to view/
+   * edit.  It can be called by other functions to select a company in the list and to 
+   * fill the editor fields with data to update.
+   * @param id The string identifier for the company to select.
+   */
   selectItem(id: string) {
     this.selectedItem.set(id);
     if (id.toLowerCase() === 'new') {
@@ -103,8 +114,8 @@ export class TeamEditorCompanies {
       this.companyForm.ingest().value.set('mexcel');
       this.companyForm.period().value.set('7');
       this.companyForm.start().value.set('5');
-      this.companyForm.holidays().value.set(false);
-      this.companyForm.modtime().value.set(false);
+      this.companyForm.holidays().value.set(true);
+      this.companyForm.modtime().value.set(true);
     } else {
       const iTeam = this.teamService.getTeam();
       if (iTeam) {
@@ -124,14 +135,87 @@ export class TeamEditorCompanies {
     }
   }
 
+  /**
+   * This method will update the selected company with the new information.  This method
+   * is called by the individual input fields.  It will be called before an add, so we
+   * need to check if 'new' is the selected company and ignore if 'new'.
+   * @param field The string value identifying which input field is providing data.
+   */
   onUpdate(field: string) {
-
+    if (this.selectedItem().toLowerCase() !== 'new') {
+      let useField = field;
+      let value = '';
+      switch (field.toLowerCase()) {
+        case "name":
+          value = this.companyForm.name().value();
+          break;
+        case "ingest":
+          value = this.companyForm.ingest().value();
+          break;
+        case "period":
+          value = this.companyForm.period().value();
+          break;
+        case "start":
+          value = this.companyForm.start().value();
+          break;
+      }
+      this.teamService.updateCompany(this.team(), this.selectedItem(), field, value).subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list
+          this.setCompanyList();
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      })
+    }
   }
 
+  /**
+   * This method is called by the Add button to start the process of adding a company to
+   * the team.  It will pull all the necessary information from the input fields and use
+   * the service method to send the data to the API.  A Team object is returned and 
+   * handled by the service, so on return we need to update the company list and select 
+   * this company for display.  But first is checks to ensure the minimum information is
+   * present.  if an error occurs, the information is placed in the status bar for 
+   * display.
+   */
   onAdd() {
-
+    if (this.companyForm().valid()) {
+      const cid = this.companyForm.id().value();
+      const name = this.companyForm.name().value();
+      const ingest = this.companyForm.ingest().value();
+      const period = Number(this.companyForm.period().value());
+      const start = Number(this.companyForm.start().value());
+      this.teamService.addCompany(this.team(), cid, name, ingest, period, start)
+        .subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list and then select
+          // the new company for display.
+          this.setCompanyList();
+          this.selectItem(cid);
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+      });
+    }
   }
 
+  /**
+   * This method is used to initiate a delete company request.  First, we must confirm
+   * that we want to delete the company and if yes, send the call to the service method
+   * and to the API.  After processing, we will update the company list and select 'new'
+   * for display.
+   */
   onDelete() {
     const dialogRef = this.dialog.open(ConfirmationDialog, {
       data: {
@@ -143,6 +227,21 @@ export class TeamEditorCompanies {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result.toLowerCase() === 'yes') {
+        this.teamService.deleteCompany(this.team(), this.selectedItem()).subscribe({
+        next: (res) => {
+          // the team is already handled, so we need to update the list and then select
+          // the 'Add Company' for display.
+          this.setCompanyList();
+          this.selectItem('new');
+        }, 
+        error: (err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status >= 400 && err.status < 500) {
+              this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+            }
+          }
+        }
+        })
       }
     });
   }

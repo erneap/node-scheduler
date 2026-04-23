@@ -1,0 +1,21 @@
+@use '@angular/material' as mat;
+
+@include mat.toolbar-overrides((
+  container-background-color: darkred,
+  container-text-color: white,
+));
+
+.view {
+  background-color: darkmagenta;
+  color: white;
+}
+
+.toolbar {
+  border-bottom: solid 1px white;
+}
+
+.editor {
+  height: 100%;
+  width: 100%;
+  margin: 10px;
+}

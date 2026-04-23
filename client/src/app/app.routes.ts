@@ -44,6 +44,8 @@ import { TeamEditorCompanies } from './team/team-editor/team-editor-companies/te
 import { TeamEditorContacts } from './team/team-editor/team-editor-contacts/team-editor-contacts';
 import { TeamEditorSpecialties } from './team/team-editor/team-editor-specialties/team-editor-specialties';
 import { TeamEditorSites } from './team/team-editor/team-editor-sites/team-editor-sites';
+import { TeamEditorSiteNew } from './team/team-editor/team-editor-sites/team-editor-site-new/team-editor-site-new';
+import { TeamEditorSiteEdit } from './team/team-editor/team-editor-sites/team-editor-site-edit/team-editor-site-edit';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -125,7 +127,25 @@ export const routes: Routes = [
       {path: 'companies', component: TeamEditorCompanies },
       {path: 'contacts', component: TeamEditorContacts },
       {path: 'specialties', component: TeamEditorSpecialties },
-      {path: 'sites', component: TeamEditorSites },
+      {path: 'sites', component: TeamEditorSites, 
+        children: [
+          {path: 'new', component: TeamEditorSiteNew },
+          {path: 'edit', component: TeamEditorSiteEdit,
+            children: [
+              { path: '', redirectTo: '/team/sites/edit/workcenters', pathMatch: 'full' },
+              { path: 'workcenters', component: SiteEditorWorkcenters,
+                children: [
+                  {path: 'positions', component: SiteEditorWorkcenterPosition },
+                  {path: 'shifts', component: SiteEditorWorkcenterShift },
+                ]
+              },
+              { path: 'forecasts', component: SiteEditorForecasts },
+              { path: 'cofs', component: SiteEditorCofs },
+              { path: '**', component: PathNotFound }
+            ]
+          }
+        ]
+      },
       {path: '**', component: TeamEditorWorkcodes }
     ]
    },

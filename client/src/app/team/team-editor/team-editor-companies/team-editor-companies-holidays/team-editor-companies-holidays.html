@@ -44,14 +44,23 @@
           }
         </mat-form-field>
       </div>
+      @if (this.holidayform().valid() && selectedItem().toLowerCase() === 'new') {
+        <div class="flexlayout row center" style="width: 100%;">
+          <button matButton="filled" class="add-button" (click)="onAdd()">
+            Add New Holiday</button>
+        </div>
+      }
       @if (showActuals()) {
         <div class="flexlayout row center label">Actual Holiday Dates</div>
-        <div class="flexlayout row center actuals">
+        <div class="flexlayout row center actuals flexgap">
           @for (actual of actualsList(); track actual.toString()) {
-            <a (click)="onUpdate(`actual|${actual.getTime()}`)">
-              {{actualString(actual)}}
-            </a>
-            <mat-icon class="icon-delete">cancel</mat-icon>
+            <div class="actual">
+              <span>
+                {{actualString(actual)}}
+              </span>
+              <mat-icon class="icon-delete" 
+                (click)="onDeleteActual(actualString(actual))">cancel</mat-icon>
+            </div>
           }
         </div>
         <div class="flexlayout row center" style="width: 100%;">
@@ -62,7 +71,7 @@
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
           @if (holidayform.actual().valid()) {
-            <button matButton="filled" class="add-button">
+            <button matButton="filled" class="add-button" (click)="onUpdate('addactual')">
               Add/Update</button>
           }
         </div>

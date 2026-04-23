@@ -1,21 +1,19 @@
-import { Component, computed, input, Input, output, signal } from '@angular/core';
-import { ISite, Site } from 'scheduler-models/scheduler/sites';
-import { AuthService } from '../../services/auth-service';
-import { SiteService } from '../../services/site-service';
-import { TeamService } from '../../services/team-service';
-import { ITeam, Team } from 'scheduler-models/scheduler/teams';
+import { Component, computed, input, Input, signal } from '@angular/core';
 import { form, FormField, max, min, required } from '@angular/forms/signals';
+import { ISite, Site } from 'scheduler-models/scheduler/sites';
+import { AuthService } from '../../../../../services/auth-service';
+import { SiteService } from '../../../../../services/site-service';
+import { TeamService } from '../../../../../services/team-service';
 import { Router, RouterOutlet } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatDialog } from '@angular/material/dialog';
+import { ITeam, Team } from 'scheduler-models/scheduler/teams';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ConfirmationDialog } from '../../../../../general/confirmation-dialog/confirmation-dialog';
+import { Item } from '../../../../../general/list/list.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialog } from '../../general/confirmation-dialog/confirmation-dialog';
-import { Item } from '../../general/list/list.model';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 interface SiteData {
   id: string;
@@ -25,21 +23,19 @@ interface SiteData {
 }
 
 @Component({
-  selector: 'app-site-editor',
+  selector: 'app-team-editor-site-edit-editor',
   imports: [
-    RouterOutlet,
-    MatToolbarModule,
     FormField,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatIconModule,
-    MatTooltip
-],
-  templateUrl: './site-editor.html',
-  styleUrl: './site-editor.scss',
+    MatToolbarModule,
+    RouterOutlet
+  ],
+  templateUrl: './team-editor-site-edit-editor.html',
+  styleUrl: './team-editor-site-edit-editor.scss',
 })
-export class SiteEditor {
+export class TeamEditorSiteEditEditor {
   siteid = computed(() => this.teamService.selectedSite());
   site = signal<Site>(new Site());
   team = signal<string>('');
@@ -115,13 +111,13 @@ export class SiteEditor {
     let url = '';
     switch (view.toLowerCase()) {
       case "workcenters":
-        url = '/site/editor/workcenters';
+        url = '/team/sites/edit/workcenters';
         break;
       case "forecasts":
-        url = '/site/editor/forecasts';
+        url = '/team/sites/edit/forecasts';
         break;
       case "cofs":
-        url = '/site/editor/cofs';
+        url = '/team/sites/edit/cofs';
         break;
     }
     this.choosen.set(url);
@@ -257,5 +253,4 @@ export class SiteEditor {
       });
       this.teamService.sites.set(sList);
     }
-  }
-}
+  }}

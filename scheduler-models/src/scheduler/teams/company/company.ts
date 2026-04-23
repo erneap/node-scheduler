@@ -275,5 +275,15 @@ export class Company implements ICompany {
     if (found >= 0) {
       this.holidays.splice(found, 1);
     }
+    // finish by resetting all the sort values for a particular holiday type
+    this.holidays.sort((a,b) => a.compareTo(b));
+    found = 0;;
+    this.holidays.forEach((hol, h) => {
+      if (hol.id === type) {
+        found++;
+        hol.sort = found;
+        this.holidays[h] = hol;
+      }
+    });
   }
 }
