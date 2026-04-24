@@ -46,6 +46,8 @@ import { TeamEditorSpecialties } from './team/team-editor/team-editor-specialtie
 import { TeamEditorSites } from './team/team-editor/team-editor-sites/team-editor-sites';
 import { TeamEditorSiteNew } from './team/team-editor/team-editor-sites/team-editor-site-new/team-editor-site-new';
 import { TeamEditorSiteEdit } from './team/team-editor/team-editor-sites/team-editor-site-edit/team-editor-site-edit';
+import { SiteEditorEmployees } from './site/site-editor/site-editor-employees/site-editor-employees';
+import { SiteEditEmployeePermissions } from './site/site-employees/site-edit-employee/site-edit-employee-permissions/site-edit-employee-permissions';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -77,31 +79,9 @@ export const routes: Routes = [
           { path: '**', component: SiteSchedule },
         ]
       },
-      { path: 'employees', component: SiteEmployees,
-        children: [
-          {path: 'new', component: SiteNewEmployee },
-          { path: 'edit', component: SiteEditEmployee,
-            children: [
-              { path: '', redirectTo: '/site/employees/edit/pto', pathMatch: 'full' },
-              { path: 'pto', component: SiteEditEmployeePTO },
-              { path: 'leaves', component: SiteEditEmployeeLeaves },
-              { path: 'balances', component: SiteEditEmployeeLeaveBalances },
-              { path: 'leaverequests', component: SiteEditEmployeeLeaveRequests },
-              { path: 'personal', component: SiteEditEmployeeProfile },
-              { path: 'security', component: SiteEditEmployeeSecurity },
-              { path: 'company', component: SiteEditEmployeeCompany },
-              { path: 'contacts', component: SiteEditEmployeeContacts },
-              { path: 'specialties', component: SiteEditEmployeeSpecialties },
-              { path: 'assignment', component: SiteEditEmployeeAssignment },
-              { path: 'variation', component: SiteEditEmployeeVariation },
-              { path: '**', component: SiteEditEmployeePTO }
-            ]
-          }
-        ]
-      },
       { path: 'editor', component: SiteEditor,
         children: [
-          { path: '', redirectTo: '/site/editor/workcenters', pathMatch: 'full' },
+          { path: '', redirectTo: '/site/editor/employees', pathMatch: 'full' },
           { path: 'workcenters', component: SiteEditorWorkcenters,
             children: [
               {path: 'positions', component: SiteEditorWorkcenterPosition },
@@ -110,6 +90,30 @@ export const routes: Routes = [
            },
           { path: 'forecasts', component: SiteEditorForecasts },
           { path: 'cofs', component: SiteEditorCofs },
+          { path: 'employees', component: SiteEditorEmployees,
+            children: [
+              { path: '', redirectTo: '/site/editor/employees/new', pathMatch: 'full'},
+              {path: 'new', component: SiteNewEmployee },
+              { path: 'edit', component: SiteEditEmployee,
+                children: [
+                  { path: '', redirectTo: '/site/editor/employees/edit/pto', pathMatch: 'full' },
+                  { path: 'pto', component: SiteEditEmployeePTO },
+                  { path: 'leaves', component: SiteEditEmployeeLeaves },
+                  { path: 'balances', component: SiteEditEmployeeLeaveBalances },
+                  { path: 'leaverequests', component: SiteEditEmployeeLeaveRequests },
+                  { path: 'personal', component: SiteEditEmployeeProfile },
+                  { path: 'security', component: SiteEditEmployeeSecurity },
+                  { path: 'permissions', component: SiteEditEmployeePermissions },
+                  { path: 'company', component: SiteEditEmployeeCompany },
+                  { path: 'contacts', component: SiteEditEmployeeContacts },
+                  { path: 'specialties', component: SiteEditEmployeeSpecialties },
+                  { path: 'assignment', component: SiteEditEmployeeAssignment },
+                  { path: 'variation', component: SiteEditEmployeeVariation },
+                  { path: '**', component: SiteEditEmployeePTO }
+                ]
+              }
+            ]
+          },
           { path: '**', component: PathNotFound }
         ]
       },
@@ -141,6 +145,30 @@ export const routes: Routes = [
               },
               { path: 'forecasts', component: SiteEditorForecasts },
               { path: 'cofs', component: SiteEditorCofs },
+              { path: 'employees', component: SiteEditorEmployees,
+                children: [
+                  { path: '', redirectTo: '/team/sites/edit/employees/new', pathMatch: 'full' },
+                  {path: 'new', component: SiteNewEmployee },
+                  { path: 'edit', component: SiteEditEmployee,
+                    children: [
+                      { path: '', redirectTo: '/team/sites/edit/employees/edit/pto', pathMatch: 'full' },
+                      { path: 'pto', component: SiteEditEmployeePTO },
+                      { path: 'leaves', component: SiteEditEmployeeLeaves },
+                      { path: 'balances', component: SiteEditEmployeeLeaveBalances },
+                      { path: 'leaverequests', component: SiteEditEmployeeLeaveRequests },
+                      { path: 'personal', component: SiteEditEmployeeProfile },
+                      { path: 'security', component: SiteEditEmployeeSecurity },
+                      { path: 'permissions', component: SiteEditEmployeePermissions },
+                      { path: 'company', component: SiteEditEmployeeCompany },
+                      { path: 'contacts', component: SiteEditEmployeeContacts },
+                      { path: 'specialties', component: SiteEditEmployeeSpecialties },
+                      { path: 'assignment', component: SiteEditEmployeeAssignment },
+                      { path: 'variation', component: SiteEditEmployeeVariation },
+                      { path: '**', component: SiteEditEmployeePTO }
+                    ]
+                  }
+                ]
+              },
               { path: '**', component: PathNotFound }
             ]
           }

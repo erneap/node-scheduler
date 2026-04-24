@@ -65,9 +65,9 @@
   @if (selectedWorkcenter() !== 'new') {
     <div class="flexlayout column topleft" style="width: 700px;">
       <mat-toolbar class="toolbar" style="width: 100%;">
-        <button matButton (click)="choose('/site/editor/workcenters/positions')">
+        <button matButton (click)="choose('positions')">
           Workcenter Positions</button>
-        <button matButton (click)="choose('/site/editor/workcenters/shifts')">
+        <button matButton (click)="choose('shifts')">
           Workcenter Shifts</button>
       </mat-toolbar>
       <router-outlet></router-outlet>

@@ -205,4 +205,29 @@ export class AuthService extends CacheService {
       clearInterval(this.interval);
     }
   }
+
+  updatePermission(user: string, field: string, value: string): Observable<HttpResponse<IUser>> {
+    const url = `${this.authUrl}/user`;
+    const data: UpdateUserRequest = {
+      id: user,
+      field: field,
+      value: value
+    }
+    return this.http.put<IUser>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iUser = res.body as IUser;
+        if (iUser) {
+          const user = new User(iUser);
+          const itUser = this.getUser();
+          if (itUser) {
+            const tUser = new User(itUser);
+            if (tUser.id === user.id) {
+              this.setUser(user);
+            }
+          }
+        }
+        return res;
+      })
+    );
+  }
 }

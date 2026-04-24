@@ -59,10 +59,6 @@
       </mat-expansion-panel-header>
       <mat-nav-list>
         @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
-          <a mat-list-item (click)="goToLink('/site/employees', true)"
-          style="height: 20px;">Employee Editor</a>
-        }
-        @if (this.isInGroup('scheduler') || this.isInGroup('siteleader')) {
           <a mat-list-item (click)="goToLink('/site/leaveapproval', false)"
           style="height: 20px;">Leave Approval</a>
         }

@@ -36,13 +36,19 @@ export class TeamEditorSites {
   }
 
   selectSite(id: string) {
+    let changed = ((this.teamService.selectedSite().toLowerCase() === 'new'
+      && id.toLowerCase() !== 'new') 
+      || (this.teamService.selectedSite().toLowerCase() !== 'new'
+      && id.toLowerCase() === 'new'));
     this.teamService.selectedSite.set(id);
-    if (id.toLowerCase() === 'new') {
-      const url = '/team/sites/new';
-      this.router.navigate([url]);
-    } else {
-      const url = '/team/sites/edit';
-      this.router.navigate([url]);
+    if (changed) {
+      if (id.toLowerCase() === 'new') {
+        const url = '/team/sites/new';
+        this.router.navigate([url]);
+      } else {
+        const url = '/team/sites/edit';
+        this.router.navigate([url]);
+      }
     }
   }
 }

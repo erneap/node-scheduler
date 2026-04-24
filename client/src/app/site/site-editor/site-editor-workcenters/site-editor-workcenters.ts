@@ -54,6 +54,7 @@ export class SiteEditorWorkcenters {
   workcentersLength = signal<number>(0);
   site = signal<string>('');
   team = signal<string>('');
+  url = signal<string>('')
 
   constructor(
     private authService: AuthService,
@@ -68,6 +69,7 @@ export class SiteEditorWorkcenters {
       const team = new Team(iTeam);
       this.team.set(team.id);
     }
+    this.url.set(window.location.pathname);
   }
 
   setWorkcenters() {
@@ -110,9 +112,11 @@ export class SiteEditorWorkcenters {
                 this.wkctrForm.name().value.set(wc.name);
                 this.workcenterPos.set(w);
                 if (wc.positions && wc.positions.length > 0) {
-                  this.router.navigate(['/site/editor/workcenters/positions'])
+                  const path = `${this.url()}/positions`;
+                  this.router.navigate([path])
                 } else {
-                  this.router.navigate(['/site/editor/workcenters/shifts'])
+                  const path = `${this.url()}/shifts`;
+                  this.router.navigate([path])
                 }
               }
             });
@@ -128,7 +132,8 @@ export class SiteEditorWorkcenters {
 
   choose(url: string) {
     if (url !== '') {
-      this.router.navigate([url]);
+      const path = `${this.url()}/${url}`;
+      this.router.navigate([path]);
     }
   }
 

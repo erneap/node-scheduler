@@ -1,0 +1,30 @@
+<div class="flexlayout column center flexgap">
+  <div class="flexlayout row center label">Employee's Access Permissions</div>
+  <div class="flexlayout row center">
+    <mat-checkbox value="employee" [disabled]="true" [formField]="permForm.employee">
+      Employee
+    </mat-checkbox>
+    @if (sitePerm() || teamPerm() || adminPerm()) {
+      <mat-checkbox value="scheduler" [formField]="permForm.scheduler"
+        (change)="onChange('scheduler')">
+        Site Scheduler
+      </mat-checkbox>
+      <mat-checkbox value="siteleader" [formField]="permForm.siteleader"
+        (change)="onChange('siteleader')">
+        Site Leadership
+      </mat-checkbox>
+    }
+    @if (teamPerm() || adminPerm()) {
+      <mat-checkbox value="teamleader" [formField]="permForm.teamleader"
+        (change)="onChange('teamleader')">
+        Team Leadership
+      </mat-checkbox>
+    }
+    @if (adminPerm()) {
+      <mat-checkbox value="admin" [formField]="permForm.admin"
+        (change)="onChange('admin')">
+        Web Site Administration
+      </mat-checkbox>
+    }
+  </div>
+</div>

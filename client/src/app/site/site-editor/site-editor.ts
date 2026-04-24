@@ -57,6 +57,7 @@ export class SiteEditor {
     max(schema.offset, 12, {message: 'must be less than 12'});
   });
   choosen = signal<string>('');
+  url = signal<string>('');
   @Input()
   get setsite(): string {
     return this.siteid();
@@ -74,6 +75,13 @@ export class SiteEditor {
     private router: Router,
     private dialog: MatDialog
   ) {
+    const url = window.location.pathname;
+    if (url.toLowerCase().startsWith('/site/editor')) {
+      this.url.set('/site/editor');
+      this.teamService.selectedSite.set('');
+    } else {
+      this.url.set('/team/sites/edit');
+    }
     const iTeam = this.teamService.getTeam();
     if (iTeam) {
       const team = new Team(iTeam);
@@ -115,13 +123,16 @@ export class SiteEditor {
     let url = '';
     switch (view.toLowerCase()) {
       case "workcenters":
-        url = '/site/editor/workcenters';
+        url = `${this.url()}/workcenters`;
         break;
       case "forecasts":
-        url = '/site/editor/forecasts';
+        url = `${this.url()}/forecasts`;
         break;
       case "cofs":
-        url = '/site/editor/cofs';
+        url = `${this.url()}/cofs`;
+        break;
+      case "employees":
+        url = `${this.url()}/employees`;
         break;
     }
     this.choosen.set(url);

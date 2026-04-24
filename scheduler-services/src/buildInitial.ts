@@ -102,7 +102,8 @@ export class BuildInitial {
                         site.employees = [];
                       }
                       if (site.employees) {
-                        site.employees.push(new Employee(emp));
+                        const oEmp = new Employee(emp);
+                        site.employees.push(oEmp);
                       }
                       if (this.initialData.team) {
                         this.initialData.team.sites[s] = site;
@@ -194,7 +195,6 @@ export class BuildInitial {
                   if (!found && this.initialData.employee 
                     && emp.id === this.employeeID) {
                     this.initialData.employee = new Employee(emp);
-                    this.initialData.employee.user = tUser;
                     found = true;
                   }
                 });

@@ -1,7 +1,7 @@
 import { Component, computed, Input, input, signal } from '@angular/core';
 import { List } from '../../general/list/list';
 import { Item } from '../../general/list/list.model';
-import { ISite, Site } from 'scheduler-models/scheduler/sites';
+import { Site } from 'scheduler-models/scheduler/sites';
 import { AuthService } from '../../services/auth-service';
 import { EmployeeService } from '../../services/employee-service';
 import { SiteService } from '../../services/site-service';
@@ -31,17 +31,18 @@ import { Team } from 'scheduler-models/scheduler/teams';
   styleUrl: './site-employees.scss',
 })
 export class SiteEmployees {
-  site = signal<Site>(new Site());
-  employeeList = signal<Item[]>([]);
-  selectedEmployeeID = computed(() => this.siteService.selectedEmployee());
+  private _site: string = '';
   @Input()
-  get siteselect(): Site {
-    return this.site();
+  get site(): string {
+    return this._site;
   }
-  set siteselect(site: ISite) {
-    this.site.set(new Site(site));
+  set site(id: string) {
+    this._site = id;
     this.setEmployees();
   }
+  employeeList = signal<Item[]>([]);
+  selectedEmployeeID = computed(() => this.siteService.selectedEmployee());
+  url = signal<string>('');
 
   constructor(
     private authService: AuthService,
@@ -51,16 +52,29 @@ export class SiteEmployees {
     private router: Router,
     private dialog: MatDialog
   ) {
-    const iSite = this.siteService.getSite();
-    if (iSite) {
-      this.site.set(new Site(iSite));
-      this.setEmployees();
-      if (this.siteService.selectedEmployee() === 'new') {
-        this.router.navigate(['/site/employees/new']);
-      } else {
-        this.router.navigate(['/site/employees/edit/pto']);
+    const url = window.location.pathname;
+    if (url.toLowerCase().startsWith('/site/editor')) {
+      this.url.set('/site/editor/employees');
+    } else if (url.toLowerCase().startsWith('/team/sites/edit/employees')) {
+      this.url.set('/team/sites/edit/employees');
+    } else {
+      this.url.set('/site/employees');
+    }
+    if (this.teamService.selectedSite() === '' || this.url().startsWith('/site/employee')) {
+      const iSite = this.siteService.getSite();
+      if (iSite) {
+        const site = new Site(iSite);
+        this.site = site.id;
+        this.teamService.selectedSite.set(site.id);
       }
     }
+    this.setEmployees();
+    if (this.siteService.selectedEmployee() === 'new') {
+      this.router.navigate([`${this.url()}/new`]);
+    } else {
+      this.router.navigate([`${this.url()}/edit/pto`]);
+    }
+      
     this.authService.showMenu.set(false);
   }
 
@@ -75,19 +89,27 @@ export class SiteEmployees {
       id: 'new',
       value: 'Add New Employee'
     });
-    if (this.site().employees) {
-      this.site().employees?.forEach(iEmp => {
-        const emp = new Employee(iEmp);
-        if (this.siteService.showAllEmployees()) {
-          list.push({
-            id: emp.id,
-            value: emp.name.getLastFirst()
-          });
-        } else {
-          if (emp.isActive(now)) {
-            list.push({
-              id: emp.id,
-              value: emp.name.getLastFirst()
+    const iTeam = this.teamService.getTeam();
+    if (iTeam) {
+      const team = new Team(iTeam);
+      team.sites.forEach(site => {
+        if (site.id.toLowerCase() === this.site.toLowerCase()) { 
+          if (site.employees) {
+            site.employees.forEach(iEmp => {
+              const emp = new Employee(iEmp);
+              if (this.siteService.showAllEmployees()) {
+                list.push({
+                  id: emp.id,
+                  value: emp.name.getLastFirst()
+                });
+              } else {
+                if (emp.isActive(now)) {
+                  list.push({
+                    id: emp.id,
+                    value: emp.name.getLastFirst()
+                  });
+                }
+              }
             });
           }
         }
@@ -99,10 +121,14 @@ export class SiteEmployees {
   onSelect(id: string) {
     const oldid = this.siteService.selectedEmployee().toLowerCase();
     this.siteService.selectedEmployee.set(id);
+    let url = '';
     if (oldid !== 'new' && id.toLowerCase() === 'new') {
-      this.router.navigate(['/site/employees/new']);
+      url = `${this.url()}/new`;
     } else if (oldid === 'new' && id.toLowerCase() !== 'new') {
-      this.router.navigate(['/site/employees/edit']);
+      url = `${this.url()}/edit`;
+    }
+    if (url !== '') {
+      this.router.navigate([url]);
     }
   }
 
@@ -151,7 +177,6 @@ export class SiteEmployees {
                     }
                   }
                   this.siteService.setSite(site);
-                  this.site.set(site);
                 }
                 const iTeam = this.teamService.getTeam();
                 if (iTeam) {

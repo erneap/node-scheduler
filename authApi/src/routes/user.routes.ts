@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { AddUserRequest, IUser, UpdateUserRequest, User } 
+import { AddUserRequest, IUser, Permission, UpdateUserRequest, User } 
   from 'scheduler-models/users';
 import { IEmployee } from 'scheduler-models/scheduler/employees'
 import { auth } from '../middleware/authorization.middleware';
@@ -133,7 +133,9 @@ router.put('/user', auth, async(req: Request, res: Response) => {
         user.lastName = update.value;
         break;
       case "addperm":
+        const [app, perm] = update.value.split('-');
         user.workgroups.push(update.value);
+        user.permissions.push(new Permission({application: app, job: perm}));
         break;
       case "removeperm":
         let index = -1;
@@ -144,6 +146,17 @@ router.put('/user', auth, async(req: Request, res: Response) => {
         });
         if (index >= 0) {
           user.workgroups.splice(index, 1);
+        }
+        index = -1;
+        const [app1, perm1] = update.value.split('-');
+        user.permissions.forEach((perm, p) => {
+          if (perm.application.toLowerCase() === app1.toLowerCase() 
+            && perm.job.toLowerCase() === perm1.toLowerCase()) {
+            index = p;
+          }
+        })
+        if (index >= 0) {
+          user.permissions.splice(index, 1);
         }
         break;
       case "addemail":
