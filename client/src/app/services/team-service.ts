@@ -8,6 +8,7 @@ import { map, Observable } from 'rxjs';
 import { Employee } from 'scheduler-models/scheduler/employees';
 import { Item } from '../general/list/list.model';
 import { HolidayType } from 'scheduler-models/scheduler/teams/company';
+import { NewSite, NewSitePersonnel } from 'scheduler-models/scheduler/sites/web';
 
 @Injectable({
   providedIn: 'root',
@@ -125,6 +126,68 @@ export class TeamService extends CacheService {
       optid: optid
     };
     return this.http.put<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * The method is used to prepare and send a request to create a new site in the database
+   * The request is sent to the API process on the server
+   * @param team The string value for the team's identifier.
+   * @param siteid The string value for the new site's identifier.
+   * @param name The string value for the new site's name.
+   * @param offset The numeric value for the timezone offset from UTC/GMT.
+   * @param people A list of personnel to add for this site leadership.
+   * @returns The updated team object for storage in a HTTP response object, which is 
+   * handled by this service.
+   */
+  addSite(team: string, siteid: string, name: string, offset: number, 
+    people: NewSitePersonnel[]): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/site`;
+    const data: NewSite = {
+      teamid: team,
+      id: siteid,
+      name: name,
+      utcoffset: offset,
+      showMids: false,
+      personnel: people
+    };
+    return this.http.post<Team>(url, data, { observe: 'response'}).pipe(
+      map(res => {
+        const iTeam = (res.body as ITeam );
+        if (iTeam) {
+          const team = new Team(iTeam);
+          const tTeam = this.getTeam();
+          if (tTeam && tTeam.id === team.id) {
+            this.setTeam(team);
+          }
+        }
+        return res;
+      })
+    );
+  }
+
+  /**
+   * This method will be used to create and send a request to remove a site from the 
+   * team's list.
+   * @param team The string value for the team's identifier.
+   * @param site The string value for the site's identifier to be removed.
+   * @returns The updated team object for storage in a HTTP response object, which is 
+   * handled by this service.
+   */
+  deleteSite(team: string, site: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/site/${team}/${site}`;
+    return this.http.delete<Team>(url, { observe: 'response'}).pipe(
       map(res => {
         const iTeam = (res.body as ITeam );
         if (iTeam) {

@@ -5,12 +5,23 @@ export interface SiteUpdate {
   value: string;
 }
 
+export interface NewSitePersonnel {
+  id: number;
+  email: string;
+  first: string;
+  middle?: string;
+  last: string;
+  position: string;
+  password: string;
+}
+
 export interface NewSite {
   teamid: string;
   id: string;
   name: string;
   utcoffset: number;
   showMids: boolean;
+  personnel?: NewSitePersonnel[]
 }
 
 export interface NewSiteWorkcenter {

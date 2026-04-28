@@ -1,1 +1,61 @@
-<p>team-editor-site-new works!</p>
+<div class="flexlayout column topleft" style="width: 100%;">
+  <div class="flexlayout row topleft">
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header style="background-color: darkred !important;">
+          <mat-panel-title>Basic Information (ID/Name/Offset)</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="flexlayout column topcenter">
+          <div class="flexlayout row center flexgap" style="width: 100%;">
+            <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+              <mat-label>New Site Identifier</mat-label>
+              <input matInput [formField]="newSiteForm.siteid" 
+                (blur)="checkErrors()">
+            </mat-form-field>
+            <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+              <mat-label>New Site Name</mat-label>
+              <input matInput [formField]="newSiteForm.name" 
+                (blur)="checkErrors()">
+            </mat-form-field>
+            <mat-form-field [floatLabel]="'always'" style="width: 250px;">
+              <mat-label>UTC Offset (-12 to 12)</mat-label>
+              <input matInput type="number" [formField]="newSiteForm.offset" 
+                (change)="checkErrors()">
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel >
+        <mat-expansion-panel-header style="background-color: darkred !important;">
+          <mat-panel-title>New Site's Initial Personnel</mat-panel-title>
+        </mat-expansion-panel-header>
+        <app-team-editor-site-new-personnel (addPerson)="updatePerson($event)"
+          [personnel]="personnel()">
+        </app-team-editor-site-new-personnel>
+      </mat-expansion-panel>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header style="background-color: darkred !important;">
+          <mat-panel-title>Action Buttons</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="flexlayout row center flexgap">
+          @if (newSiteForm().valid()) {
+            <button matButton="filled" class="add-button" (click)="onAdd()">
+              Add
+            </button>
+          }
+          <button matButton="filled" class="clear-button" (click)="onClear()">
+            Clear
+          </button>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+    <div class="flexlayout column center" style="width: 250px;">
+      <div class="flexlayout row center">New Site Errors</div>
+      <ul class="error">
+        @for (err of errors(); track err) {
+          <li class="error">{{err.field}}: {{err.message}}</li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>

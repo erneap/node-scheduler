@@ -119,7 +119,8 @@ export class EmployeeService {
           employee.work = undefined;
           employee.id = user.id;
           employee._id = new ObjectId(employee.id);
-          await collections.employees.insertOne(employee);
+          const result = await collections.employees.insertOne(employee);
+          console.log(result);
         } else {
           // first insert new user object
           user = new User(employee.user);

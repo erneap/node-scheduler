@@ -1,9 +1,12 @@
 import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
-import { SiteUpdate, NewSite } from 'scheduler-models/scheduler/sites/web';
+import { SiteUpdate, NewSite, NewSitePersonnel } from 'scheduler-models/scheduler/sites/web';
 import { Site } from "scheduler-models/scheduler/sites";
 import { Team } from "scheduler-models/scheduler/teams";
-import { BuildInitial, postLogEntry, TeamService } from "scheduler-services";
+import { BuildInitial, collections, EmployeeService, postLogEntry, TeamService, UserService } from "scheduler-services";
+import { IUser, Permission, User } from "scheduler-models/users";
+import { Assignment, Employee } from "scheduler-models/scheduler/employees";
+import { genSaltSync, hashSync } from "bcrypt-ts";
 
 const router = Router();
 export default router;
@@ -42,6 +45,8 @@ router.post('/site', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSite;
     const teamService = new TeamService();
+    const userService = new UserService();
+    const empService = new EmployeeService();
     if (data.teamid && data.id) {
       const iTeam = await teamService.getTeam(data.teamid);
       let answer = new Site();
@@ -56,16 +61,29 @@ router.post('/site', auth, async(req: Request, res: Response) => {
 
         // not present, so add to team, update the team in the database and return 
         // new site to the requestor
+        // first check attached personnel and add them.
+        // Check to see if the people are in the authentication tables (users), if not 
+        // add them and get their key id and use in employee table. first to check, then
+        // to update for add.
+        const siteEmployees: Employee[] = [];
+        if (data.personnel && data.personnel.length > 0 ) {
+          // check users for the person by email address.
+          const pesonnelPromises = data.personnel.map(async(person) => {
+            const emp = await addUser(person, data.teamid, data.id);
+          });
+          await Promise.allSettled(pesonnelPromises)
+        }
         answer = new Site({
           id: data.id,
           name: data.name,
           utcOffset: data.utcoffset,
           showMids: data.showMids
         });
+        answer.employees = siteEmployees;
         team.sites.push(answer);
         team.sites.sort((a,b) => a.compareTo(b));
         await teamService.replaceTeam(team);
-        res.status(200).json(answer);
+        res.status(200).json(team);
       } else {
         throw new Error('Team not found');
       }
@@ -76,6 +94,117 @@ router.post('/site', auth, async(req: Request, res: Response) => {
     res.status(400).json({'message': error.message});
   }
 });
+
+async function addUser(person: NewSitePersonnel, team: string, site: string)
+  : Promise<Employee> {
+  try {
+    let emp = new Employee();
+    const userService = new UserService();
+    const empService = new EmployeeService();
+    let iuser: IUser | undefined = undefined;
+    try {
+      iuser = await userService.getByEmail(person.email);
+    } catch (err) {
+      
+    }
+    if (iuser) {
+      let user = new User(iuser);
+      // user is in authentication database collection, so now check to see if
+      // there is already an employee record for this user, by id.
+      const iEmp = await empService.get(user.id);
+      emp = new Employee(iEmp);
+      if (emp.id !== '') {
+        // this employee record is present, so update the site, and name 
+        // information
+        emp.name.lastname = person.last;
+        emp.name.firstname = person.first;
+        emp.name.middlename = person.middle;
+        emp.site = site
+
+        // now update the employee
+        await empService.replace(emp);
+        emp.user = new User(user);
+      } else {
+        // employee record not present so add a new one with a default assignment
+        emp.id = user.id;
+        emp.team = team;
+        emp.site = site
+        emp.email = person.email;
+        emp.name.firstname = person.first;
+        emp.name.lastname = person.last;
+        emp.name.middlename = person.middle;
+        const now = new Date();
+        emp.addAssignment(site, 'staff', now);
+        await empService.insert(emp);
+        emp.user = new User(user);
+      }
+      user.lastName = person.last;
+      user.middleName = person.middle;
+      user.firstName = person.first;
+      if (!user.hasPermission('scheduler', 'employee')) {
+        user.permissions.push(new Permission({
+          application: 'scheduler',
+          job: 'employee'
+        }));
+      }
+      if (!user.hasPermission('scheduler', person.position)) {
+        user.permissions.push(new Permission({
+          application: 'scheduler',
+          job: person.position,
+        }));
+      }
+      const salt = genSaltSync(12)
+      const hash = hashSync((person.password) 
+        ? person.password : '', salt);
+      user.password = hash;
+      user.passwordExpires = new Date();
+      user.badAttempts = 0;
+      await userService.replace(user);
+      emp.user = user;
+    } else {
+      let user = new User();
+      // no user, so add one then add a new employee.
+      user.emailAddress = person.email;
+      user.lastName = person.last;
+      user.middleName = person.middle;
+      user.firstName = person.first;
+      user.permissions.push(new Permission({
+        application: 'scheduler',
+        job: 'employee',
+      }));
+      user.permissions.push(new Permission({
+        application: 'scheduler',
+        job: person.position,
+      }));
+      const salt = genSaltSync(12)
+      const hash = hashSync((person.password) 
+        ? person.password : '', salt);
+      user.password = hash;
+      user.passwordExpires = new Date();
+      user.badAttempts = 0;
+      const tuser = await userService.insert(user);
+      user = new User(tuser);
+      const emp = new Employee();
+      emp.id = user.id;
+      emp.team = team;
+      emp.site = site;
+      emp.email = person.email;
+      emp.name.firstname = person.first;
+      emp.name.lastname = person.last;
+      emp.name.middlename = person.middle;
+      const now = new Date();
+      emp.addAssignment(site, 'staff', now);
+      try {
+        const temp = await empService.insert(emp);
+        console.log(temp);
+      } catch (err) { console.log(err) }
+      emp.user = new User(user);
+    }
+    return emp;
+  } catch (err) {
+    throw err;
+  }
+}
 
 /**
  * This method will be used to update the basic information for the site, record the 
