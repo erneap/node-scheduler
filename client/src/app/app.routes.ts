@@ -48,9 +48,22 @@ import { TeamEditorSiteNew } from './team/team-editor/team-editor-sites/team-edi
 import { TeamEditorSiteEdit } from './team/team-editor/team-editor-sites/team-editor-site-edit/team-editor-site-edit';
 import { SiteEditorEmployees } from './site/site-editor/site-editor-employees/site-editor-employees';
 import { SiteEditEmployeePermissions } from './site/site-employees/site-edit-employee/site-edit-employee-permissions/site-edit-employee-permissions';
+import { Forgot } from './authentication/forgot/forgot';
+import { ForgotEmail } from './authentication/forgot/forgot-email/forgot-email';
+import { ForgotQuestion } from './authentication/forgot/forgot-question/forgot-question';
+import { ForgotComplete } from './authentication/forgot/forgot-complete/forgot-complete';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
+  { path: 'reset', component: Forgot,
+    children: [
+      { path: '', redirectTo: '/reset/email', pathMatch: 'full'},
+      { path: 'email', component: ForgotEmail },
+      { path: 'question', component: ForgotQuestion },
+      { path: 'complete', component: ForgotComplete },
+      { path: '**', component: ForgotEmail }
+    ]
+  },
   { path: 'mustchange', component: MustChange },
   { path: 'unauthorized', component: NotAuthorized },
   { path: 'employee',

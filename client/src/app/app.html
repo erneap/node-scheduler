@@ -14,7 +14,7 @@
     }
     @if (!this.authService.isAuthenticated) {
       <button mat-icon-button
-        matTooltip="Show Login Form" routerLink="home">
+        matTooltip="Show Login Form" (click)="showLogin()">
         <mat-icon>lock_open</mat-icon>
       </button>
     }

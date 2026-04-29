@@ -146,4 +146,8 @@ export class Login {
       });
     }
   }
+
+  onForgot() {
+    this.router.navigate(['/reset']);
+  }
 }

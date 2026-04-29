@@ -1,0 +1,32 @@
+.label {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.error {
+  color: pink;
+}
+
+.indicator {
+  width: 25px;
+  height: 25px;
+  border: solid 1px black;
+}
+
+.passcheck {
+  height: 25px;
+  width: 225px;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: white;
+  color: black;
+  border: solid 1px black;
+}
+
+.question {
+  width: 100%;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+}

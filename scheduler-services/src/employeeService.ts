@@ -77,6 +77,38 @@ export class EmployeeService {
   }
 
   /**
+   * This method will mainly be used to delete employees, and possibly associated users
+   * records in the event a site is deleted.
+   * @param site The string value for the site identifier
+   * @returns A list of employees assigned to the designated site.
+   */
+  async getBySite(site: string): Promise<Employee[]> {
+    const employees: Employee[] = [];
+    if (collections.employees && collections.users) {
+      const users = new Map<string, User>();
+      const userCursur = collections.users.find<IUser>({});
+      const userArray = await userCursur.toArray();
+      userArray.forEach(iuser => {
+        const user = new User(iuser);
+        users.set(user.id, user);
+      });
+
+      const query = { site: site };
+      const empCursor = collections.employees.find<IEmployee>(query);
+      const empArray = await empCursor.toArray();
+      empArray.forEach(iemp => {
+        const emp = new Employee(iemp);
+        const tuser = users.get(emp.id);
+        if (tuser) {
+          emp.user = new User(tuser);
+        }
+        employees.push(emp);
+      })
+    }
+    return employees;
+  }
+
+  /**
    * This method will be used to insert a new employee into the employee's collection, 
    * but it also will create a new user, if the employee's user record is not already 
    * in the database

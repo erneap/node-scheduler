@@ -1,0 +1,39 @@
+<div class="page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title style="color: White;">User Forgot Password Recovery</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="flexlayout column center">
+        <div class="flexlayout row center">
+          <mat-form-field floatLabel="always" style="width: 300px;">
+            <mat-label>Email Address</mat-label>
+            <input matInput [formField]="forgotForm.email" (keyup)="onChange()">
+          </mat-form-field>
+        </div>
+        @if (forgotForm.email().errors().length > 0) {
+          <div class="flexlayout row center flexgap" style="margin: 0; padding: 0;">
+          @for (err of forgotForm.email().errors(); track err.kind) {
+            <span class="error">* {{err.message}}</span>
+          }
+          </div>
+        } 
+        @if (showChoice()) {
+          <div class="flexlayout row center flexgap">
+            <label>
+              <input type="radio" value="email" [formField]="forgotForm.forgotType"
+                (click)="chooseType('email')">
+              By Email Delivery
+            </label>
+            <label>
+              <input type="radio" value="question" [formField]="forgotForm.forgotType"
+                (click)="chooseType('question')">
+              By Question Answer
+            </label>
+          </div>
+        }
+        <router-outlet></router-outlet>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

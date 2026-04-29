@@ -47,6 +47,31 @@ router.get('/users', auth, async (req: Request, res: Response) => {
 });
 
 /**
+ * This route is used to retrieve a single user from the database collection by the 
+ * user's email address.  If the email address is blank an error is thrown.
+ */
+router.post('/user/email', async(req: Request, res: Response) => {
+  try {
+    const addUser = req.body as AddUserRequest
+    if (addUser.emailAddress) {
+      const uService = new UserService();
+      let user: User | undefined = undefined;
+      try {
+        user = await uService.getByEmail(addUser.emailAddress);
+      } catch (err) {}
+      return res.status(200).json(user);
+    } else {
+      throw new Error('email is blank');
+    }
+  } catch (err) {
+    console.log(err);
+    const error = err as Error;
+    postLogEntry('Users', `Get: UserByEmail: ${error.message}`);
+    res.status(400).json({message: `User: Get: UserByEmail: ${error.message}`});
+  }
+});
+
+/**
  * This route will create a new user in the database collection, but first it will check
  * for the user already being present by email address.  If not present in the database, 
  * the user is created, but if any are present and error will 

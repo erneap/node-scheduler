@@ -1,0 +1,58 @@
+<div class="flexlayout column center" style="border-top: solid 1px white;">
+  <div class="flexlayout row center question">
+    QUESTION: {{question()}}
+  </div>
+  <div class="flexlayout row center" style="width: 100%;">
+    <mat-form-field floatLabel="always" style="width: 99%;">
+      <mat-label>Security Question Answer</mat-label>
+      <input matInput type="password" [formField]="questionForm.answer">
+    </mat-form-field>
+  </div>
+  <div class="flexlayout row center flexgap" style="width: 100%;">
+    <div class="flexlayout column center">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>New Password</mat-label>
+        <input matInput type="password" [formField]="questionForm.password1" 
+          (keyup)="checkPasswords()">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>New Password Confirm</mat-label>
+        <input matInput type="password" [formField]="questionForm.password2" 
+          (keyup)="checkPasswords()">
+      </mat-form-field>
+    </div>
+    <div class="flexlayout column topleft" style="margin-top: 10px;">
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="minimumLengthStyle()"></div>
+        <div class="passcheck flexlayout row center">At least 10 characters</div>
+      </div>
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="minimumLowerStyle()"></div>
+        <div class="passcheck flexlayout row center">At least 2 Lower Case</div>
+      </div>
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="minimumUpperStyle()"></div>
+        <div class="passcheck flexlayout row center">At least 2 Upper Case</div>
+      </div>
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="minimumNumberStyle()"></div>
+        <div class="passcheck flexlayout row center">At least 2 Number</div>
+      </div>
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="minimumSpecialStyle()"></div>
+        <div class="passcheck flexlayout row center">At least 2 Special Character</div>
+      </div>
+      <div class="flexlayout row topleft">
+        <div class="indicator" [style]="mustMatchStyle()"></div>
+        <div class="passcheck flexlayout row center">Passwords Match</div>
+      </div>
+    </div>
+  </div>
+  @if (questionForm().valid() && passwordValid()) {
+    <div class="flexlayout row center" style="width: 100%;">
+      <button matButton="filled" class="add-button" (click)="onSubmit()">
+        Submit
+      </button>
+    </div>
+  }
+</div>

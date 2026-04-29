@@ -31,7 +31,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^8.0.6",
     "scheduler-models": "^1.3.108",
-    "scheduler-services": "^1.3.73",
+    "scheduler-services": "^1.3.74",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"

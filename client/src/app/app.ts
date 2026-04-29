@@ -53,13 +53,18 @@ export class App {
     }
   }
 
+  showLogin() {
+    this.router.navigate(['/login']);
+  }
+
   logout() {
     this.authService.logout();
     this.empService.removeEmployee();
     this.siteService.removeSite();
     this.teamService.removeTeam();
     this.msgService.stopNotices();
-    this.showMenu.set(true);
+    this.sidenav.close();
+    this.showMenu.set(false);
     this.router.navigate(['/login'])
   }
 

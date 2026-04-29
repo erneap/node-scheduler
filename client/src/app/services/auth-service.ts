@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { CacheService } from './cache.service';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthenticationRequest, IUser, UpdateUserRequest, User } 
+import { AddUserRequest, AuthenticationRequest, ForgotPasswordRequest, IUser, PasswordResetRequest, SecurityQuestionResponse, UpdateUserRequest, User } 
   from 'scheduler-models/users';
 import { map, Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -27,6 +27,7 @@ export class AuthService extends CacheService {
     return false;
   });
   interval: any;
+  forgotEmail = signal<string>('');
 
   constructor(
     private http: HttpClient,
@@ -229,5 +230,55 @@ export class AuthService extends CacheService {
         return res;
       })
     );
+  }
+
+  forgotUser(email: string): Observable<HttpResponse<IUser>> {
+    const url = `${this.authUrl}/user/email`;
+    const data: AddUserRequest = {
+      emailAddress: email,
+      firstName: '',
+      lastName: '',
+      password: '',
+      application: ''
+    }
+    return this.http.post<IUser>(url, data, { observe: 'response'});
+  }
+
+  startQuestionReset(email: string): Observable<HttpResponse<SecurityQuestionResponse>> {
+    const url = `${this.authUrl}/altreset`;
+    const data: ForgotPasswordRequest = {
+      emailAddress: email,
+    }
+    return this.http.post<SecurityQuestionResponse>(url, data, {observe: 'response'});
+  }
+
+  answerQuestionReset(email: string, id: number, answer: string, password: string)
+    : Observable<HttpResponse<User>> {
+    const url = `${this.authUrl}/altreset`;
+    const data: PasswordResetRequest = {
+      emailAddress: email,
+      subid: id,
+      resettoken: answer,
+      password: password
+    };
+    return this.http.put<User>(url, data, { observe: 'response'});
+  }
+
+  startEmailReset(email: string): Observable<HttpResponse<User>> {
+    const url = `${this.authUrl}/reset`;
+    const data: ForgotPasswordRequest = {
+      emailAddress: email,
+    };
+    return this.http.post<User>(url, data, { observe: 'response'});
+  }
+
+  answerEmailReset(email: string, token: string, password: string): Observable<HttpResponse<User>> {
+    const url = `${this.authUrl}/reset`;
+    const data: PasswordResetRequest = {
+      emailAddress: email,
+      resettoken: token,
+      password: password,
+    };
+    return this.http.put<User>(url, data, { observe: 'response'});
   }
 }

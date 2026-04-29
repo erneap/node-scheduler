@@ -45,8 +45,6 @@ router.post('/site', auth, async(req: Request, res: Response) => {
   try {
     const data = req.body as NewSite;
     const teamService = new TeamService();
-    const userService = new UserService();
-    const empService = new EmployeeService();
     if (data.teamid && data.id) {
       const iTeam = await teamService.getTeam(data.teamid);
       let answer = new Site();
@@ -70,11 +68,12 @@ router.post('/site', auth, async(req: Request, res: Response) => {
           // check users for the person by email address.
           const pesonnelPromises = data.personnel.map(async(person) => {
             const emp = await addUser(person, data.teamid, data.id);
+            siteEmployees.push(emp);
           });
           await Promise.allSettled(pesonnelPromises)
         }
         answer = new Site({
-          id: data.id,
+          id: data.id.toLowerCase(),
           name: data.name,
           utcOffset: data.utcoffset,
           showMids: data.showMids
@@ -99,109 +98,61 @@ async function addUser(person: NewSitePersonnel, team: string, site: string)
   : Promise<Employee> {
   try {
     let emp = new Employee();
-    const userService = new UserService();
     const empService = new EmployeeService();
-    let iuser: IUser | undefined = undefined;
-    try {
-      iuser = await userService.getByEmail(person.email);
-    } catch (err) {
-      
-    }
-    if (iuser) {
-      let user = new User(iuser);
-      // user is in authentication database collection, so now check to see if
-      // there is already an employee record for this user, by id.
-      const iEmp = await empService.get(user.id);
-      emp = new Employee(iEmp);
-      if (emp.id !== '') {
-        // this employee record is present, so update the site, and name 
-        // information
-        emp.name.lastname = person.last;
-        emp.name.firstname = person.first;
-        emp.name.middlename = person.middle;
-        emp.site = site
-
-        // now update the employee
-        await empService.replace(emp);
-        emp.user = new User(user);
-      } else {
-        // employee record not present so add a new one with a default assignment
-        emp.id = user.id;
-        emp.team = team;
-        emp.site = site
-        emp.email = person.email;
-        emp.name.firstname = person.first;
-        emp.name.lastname = person.last;
-        emp.name.middlename = person.middle;
-        const now = new Date();
-        emp.addAssignment(site, 'staff', now);
-        await empService.insert(emp);
-        emp.user = new User(user);
-      }
-      user.lastName = person.last;
-      user.middleName = person.middle;
-      user.firstName = person.first;
-      if (!user.hasPermission('scheduler', 'employee')) {
-        user.permissions.push(new Permission({
-          application: 'scheduler',
-          job: 'employee'
-        }));
-      }
-      if (!user.hasPermission('scheduler', person.position)) {
-        user.permissions.push(new Permission({
-          application: 'scheduler',
-          job: person.position,
-        }));
-      }
-      const salt = genSaltSync(12)
-      const hash = hashSync((person.password) 
-        ? person.password : '', salt);
-      user.password = hash;
-      user.passwordExpires = new Date();
-      user.badAttempts = 0;
-      await userService.replace(user);
-      emp.user = user;
-    } else {
-      let user = new User();
-      // no user, so add one then add a new employee.
-      user.emailAddress = person.email;
-      user.lastName = person.last;
-      user.middleName = person.middle;
-      user.firstName = person.first;
+    let user = new User();
+    user.emailAddress = person.email;
+    user.lastName = person.last;
+    user.middleName = person.middle;
+    user.firstName = person.first;
+    if (!user.hasPermission('scheduler', 'employee')) {
       user.permissions.push(new Permission({
         application: 'scheduler',
-        job: 'employee',
+        job: 'employee'
       }));
+    }
+    if (!user.hasPermission('scheduler', person.position)) {
       user.permissions.push(new Permission({
         application: 'scheduler',
         job: person.position,
       }));
-      const salt = genSaltSync(12)
-      const hash = hashSync((person.password) 
-        ? person.password : '', salt);
-      user.password = hash;
-      user.passwordExpires = new Date();
-      user.badAttempts = 0;
-      const tuser = await userService.insert(user);
-      user = new User(tuser);
-      const emp = new Employee();
-      emp.id = user.id;
-      emp.team = team;
-      emp.site = site;
-      emp.email = person.email;
-      emp.name.firstname = person.first;
-      emp.name.lastname = person.last;
-      emp.name.middlename = person.middle;
-      const now = new Date();
-      emp.addAssignment(site, 'staff', now);
-      try {
-        const temp = await empService.insert(emp);
-        console.log(temp);
-      } catch (err) { console.log(err) }
-      emp.user = new User(user);
     }
+    const salt = genSaltSync(12)
+    const hash = hashSync((person.password) 
+      ? person.password : '', salt);
+    user.password = hash;
+    user.passwordExpires = new Date();
+    user.badAttempts = 0;
+    // the employee service insert method checks to see if there is already an employee
+    // with this first, middle and last name.  If so, it updates the employee, if not
+    // it inserts the employee in the employee collections.  It also checks for a user
+    // with this first, last and middle names and creates an authentication record
+    // if not present.
+    emp = new Employee();
+    emp.team = team;
+    emp.site = site.toLowerCase();
+    emp.email = person.email;
+    emp.name.lastname = person.last;
+    emp.name.firstname = person.first;
+    emp.name.middlename = person.middle;
+    const now = new Date();
+    const asgmt = new Assignment();
+    asgmt.id = 0;
+    asgmt.startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    asgmt.endDate = new Date(Date.UTC(9998, 11, 31));
+    asgmt.site = emp.site;
+    asgmt.addSchedule(7);
+    for ( let i=1; i < 6; i++) {
+      asgmt.changeWorkday(0, i, 'staff', 'D', 8);
+    }
+    if (!emp.assignments) {
+      emp.assignments = [];
+    }
+    emp.assignments.push(asgmt);
+    emp.user = new User(user);
+    await empService.insert(emp);
     return emp;
   } catch (err) {
+    console.log(err);
     throw err;
   }
 }
@@ -268,7 +219,11 @@ router.put('/site', auth, async(req: Request, res: Response) => {
  * 4) if site was present, delele all the employees associated with this team and site 
  * from the database.
  * 5) Update the team in the database.
- * 6) Respond with an empty site.
+ * 6) Check employee database for employees assigned to this site. 
+ * 7) For each employee assigned, delete it, then check for a corresponding user in the
+ * authentication collection.  If the user only has scheduler permissions, delete it, if
+ * not, remove the scheduler permissions and replace the user.
+ * 8) Respond with an empty site.
  */
 router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
   try {
@@ -276,6 +231,8 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
     const siteid = req.params.site as string;
     if (teamid !== '' && siteid !== '') {
       const teamService = new TeamService();
+      const empService = new EmployeeService();
+      const userService = new UserService();
       const iTeam = await teamService.getTeam(teamid);
       if (iTeam) {
         const team = new Team(iTeam);
@@ -293,6 +250,34 @@ router.delete('/site/:team/:site', auth, async(req: Request, res: Response) => {
 
         // update the database with the team
         await teamService.replaceTeam(team);
+
+        // check for employees at this site.
+        const employees = await empService.getBySite(siteid);
+        if (employees.length > 0) {
+          const empPromises = employees.map(async(iemp) => {
+            const emp = new Employee(iemp);
+            if (emp.user) {
+              let otherPerms = false;
+              emp.user.permissions.forEach(perm => {
+                if (perm.application.toLowerCase() !== 'scheduler') {
+                  otherPerms = true;
+                }
+              });
+              if (!otherPerms) {
+                await userService.remove(emp.user.id)
+              } else {
+                for (let i = emp.user.permissions.length - 1; i >= 0; i--) {
+                  if (emp.user.permissions[i].application.toLowerCase() === 'scheduler') {
+                    emp.user.permissions.splice(i, 1);
+                  }
+                }
+                await userService.replace(emp.user);
+              }
+            }
+            await empService.remove(emp.id);
+          });
+          await Promise.allSettled(empPromises);
+        }
         res.status(200).json(team);
       } else {
         throw new Error('Team not found')
