@@ -45,6 +45,7 @@ export class EmployeeSecurityEditor {
   minimumNumberStyle = signal<string>('background-color: red;');
   minimumSpecialStyle = signal<string>('background-color: red;');
   mustMatchStyle = signal<string>('background-color: red;');
+  passwordValid = signal<boolean>(false);
 
   constructor(
     private authService: AuthService,
@@ -178,6 +179,8 @@ export class EmployeeSecurityEditor {
     } else {
       this.mustMatchStyle.set('background-color: red;');
     }
+    this.passwordValid.set(hasMinimum && lower > 1 && upper > 1 && numeric > 1 
+      && passwd1 === passwd2);
   }
 
   changePassword() {

@@ -1,0 +1,19 @@
+<div class="flexlayout column center flexgap">
+  <h2>New Team Editor</h2>
+  <mat-form-field floatLabel="always" style="width: 300px;">
+    <mat-label>New Team Name</mat-label>
+    <input matInput [formField]="teamForm.name">
+    @if (teamForm.name().invalid()) {
+      <mat-error>* required</mat-error>
+    }
+  </mat-form-field>
+  <app-admin-teams-new-personnel (addPerson)="updatePerson($event)" 
+    [personnel]="personnel()"></app-admin-teams-new-personnel>
+  <div class="flexlayout row center" style="width: 100%;">
+    @if (teamForm().valid() && personnel().length > 0) {
+      <button matButton="filled" class="add-button">
+        Add Team
+      </button>
+    }
+  </div>
+</div>

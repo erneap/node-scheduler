@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "scheduler-models": "^1.3.110",
+    "scheduler-services": "^1.3.75"
+  }
+}

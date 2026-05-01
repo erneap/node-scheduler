@@ -1,0 +1,11 @@
+<div class="flexlayout row topleft view" [style]="style()">
+  <div class="flexlayout column topleft editor" >
+    <h2>Administrative Tools</h2>
+    <mat-toolbar class="flexlayout row topleft toolbar" style="width: 100%;">
+      <button matButton (click)="choose('teams')">Team Editor</button>
+      <button matButton (click)="choose('accounts')">Account Management</button>
+      <button matButton (click)="choose('purge')">Data Purge</button>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column center">
+    <div class="flexlayout row center label">Added Personnel</div>
+    <app-list [width]="200" [height]="300" [list]="list()" [selectedItem]="selectedPerson()"
+      (itemSelected)="selectPerson($event)"></app-list>
+  </div>
+  <div class="flexlayout column center" style="margin-left: 5px;">
+    <div class="flexlayout row center label">Personnel Editor</div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 250px;">
+        <mat-label>Email Address</mat-label>
+        <input matInput [formField]="personForm.email" (change)="checkErrors()">
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>First Name</mat-label>
+        <input matInput [formField]="personForm.first" (change)="checkErrors()">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>Middle Name (Optional)</mat-label>
+        <input matInput [formField]="personForm.middle" (change)="checkErrors()">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>Last Name</mat-label>
+        <input matInput [formField]="personForm.last" (change)="checkErrors()">
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>Permission/Job</mat-label>
+        <mat-select [formField]="personForm.position" (selectionChange)="checkErrors()">
+          <mat-option value="teamleader">Team Leadership</mat-option>
+          <mat-option value="admin">Administrator</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center flexgap" style="width: 100%;">
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" [formField]="personForm.password1" 
+          (keyup)="checkErrors()">
+      </mat-form-field>
+      <mat-form-field floatLabel="always" style="width: 200px;">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput type="password" [formField]="personForm.password2" 
+          (keyup)="checkErrors()">
+      </mat-form-field>
+    </div>
+    <div class="flexlayout row center" style="width: 100%;">
+      @if (personForm().valid()) {
+        <button matButton="filled" class="add-button" (click)="updatePerson()">
+          @if (personForm.id().value() === 0) {
+            Add Person
+          }
+          @else {
+            Update Person
+          }
+        </button>
+      }
+    </div>
+  </div>
+  <div class="flexlayout column center" style="margin-left: 5px;">
+    <div class="flexlayout row center label">Personel Error(s):</div>
+    @for (err of errors(); track err) {
+      <div class="flexlayout row center error">
+        - {{err.field}}: {{err.message}}
+      </div>
+    }
+  </div>
+</div>

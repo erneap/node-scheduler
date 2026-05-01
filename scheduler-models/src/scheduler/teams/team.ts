@@ -1,3 +1,4 @@
+import { Employee, IEmployee } from "../employees";
 import { IWorkcode, Workcode } from "../labor";
 import { ISite, Site } from "../sites";
 import { Company, ICompany } from "./company";
@@ -13,6 +14,7 @@ export interface ITeam {
   companies?: ICompany[];
   contacttypes?: IContact[];
   specialties?: ISpecialty[];
+  employees?: IEmployee[];
 }
 
 export class Team implements ITeam {
@@ -24,6 +26,7 @@ export class Team implements ITeam {
   public companies: Company[];
   public contacttypes: Contact[];
   public specialties: Specialty[];
+  public employees?: Employee[];
 
   constructor(team?: ITeam) {
     this._id = (team) ? team._id : ''
@@ -66,6 +69,15 @@ export class Team implements ITeam {
         this.specialties.push(new Specialty(sp));
       });
       this.specialties.sort((a,b) => a.compareTo(b));
+    }
+    if (team && team.employees && team.employees.length > 0) {
+      this.employees = [];
+      team.employees.forEach(emp => {
+        if (this.employees) {
+          this.employees.push(new Employee(emp));
+        }
+      });
+      this.employees.sort((a,b) => a.compareTo(b));
     }
   }
 

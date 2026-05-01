@@ -1,0 +1,8 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column center" style="margin-right: 5px;">
+    <app-list [width]="250" [height]="listHeight()" [list]="list()" 
+      [selectedItem]="adminService.selectedTeam()" (itemSelected)="selectTeam($event)">
+    </app-list>
+  </div>
+  <router-outlet></router-outlet>
+</div>

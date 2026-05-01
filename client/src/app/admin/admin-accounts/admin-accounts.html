@@ -1,0 +1,47 @@
+<div class="flexlayout row topleft">
+  <div class="flexlayout column topleft flexwrap userlist" [style]="getListMaxHeight()">
+    @for (user of accounts(); track user.id) {
+      <div [class]="getClasses(user)" (click)="selectUser(user.id)">
+        {{user.getLastFirst()}}
+      </div>
+    }
+  </div>
+  @if (adminService.selectedUser().id !== '') {
+    <div class="flexlayout column center" style="margin-left: 10px;">
+      <div class="flexlayout row center" style="width: 100%;">
+        <h2>{{adminService.selectedUser().getFullName()}}</h2>
+      </div>
+      @if (adminService.selectedUser().badAttempts > 2) {
+        <div class="flexlayout row center" style="width: 100%;">
+          <button matButton="filled" class="delete-button">
+            Unlock
+          </button>
+        </div>
+      }
+      <div class="flexlayout row center" style="width: 100%;margin-top: 5px;">
+        <button matButton="filled" class="add-button" (click)="sendTempPassword()">
+          Send Temporary Password
+        </button>
+      </div>
+      <div class="flexlayout column center" style="width: 100%;">
+        <div class="flexlayout row center" style="width: 100%;">
+          <h3>Change User's Permissions</h3>
+        </div>
+        <div class="flexlayout row center flexwrap flexgap permissions">
+          @for (perm of permissions(); track perm) {
+            <label><input type="checkbox" 
+              (click)="handleClick(perm.application, perm.job, $event)" 
+              [checked]="hasPermission(perm.application, perm.job)">
+              {{perm.application.toUpperCase()}} - {{perm.job.toUpperCase()}}
+            </label>
+          }
+        </div>
+      </div>
+      <div class="flexlayout row center" style="width: 100%;margin-top: 5px;">
+        <button matButton="filled" class="delete-button" (click)="deleteUser()">
+          Delete User
+        </button>
+      </div>
+    </div>
+  }
+</div>

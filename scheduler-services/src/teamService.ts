@@ -51,19 +51,25 @@ export class TeamService {
               const empList: string[] = [];
               const empPromises = empArray.map(async(emp) => {
                 let found = false;
-                team.sites.forEach((site, s) => {
-                  if (!found && site.id.toLowerCase() === emp.site.toLowerCase()) {
-                    const employee = new Employee(emp);
-                    const user = userMap.get(employee.id);
-                    if (user) {
-                      employee.user = user;
+                if (team) {
+                  team.sites.forEach((site, s) => {
+                    if (!found && site.id.toLowerCase() === emp.site.toLowerCase()) {
+                      const employee = new Employee(emp);
+                      const user = userMap.get(employee.id);
+                      if (user) {
+                        employee.user = user;
+                      }
+                      if (site.employees) {
+                        site.employees.push(employee);
+                        empList.push(employee.id);
+                      }
+                      if (team) {
+                        team.sites[s] = site;
+                      }
+                      found = true;
                     }
-                    site.employees.push(employee);
-                    empList.push(employee.id);
-                    team.sites[s] = site;
-                    found = true;
-                  }
-                });
+                  });
+                }
               });
               await Promise.allSettled(empPromises);
 
@@ -80,30 +86,38 @@ export class TeamService {
                 const result = await conn.query(sql, workVals);
                 const workPromises = result.map((wk: any) => {
                   let found = false;
-                  team.sites.forEach((site, s) => {
-                    if (!found) {
-                      site.employees.forEach((emp, e) => {
-                        if (!found && emp.id === wk.employeeID) {
-                          if (!emp.work) {
-                            emp.work = [];
-                          }
-                          if (emp.work) {
-                            emp.work.push(new Work({
-                              dateworked: new Date(wk.dateworked),
-                              chargenumber: wk.chargenumber,
-                              extension: wk.extension,
-                              paycode: Number(wk.paycode),
-                              modtime: (wk.modtime === '1' || wk.modtime === 1),
-                              hours: Number(wk.hours)
-                            }));
-                            found = true;
-                            site.employees[e] = emp;
-                            team.sites[s] = site;
-                          }
+                  if (team) {
+                    team.sites.forEach((site, s) => {
+                      if (!found) {
+                        if (site.employees) {
+                          site.employees.forEach((emp, e) => {
+                            if (!found && emp.id === wk.employeeID) {
+                              if (!emp.work) {
+                                emp.work = [];
+                              }
+                              if (emp.work) {
+                                emp.work.push(new Work({
+                                  dateworked: new Date(wk.dateworked),
+                                  chargenumber: wk.chargenumber,
+                                  extension: wk.extension,
+                                  paycode: Number(wk.paycode),
+                                  modtime: (wk.modtime === '1' || wk.modtime === 1),
+                                  hours: Number(wk.hours)
+                                }));
+                                found = true;
+                                if (site.employees) {
+                                  site.employees[e] = emp;
+                                }
+                                if (team) {
+                                  team.sites[s] = site;
+                                }
+                              }
+                            }
+                          });
                         }
-                      });
-                    }
-                  });
+                      }
+                    });
+                  }
                 });
                 await Promise.allSettled(workPromises);
               }
@@ -117,7 +131,7 @@ export class TeamService {
       } else {
         throw new Error('No team collection provided');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log(err.stackTrace)
       throw err;
     } finally {

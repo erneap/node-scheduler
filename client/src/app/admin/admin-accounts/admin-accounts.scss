@@ -1,0 +1,86 @@
+.userlist {
+  max-width: 606px;
+  overflow: auto;
+}
+
+.user {
+  width: 200px;
+  height: 20px;
+  font-size: 1rem;
+  border: solid 1px black;
+  cursor: pointer;
+}
+
+.good {
+  background-color: white;
+  color: black;
+}
+
+.good:hover {
+  background-color: gray;
+  color: black;
+}
+
+.locked {
+  background-color: lightsalmon;
+  color: black;
+}
+
+.locked:hover {
+  background-color: #ff4800;
+  color: black;
+}
+
+.expired {
+  background-color: #ff0000;
+  color: black;
+}
+
+.expired:hover {
+  background-color: #b30000;
+  color: white;
+}
+
+.old {
+  background-color: #9900cc;
+  color: white;
+}
+
+.old:hover {
+  background-color: #4d0066;
+  color: white;
+}
+
+h2 {
+  color: white;
+}
+
+.label {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.error {
+  color: pink;
+}
+
+.permissions {
+  width: 400px;
+}
+
+.indicator {
+  width: 25px;
+  height: 25px;
+  border: solid 1px black;
+}
+
+.passcheck {
+  height: 25px;
+  width: 225px;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: white;
+  color: black;
+  border: solid 1px black;
+}

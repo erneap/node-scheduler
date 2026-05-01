@@ -109,6 +109,40 @@ export class EmployeeService {
   }
 
   /**
+   * This method will mainly be used to show employees, and possibly associated users
+   * for a team.
+   * @param team The string value for the team identifier
+   * @returns A list of employees assigned to the designated team.
+   */
+  async getByTeam(team: string): Promise<Employee[]> {
+    const employees: Employee[] = [];
+    if (collections.employees && collections.users) {
+      const users = new Map<string, User>();
+      const userCursur = collections.users.find<IUser>({});
+      const userArray = await userCursur.toArray();
+      userArray.forEach(iuser => {
+        const user = new User(iuser);
+        users.set(user.id, user);
+      });
+      const oteam = new ObjectId(team);
+      console.log(oteam);
+      const query = {$or:[{team: oteam},{team: team}]};
+      const empCursor = collections.employees.find<IEmployee>(query);
+      const empArray = await empCursor.toArray();
+      empArray.forEach(iemp => {
+        const emp = new Employee(iemp);
+        const tuser = users.get(emp.id);
+        if (tuser) {
+          emp.user = new User(tuser);
+        }
+        employees.push(emp);
+      });
+    }
+    return employees;
+
+  }
+
+  /**
    * This method will be used to insert a new employee into the employee's collection, 
    * but it also will create a new user, if the employee's user record is not already 
    * in the database

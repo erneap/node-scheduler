@@ -18,7 +18,7 @@ interface NewSiteData {
   name: string;
   offset: number;
 }
-interface ErrorMessage {
+export interface ErrorMessage {
   field: string;
   message: string;
 }
@@ -94,7 +94,6 @@ export class TeamEditorSiteNew {
       });
     }
     this.personnel.set(people);
-    console.log(this.personnel());
     this.checkErrors();
   }
     

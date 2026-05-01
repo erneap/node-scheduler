@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { NewSitePersonnel } from 'scheduler-models/scheduler/sites/web';
 
-interface PersonelData {
+export interface PersonelData {
   id: number;
   email: string;
   first: string;
@@ -18,7 +18,7 @@ interface PersonelData {
   password2: string;
   position: string;
 }
-interface ErrorMessage {
+export interface ErrorMessage {
   field: string;
   message: string;
 }

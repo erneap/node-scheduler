@@ -1,6 +1,8 @@
-import { IUser, User } from "scheduler-models/users";
+import { IUser, Permission, User } from "scheduler-models/users";
 import { collections } from "./mongoconnect";
 import { ObjectId } from "mongodb";
+import { mdbConnection } from "./sqldb";
+import { PoolConnection } from "mariadb/*";
 
 /**
  * This class definition will be used to get, insert, replace and/or delete users from
@@ -74,7 +76,7 @@ export class UserService {
         if (usr.emailAddress.toLowerCase() === newuser.emailAddress.toLowerCase() 
           || (usr.lastName.toLowerCase() === newuser.lastName.toLowerCase()
           && usr.firstName.toLowerCase() === newuser.firstName.toLowerCase()
-          && usr.middleName.toLowerCase() === newuser.middleName.toLowerCase())) {
+          && usr.middleName?.toLowerCase() === newuser.middleName?.toLowerCase())) {
           user = new User(usr);
           found = true;
         }
@@ -145,5 +147,30 @@ export class UserService {
     } else {
       throw new Error('No user collection');
     }
+  }
+
+  async getPermission(): Promise<Permission[]> {
+    let conn: PoolConnection | undefined;
+    const list: Permission[] = [];
+    try {
+      if (mdbConnection.pool) {
+        conn = await mdbConnection.pool.getConnection();
+        const query = "SELECT * FROM permissions ORDER BY application, job;";
+        const result = await conn.query(query);
+        result.forEach((row: any) => {
+          list.push(new Permission({
+            application: row.application,
+            job: row.job
+          }));
+        });
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      if (conn) {
+        conn.release();
+      }
+    }
+    return list;
   }
 }

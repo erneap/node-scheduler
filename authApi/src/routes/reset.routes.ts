@@ -70,7 +70,7 @@ router.post('/reset', async(req: Request, res: Response) => {
       + "process for re-establishing log in privileges is in effect.  Please "
       + "copy the token string below and click the link to get you back to a "
       + "web page to change your forgotten password.\n</p>\n"
-      + "<p>We are glad that you've choosen to enrich your life through faith!</p>\n"
+      + "<p>We are glad that you've choosen to enrich your life!</p>\n"
       + '<div class="password">\n'
       + '<p>The following is your token string to verify you are the account '
       + `holder:</p>\n<h2 style="color: yellow;">${result}</h2>\n`
@@ -88,6 +88,80 @@ router.post('/reset', async(req: Request, res: Response) => {
       });
     
       await sendMail(to, 'Forgot Password Token', message);
+    } catch (error) {
+      throw error;
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    let message = '';
+    if (typeof error === 'string') {
+      message = error;
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else {
+      message = error as string;
+    }
+    postLogEntry('authentication', `reset: Post: Error: ${message}`);
+    res.status(400).json({message: message });
+  }
+});
+
+/**
+ * This route will be used for a password reset request where the user can't remember
+ * his/her password.  It will receive the user's email address, check to see if a user
+ * account is present, create a reset token and expiration date/time, then send an email
+ * to the email address and any additional email addresses with the reset token included.
+ */
+router.post('/resetadmin', async(req: Request, res: Response) => {
+  const now = new Date();
+  try {
+    const uService = new UserService();
+    const request = req.body as ForgotPasswordRequest;
+    const id = request.emailAddress;
+
+    const user = await uService.get(id);
+    const result = user.createResetToken();
+    const salt = genSaltSync(12)
+    const hash = hashSync(result, salt);
+    user.password = hash;
+    user.passwordExpires = new Date();
+    user.badAttempts = -1;
+    await uService.replace(user);
+
+    let message = '<!DOCTYPE html>\n<html>\n<head>\n<style>\n'
+      + 'body { background-color:lightblue;display:flex;flex-direction:column;'
+      + 'justify-content:center;align-items:center;padding:10px;}\n'
+      + 'div.main {display:flex;flex-direction:column;justify-content:center;'
+      + 'align-items: center;}\n'
+      + 'div.password {background-color:blue;color:white;display:flex;'
+      + 'flex-direction:column;justify-content:center;align-items:center;'
+      + 'padding: 10px;}\n'
+      + '</style>\n</head>\n<body>\n'
+      + '<h1>Team Scheduler Web Application</h1>\n'
+      + '<h2>Temporary Password</h2>\n'
+      + '<div class="main">\n<p>\n'
+      + "The administrator has reset your password to a random password, given below."
+      + "  You will use this password to log into your account with the email address "
+      + "used to send this.  You will be required to change your password immediately."
+      + "\n</p>\n"
+      + "<p>We are glad that you've choosen to enrich your life!</p>\n"
+      + '<div class="password">\n'
+      + '<p>The following is your TEMPORARY PASSWORD:'
+      + `</p>\n<h2 style="color: yellow;">${result}</h2>\n`
+      + '<p style="color:lightpink;text-decoration: underline;">\n'
+      + '<a href="http://www.osanscheduler.com/forgot">Link back to site</a>\n'
+      + '</p>\n</div>\n<div style="margin-top: 25px;">'
+      + 'Thanks again, the webmaster.</div>\n</div>\n</body>\n</html>';
+
+    try {
+      let to = user.emailAddress;
+      user.additionalEmails.forEach(email => {
+        if (user.emailAddress.toLowerCase() !== email.toLowerCase()) {
+          to += `, ${email}`;
+        }
+      });
+    
+      await sendMail(to, 'Password Token', message);
     } catch (error) {
       throw error;
     }

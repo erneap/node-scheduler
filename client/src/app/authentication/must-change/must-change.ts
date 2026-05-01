@@ -96,6 +96,8 @@ export class MustChange {
           next: (res) => {
             this.authService.statusMessage.set('Password changed');
             const user = new User(res.body as IUser);
+            this.authService.setUser(user);
+            this.router.navigate(['/employee/schedule'])
           },
           error: (err) => {
             console.log(err);

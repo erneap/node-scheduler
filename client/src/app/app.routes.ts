@@ -52,6 +52,12 @@ import { Forgot } from './authentication/forgot/forgot';
 import { ForgotEmail } from './authentication/forgot/forgot-email/forgot-email';
 import { ForgotQuestion } from './authentication/forgot/forgot-question/forgot-question';
 import { ForgotComplete } from './authentication/forgot/forgot-complete/forgot-complete';
+import { Admin } from './admin/admin';
+import { AdminTeams } from './admin/admin-teams/admin-teams';
+import { AdminTeamsNew } from './admin/admin-teams/admin-teams-new/admin-teams-new';
+import { AdminTeamsEdit } from './admin/admin-teams/admin-teams-edit/admin-teams-edit';
+import { AdminAccounts } from './admin/admin-accounts/admin-accounts';
+import { AdminPurge } from './admin/admin-purge/admin-purge';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -189,6 +195,22 @@ export const routes: Routes = [
       },
       {path: '**', component: TeamEditorWorkcodes }
     ]
-   },
+  },
+  { path: 'admin', component: Admin,
+    children: [
+      {path: '', redirectTo: '/admin/accounts', pathMatch: 'full'},
+      {path: 'teams', component: AdminTeams,
+        children: [
+          {path: '', redirectTo: '/admin/teams/new', pathMatch: 'full'},
+          {path: 'new', component: AdminTeamsNew },
+          {path: 'edit', component: AdminTeamsEdit },
+          {path: '**', component: AdminTeamsNew}
+        ]
+      },
+      {path: 'accounts', component: AdminAccounts},
+      {path: 'purge', component: AdminPurge},
+      {path: '**', component: AdminAccounts},
+    ]
+  },
   { path: '**', redirectTo: '/login' }
 ];

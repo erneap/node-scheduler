@@ -46,6 +46,23 @@ router.get('/users', auth, async (req: Request, res: Response) => {
   }
 });
 
+router.get('/permissions', auth, async(req: Request, res: Response) => {
+  try {
+    const uService = new UserService();
+    const permissions: Permission[] = [];
+    const list = await uService.getPermission();
+    list.forEach(perm => {
+      permissions.push(new Permission(perm));
+    });
+    return res.status(200).json(permissions);
+  } catch (err) {
+    console.log(err);
+    const error = err as Error;
+    postLogEntry('Users', `Get: GetPermissions: ${error.message}`);
+    res.status(400).json({message: `User: Get: Permissions: ${error.message}`});
+  }
+});
+
 /**
  * This route is used to retrieve a single user from the database collection by the 
  * user's email address.  If the email address is blank an error is thrown.

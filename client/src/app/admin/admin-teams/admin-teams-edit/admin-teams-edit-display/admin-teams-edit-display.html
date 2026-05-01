@@ -1,0 +1,26 @@
+<div class="flexlayout column center flexgap">
+  <div class="flexlayout row center warning">
+    Administrators are unable to edit a team.  The team leadership should take <br /> action on
+    the team editor page.  The Team Name and leaders are listed below.
+  </div>
+  <div class="flexlayout row center label">
+    NAME: {{name()}}
+  </div>
+  <div class="flexlayout row center label">
+    Team Leaders:
+  </div>
+  @for (usr of leadership(); track usr.id) {
+    <div class="flexlayout row center" style="width: 100%;">
+      {{usr.getFullName()}} ({{usr.emailAddress}})
+    </div>
+  }
+  <div class="flexlayout row center warning">
+    Administrators are unable to edit a team.  The team leadership should take<br /> action on
+    the team editor page.  The Team Name and leaders are listed above.
+  </div>
+  <div class="flexlayout row center" style="width: 100%;">
+    <button matButton="filled" class="delete-button">
+      Delete Team
+    </button>
+  </div>
+</div>

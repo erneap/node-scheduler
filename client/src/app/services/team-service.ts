@@ -108,6 +108,11 @@ export class TeamService extends CacheService {
     return this.http.get<Employee[]>(url, { observe: 'response'});
   }
 
+  getSelectedTeam(team: string): Observable<HttpResponse<Team>> {
+    const url = `${this.schedulerUrl}/team/${team}`;
+    return this.http.get<Team>(url, {observe: 'response'});
+  }
+
   /**
    * This method is used to prepare and send a request to update a team in the database.
    * The request is sent to the API process on the server

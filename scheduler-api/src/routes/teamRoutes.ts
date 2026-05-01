@@ -2,7 +2,9 @@ import { Request, Response, Router } from "express";
 import { auth } from '../middleware/authorization.middleware';
 import { Contact, NewTeam, Specialty, Team, UpdateTeam } 
   from "scheduler-models/scheduler/teams";
-import { postLogEntry, TeamService } from "scheduler-services";
+import { EmployeeService, postLogEntry, TeamService, UserService } from "scheduler-services";
+import { User } from "scheduler-models/users";
+import { Employee } from "scheduler-models/scheduler/employees";
 
 const router = Router();
 export default router;
@@ -13,16 +15,27 @@ export default router;
  * 1) Get the team identifier from the request
  * 2) Check for the teams database collection
  * 3) Pull the team from the database
+ * 4) Pull the employees for the team and add
  * 4) Respond with the team.
  */
 router.get('/team/:team', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
+    console.log(teamid);
     if (teamid !== '') {
       const teamService = new TeamService();
+      const userService = new UserService();
+      const employeeService = new EmployeeService();
       const iTeam = await teamService.getTeam(teamid);
       if (iTeam) {
         const team = new Team(iTeam);
+        const employees: Employee[] = [];
+        const emps = await employeeService.getByTeam(teamid);
+        emps.forEach(emp => {
+          employees.push(new Employee(emp));
+        });
+        employees.sort((a,b) => a.compareTo(b));
+        team.employees = employees;
         res.status(200).json(team);
       } else {
         throw new Error('Team not found');
@@ -33,6 +46,27 @@ router.get('/team/:team', auth, async(req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error;
     await postLogEntry('team', `team: Get: Error: ${error.message}`);
+    res.status(400).json({'message': error.message});
+  }
+});
+
+/**
+ * This method will get all the teams in the database, to display in the admin
+ * teams page for editing
+ */
+router.get('/teams', auth, async(req: Request, res: Response) => {
+  try {
+    const teamService = new TeamService();
+    const iTeams = await teamService.getAllTeams();
+    const teams: Team[] = [];
+    iTeams.forEach(team => {
+      teams.push(new Team(team));
+    })
+    teams.sort((a,b) => (a.name < b.name) ? -1 : 1);
+    res.status(200).json(teams);
+  } catch (err) {
+    const error = err as Error;
+    await postLogEntry('team', `teams: Get: Error: ${error.message}`);
     res.status(400).json({'message': error.message});
   }
 });

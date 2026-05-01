@@ -1,7 +1,9 @@
+import { NewSitePersonnel } from "../sites/web";
 import { HolidayType } from "./company";
 
 export interface NewTeam {
   name: string;
+  personnel?: NewSitePersonnel[];
 }
 
 export interface NewCompany {
