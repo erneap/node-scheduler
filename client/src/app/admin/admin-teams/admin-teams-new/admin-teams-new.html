@@ -11,7 +11,7 @@
     [personnel]="personnel()"></app-admin-teams-new-personnel>
   <div class="flexlayout row center" style="width: 100%;">
     @if (teamForm().valid() && personnel().length > 0) {
-      <button matButton="filled" class="add-button">
+      <button matButton="filled" class="add-button" (click)="onAdd()">
         Add Team
       </button>
     }

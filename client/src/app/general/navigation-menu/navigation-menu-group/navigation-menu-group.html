@@ -1,0 +1,11 @@
+@if (group.useGroup(user())) {
+  <div class="flexlayout column topleft">
+    <div class="flexlayout row topleft label">
+      {{group.name}}
+    </div>
+    @for (item of group.items; track item.id) {
+      <app-navigation-menu-group-item [item]="item" (toggle)="onToggle($event)">
+      </app-navigation-menu-group-item>
+    }
+  </div>
+}

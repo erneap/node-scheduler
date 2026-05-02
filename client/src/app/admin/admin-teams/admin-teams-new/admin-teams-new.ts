@@ -8,6 +8,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { AdminTeamsNewPersonnel } from './admin-teams-new-personnel/admin-teams-new-personnel';
+import { AdminService } from '../../../services/admin-service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ITeam, Team } from 'scheduler-models/scheduler/teams';
+import { Item } from '../../../general/list/list.model';
 
 interface NewTeamData {
   name: string;
@@ -36,6 +40,7 @@ export class AdminTeamsNew {
 
   constructor(
     private authService: AuthService,
+    private adminService: AdminService,
     private teamService: TeamService,
     private router: Router
   ) {
@@ -73,5 +78,30 @@ export class AdminTeamsNew {
       });
     }
     this.personnel.set(people);
+  }
+
+  onAdd() {
+    this.adminService.addTeam(this.teamForm.name().value(), this.personnel()).subscribe({
+      next: (res) => {
+        const teams = res.body as ITeam[]
+        const list: Item[] = [];
+        list.push({id: 'new', value: 'Add New Team'});
+        teams.forEach(iteam => {
+          const team = new Team(iteam);
+          if (team.name === this.teamForm.name().value()) {
+            this.adminService.selectedTeam.set(team.id);
+          }
+          list.push({id: team.id, value: team.name });
+        });
+        this.adminService.teamList.set(list);
+        this.router.navigate(['/admin/teams/edit']);
+      }, error: (err) => {
+        if (err instanceof HttpErrorResponse) {
+          if (err.status >= 400 && err.status < 500) {
+            this.authService.statusMessage.set(`${err.status} - ${err.error.message}`)
+          }
+        }
+      }
+    })
   }
 }

@@ -4,7 +4,9 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ForgotPasswordRequest, Permission, UpdateUserRequest, User } from 'scheduler-models/users';
 import { Message } from 'scheduler-models/general';
-import { Team } from 'scheduler-models/scheduler/teams';
+import { NewTeam, Team } from 'scheduler-models/scheduler/teams';
+import { NewSitePersonnel } from 'scheduler-models/scheduler/sites/web';
+import { Item } from '../general/list/list.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +16,7 @@ export class AdminService {
   private schedulerUrl = `${environment.schedulerUrl}`;
   selectedUser = signal<User>(new User());
   selectedTeam = signal<string>('new');
+  teamList = signal<Item[]>([]);
 
   constructor(
     private http: HttpClient
@@ -55,5 +58,14 @@ export class AdminService {
       emailAddress: id
     };
     return this.http.post<User>(url, data, {observe: 'response'});
+  }
+
+  addTeam(name: string, personnel: NewSitePersonnel[]): Observable<HttpResponse<Team[]>> {
+    const url = `${this.schedulerUrl}/team`;
+    const data: NewTeam = {
+      name: name,
+      personnel: personnel
+    };
+    return this.http.post<Team[]>(url, data, {observe: 'response'});
   }
 }

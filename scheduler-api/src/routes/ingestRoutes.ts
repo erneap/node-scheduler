@@ -305,6 +305,9 @@ router.post('/ingest', upload.array('files'), async(req: Request, res: Response)
                   // code field of the row indicates whether or not this is a leave type.
                   // If not empty, we assume it is work.  At this point all leaves are 
                   // recorded as actual
+                  if (eEmp.employeeID === '1044019') {
+                    console.log(`${row.date} - ${row.code}`);
+                  }
                   emp.addLeave(0, row.date, row.code, 'ACTUAL', row.hours, '', 
                     row.holidayID);
                   await empService.replace(emp);

@@ -53,7 +53,7 @@ export class AdminTeams {
         }
       }
     });
-    this.list.set(list);
+    this.adminService.teamList.set(list);
   }
 
   selectTeam(id: string) {

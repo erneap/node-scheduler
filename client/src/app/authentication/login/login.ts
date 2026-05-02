@@ -17,6 +17,7 @@ import { Employee } from 'scheduler-models/scheduler/employees';
 import { Site } from 'scheduler-models/scheduler/sites';
 import { Team } from 'scheduler-models/scheduler/teams';
 import { NoticeService } from '../../services/notice-service';
+import { MenuGroup } from 'scheduler-models/general';
 
 @Component({
   selector: 'app-login',
@@ -94,6 +95,14 @@ export class Login {
         next: (res) => {
           const initial = (res.body as InitialResponse);
           if (initial) {
+            if (initial.menu) {
+              const list: MenuGroup[] = [];
+              initial.menu.forEach(gp => {
+                list.push(new MenuGroup(gp));
+              });
+              list.sort((a,b) => a.compareTo(b));
+              this.authService.menuGroups.set(list);
+            }
             if (initial.employee) {
               this.employeeService.setEmployee(initial.employee);
             }
@@ -126,6 +135,7 @@ export class Login {
               || user.questions[2].answer === ''
             ) {
               this.authService.statusMessage.set('Security Questions/Answer must be set');
+              this.authService.showMenu.set(false);
               this.router.navigate(['/employee/security']);
             } else {
               this.authService.showMenu.set(true);

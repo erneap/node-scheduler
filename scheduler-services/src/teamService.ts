@@ -74,7 +74,7 @@ export class TeamService {
               await Promise.allSettled(empPromises);
 
               // pull work records for the employees
-              if (mdbConnection.pool) {
+              if (empList.length > 0 && mdbConnection.pool) {
                 conn = await mdbConnection.pool.getConnection();
                 const now = new Date();
                 const start = new Date(Date.UTC(now.getFullYear() - 1, 0, 1));
@@ -82,7 +82,8 @@ export class TeamService {
                 const sql = "SELECT * FROM employeeWork WHERE employeeID in ( "
                   + "? ) AND dateworked >= ? AND dateworked < ? ORDER BY "
                   + "employeeID, dateworked, chargenumber, extension, paycode;";
-                const workVals = [ empList, start, end ];
+                const workVals = [ empList, this.dateToDatetimeString(start), 
+                  this.dateToDatetimeString(end) ];
                 const result = await conn.query(sql, workVals);
                 const workPromises = result.map((wk: any) => {
                   let found = false;
@@ -141,6 +142,32 @@ export class TeamService {
     return team;
   }
 
+  private dateToDatetimeString(date: Date): string {
+    let answer = '';
+    date = new Date(date);
+    if (date.getUTCMonth() < 9) {
+      answer += '0';
+    }
+    answer += `${date.getUTCMonth() + 1}/`;
+    if (date.getUTCDate() < 10) {
+      answer += '0';
+    }
+    answer += `${date.getUTCDate()}/${date.getUTCFullYear()} `;
+    if (date.getUTCHours() < 10) {
+      answer += '0';
+    }
+    answer += `${date.getUTCHours()}:`;
+    if (date.getUTCMinutes() < 10) {
+      answer += '0';
+    }
+    answer += `${date.getUTCMinutes()}:`;
+    if (date.getUTCSeconds() < 10) {
+      answer += '0'
+    }
+    answer += `${date.getUTCSeconds()}`;
+    return answer;
+  }
+
   /**
    * This method is used to create a new team in the database.  A new team usually 
    * consists of just a name for the team, so it is processed as the object without any
@@ -153,6 +180,9 @@ export class TeamService {
       if (collections.teams) {
         let team = new Team(iTeam);
         if (!iTeam._id || iTeam._id.toString() === '' || iTeam._id.toString() === '0') {
+          const id = new ObjectId();
+          team._id = id;
+          team.id = id.toString();
           const result = await collections.teams.insertOne(team);
           team.id = result.insertedId.toString();
         } else {
@@ -166,7 +196,10 @@ export class TeamService {
           const query = { _id: new ObjectId(team.id)};
           const result = await collections.teams.replaceOne(query, team);
         }
-        team = await this.getTeam(team.id);
+        const iteam = await this.getTeam(team.id);
+        if (iteam) {
+          team = new Team(iteam);
+        }
         return team;
       } else {
         throw new Error('No team collection provided');
@@ -193,7 +226,10 @@ export class TeamService {
           team.sites[s] = site;
         });
         await collections.teams.replaceOne(query, team);
-        team = await this.getTeam(team.id);
+        const iteam = await this.getTeam(team.id);
+        if (iteam) {
+          team = new Team(iteam);
+        }
         return team;
       } else {
         throw new Error('No team collections provided');

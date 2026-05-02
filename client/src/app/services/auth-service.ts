@@ -6,7 +6,7 @@ import { AddUserRequest, AuthenticationRequest, ForgotPasswordRequest, IUser, Pa
   from 'scheduler-models/users';
 import { map, Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Message } from 'scheduler-models/general';
+import { MenuGroup, Message } from 'scheduler-models/general';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,7 @@ import { Message } from 'scheduler-models/general';
 export class AuthService extends CacheService {
   private authUrl  = `${environment.authUrl}`;
   statusMessage = signal('');
+  menuGroups = signal<MenuGroup[]>([]);
   showMenu = signal<boolean>(false);
   isAuthenticated = false;
   mustChange = computed(() => {

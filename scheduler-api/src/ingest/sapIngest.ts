@@ -88,6 +88,9 @@ export class SAPIngest {
                     break;
                   case 'charge number desc':
                     eRow.description = sValue;
+                    if (sValue.toLowerCase().indexOf('modified') >= 0) {
+                      eRow.modified = true;
+                    }
                     break;
                   case 'explanation':
                     eRow.comment = sValue;

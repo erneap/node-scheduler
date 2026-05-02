@@ -3,8 +3,11 @@ import { auth } from '../middleware/authorization.middleware';
 import { Contact, NewTeam, Specialty, Team, UpdateTeam } 
   from "scheduler-models/scheduler/teams";
 import { EmployeeService, postLogEntry, TeamService, UserService } from "scheduler-services";
-import { User } from "scheduler-models/users";
-import { Employee } from "scheduler-models/scheduler/employees";
+import { Permission, User } from "scheduler-models/users";
+import { Assignment, Employee } from "scheduler-models/scheduler/employees";
+import { NewSitePersonnel } from "scheduler-models/scheduler/sites/web";
+import { genSaltSync, hashSync } from "bcrypt-ts";
+import { Workcode } from "scheduler-models/scheduler/labor";
 
 const router = Router();
 export default router;
@@ -21,7 +24,6 @@ export default router;
 router.get('/team/:team', auth, async(req: Request, res: Response) => {
   try {
     const teamid = req.params.team as string;
-    console.log(teamid);
     if (teamid !== '') {
       const teamService = new TeamService();
       const userService = new UserService();
@@ -94,10 +96,35 @@ router.post('/team', auth, async(req: Request, res: Response) => {
         }
       });
       if (!found) {
-        const team = new Team();
+        let team = new Team();
         team.name = data.name;
+        // get base team for workcodes
+        const iteam = await teamService.getTeam('64dad6b14952737d1eb2193f');
+        if (iteam) {
+          const baseTeam: Team = new Team(iteam);
+          console.log(baseTeam.workcodes.length);
+          baseTeam.workcodes.forEach(wc => {
+            team.workcodes.push(new Workcode(wc));
+          });
+        }
         const result = await teamService.insertTeam(team);
-        res.status(200).json(result);
+        team = new Team(result);
+        team.employees = [];
+        console.log(data.personnel);
+        if (data.personnel) {
+          const promises = data.personnel.map(async(person) => {
+            const emp = await addUser(person, team.id, 'staff');
+            if (team.employees) {
+              team.employees.push(new Employee(emp));
+            }
+          })
+        }
+        const iteams = await teamService.getAllTeams();
+        const teams: Team[] = [];
+        iteams.forEach(iteam => {
+          teams.push(new Team(iteam));
+        });
+        res.status(200).json(teams);
       } else {
         throw new Error('New Team Name already in use.')
       }
@@ -110,6 +137,69 @@ router.post('/team', auth, async(req: Request, res: Response) => {
     res.status(400).json({'message': error.message});
   }
 });
+
+async function addUser(person: NewSitePersonnel, team: string, site: string)
+  : Promise<Employee> {
+  try {
+    let emp = new Employee();
+    const empService = new EmployeeService();
+    let user = new User();
+    user.emailAddress = person.email;
+    user.lastName = person.last;
+    user.middleName = person.middle;
+    user.firstName = person.first;
+    if (!user.hasPermission('scheduler', 'employee')) {
+      user.permissions.push(new Permission({
+        application: 'scheduler',
+        job: 'employee'
+      }));
+    }
+    if (!user.hasPermission('scheduler', person.position)) {
+      user.permissions.push(new Permission({
+        application: 'scheduler',
+        job: person.position,
+      }));
+    }
+    const salt = genSaltSync(12)
+    const hash = hashSync((person.password) 
+      ? person.password : '', salt);
+    user.password = hash;
+    user.passwordExpires = new Date();
+    user.badAttempts = 0;
+    // the employee service insert method checks to see if there is already an employee
+    // with this first, middle and last name.  If so, it updates the employee, if not
+    // it inserts the employee in the employee collections.  It also checks for a user
+    // with this first, last and middle names and creates an authentication record
+    // if not present.
+    emp = new Employee();
+    emp.team = team;
+    emp.site = site.toLowerCase();
+    emp.email = person.email;
+    emp.name.lastname = person.last;
+    emp.name.firstname = person.first;
+    emp.name.middlename = person.middle;
+    const now = new Date();
+    const asgmt = new Assignment();
+    asgmt.id = 0;
+    asgmt.startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    asgmt.endDate = new Date(Date.UTC(9998, 11, 31));
+    asgmt.site = emp.site;
+    asgmt.addSchedule(7);
+    for ( let i=1; i < 6; i++) {
+      asgmt.changeWorkday(0, i, 'staff', 'D', 8);
+    }
+    if (!emp.assignments) {
+      emp.assignments = [];
+    }
+    emp.assignments.push(asgmt);
+    emp.user = new User(user);
+    await empService.insert(emp);
+    return emp;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
 
 /**
  * This method is used to update a team. which is mainly the name field, but I've included

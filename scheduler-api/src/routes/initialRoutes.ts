@@ -17,6 +17,7 @@ const router = Router();
 router.get('/initial/:id', auth, async(req: Request, res: Response) => {
   try {
     let initial: InitialResponse = {
+      menu: [],
       employee: new Employee(),
       site: new Site(),
       team: new Team(),

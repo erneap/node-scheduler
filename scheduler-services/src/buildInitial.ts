@@ -7,6 +7,7 @@ import { IUser, SecurityQuestion, User } from "scheduler-models/users";
 import { ITeam, Team } from "scheduler-models/scheduler/teams";
 import { mdbConnection } from "./sqldb";
 import { Site } from "scheduler-models/scheduler/sites";
+import { MenuGroup, MenuItem } from "scheduler-models/general";
 
 /**
  * This class definition is used for building an employee's initial data, which
@@ -19,7 +20,9 @@ export class BuildInitial {
 
   constructor(empID?: string) {
     this.employeeID = (empID) ? empID : '';
-    this.initialData = { };
+    this.initialData = {
+      menu: []
+    };
   }
 
   /**
@@ -216,6 +219,45 @@ export class BuildInitial {
               question: row.question
             }));
           }
+        });
+      }
+
+      // pull menu groups/items from the database
+      if (this.initialData.menu.length === 0) {
+        this.initialData.menu = [];
+        let sql = "SELECT * FROM menugroups ORDER BY id;";
+        let results = await conn?.query(sql);
+        results.forEach((row: any) => {
+          this.initialData.menu.push(new MenuGroup({
+            id: Number(row.id),
+            name: row.name
+          }));
+        });
+
+        sql = "SELECT * FROM menuItems ORDER BY id;";
+        results = await conn?.query(sql);
+        results.forEach((row: any) => {
+          const groupid = Number(row.groupid);
+          this.initialData.menu.forEach((grp, g) => {
+            if (grp.id === groupid) {
+              if (!grp.items) {
+                grp.items = [];
+              }
+              if (grp.items) {
+                const item = new MenuItem({
+                  id: Number(row.id),
+                  name: row.name,
+                  link: row.link,
+                  showMenu: (row.showMenu === '1'),
+                  application: row.application,
+                  groups: [] 
+                });
+                item.groups = (row.groups as string).split('|');
+                grp.items.push(item);
+              }
+              this.initialData.menu[g] = grp;
+            }
+          })
         });
       }
     } catch (err) {
